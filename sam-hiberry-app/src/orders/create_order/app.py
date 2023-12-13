@@ -40,7 +40,7 @@ def lambda_handler(event, context: LambdaContext):
         
         logger.info(f'Order received and created: {order}')
         return {
-            'statusCode': 200,
+            'statusCode': 201,
             'body': json.dumps('Order received and created successfully.')
         }
 

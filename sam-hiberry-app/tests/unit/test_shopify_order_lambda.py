@@ -4,7 +4,7 @@ import sys
 import unittest
 
 sys.path.append(str(Path(__file__).parent.parent.parent)) 
-from src.integration.shopify_processor.app import process_shopify_event
+from src.integration.shopify_processor.processor import process_shopify_event
 
 
 class TestShopifyOrderProcessingFunction(unittest.TestCase):
