@@ -1,13 +1,15 @@
 import json
 from datetime import datetime
 import uuid
-import logging
+
+from aws_lambda_powertools import Logger
+from aws_lambda_powertools.utilities.typing import LambdaContext
 
 # Initialize logging
-logger = logging.getLogger()
-logger.setLevel(logging.INFO)
+logger = Logger()
 
-def lambda_handler(event, context):
+
+def lambda_handler(event, context: LambdaContext):
     """
     """
 
@@ -36,7 +38,7 @@ def lambda_handler(event, context):
             #"delivery_sequence": int(data.get("delivery_sequence", 0))
         }
         
-        print(f'Order received and created: {order}')
+        logger.info(f'Order received and created: {order}')
         return {
             'statusCode': 200,
             'body': json.dumps('Order received and created successfully.')

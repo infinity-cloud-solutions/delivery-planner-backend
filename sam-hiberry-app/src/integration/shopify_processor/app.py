@@ -1,11 +1,11 @@
 import json
-import logging
 import os
 import requests
+from aws_lambda_powertools import Logger
+from aws_lambda_powertools.utilities.typing import LambdaContext
 
 # Initialize logging
-logger = logging.getLogger()
-logger.setLevel(logging.INFO)
+logger = Logger()
 
 # Shopify identifier
 SHOPIFY_ID = 0
@@ -82,7 +82,7 @@ def process_shopify_event(shopify_data: dict) -> dict:
     return order_data
 
 
-def lambda_handler(event, context):
+def lambda_handler(event: dict, context: LambdaContext):
     """
     Handler function for AWS Lambda to process Shopify order/create events.
 
@@ -105,13 +105,13 @@ def lambda_handler(event, context):
         order_data = process_shopify_event(shopify_data)
 
         # Send data to the CreateOrderFunction API
-        logging.info(
+        logger.info(
             f"Calling create order api with payload: {json.dumps(order_data)}")
 
         response = requests.post(CREATE_ORDER_API_URL, json=order_data)
         response.raise_for_status()
 
-        logging.info(f"Response : {response.status_code}")
+        logger.info(f"Response : {response.status_code}")
 
     except requests.exceptions.RequestException as e:
         logger.error(f"Error while sending request to create order: {str(e)}")
