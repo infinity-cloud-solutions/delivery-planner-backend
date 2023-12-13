@@ -21,7 +21,7 @@ Resources:
     Type: AWS::Serverless::Function 
     Properties:
       FunctionName: !Sub "ShopifyOrderProcessingFunction-${StageName}"
-      CodeUri: order_processing/
+      CodeUri: src/integration/shopify_processor/
       Handler: app.lambda_handler
       Runtime: python3.10
       Architectures:
@@ -48,7 +48,7 @@ Resources:
     Type: AWS::Serverless::Function
     Properties:
       FunctionName: !Sub "CreateOrderFunction-${StageName}"
-      CodeUri: create_order/
+      CodeUri: src/orders/create_order/
       Handler: app.lambda_handler
       Runtime: python3.10
       Events:
