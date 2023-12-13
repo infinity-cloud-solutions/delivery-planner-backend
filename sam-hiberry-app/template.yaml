@@ -1,0 +1,78 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: >
+  sam-hiberry-app
+
+Globals:
+  Function:
+    Timeout: 3
+
+Parameters:
+  ShopifyEventBusName:
+    Type: String
+  StageName:
+    Type: String
+    Default: uat
+    AllowedValues:
+      - uat
+      - prod
+Resources:
+  ShopifyOrderProcessingFunction:
+    Type: AWS::Serverless::Function 
+    Properties:
+      FunctionName: !Sub "ShopifyOrderProcessingFunction-${StageName}"
+      CodeUri: order_processing/
+      Handler: app.lambda_handler
+      Runtime: python3.10
+      Architectures:
+      - x86_64
+      Environment: 
+        Variables:
+          CREATE_ORDER_API_URL: !Sub "https://${ApiGateway}.execute-api.${AWS::Region}.amazonaws.com/${StageName}/order"
+      DeadLetterQueue:
+        Type: SQS
+        TargetArn: !GetAtt ShopifyOrderProcessingDLQ.Arn
+      Events:
+        ShopifyOrder:
+          Type: EventBridgeRule
+          Properties:
+            EventBusName: !Ref ShopifyEventBusName
+            Pattern:
+              detail-type: 
+                - "shopifyWebhook"
+              detail:
+                metadata:
+                  X-Shopify-Topic:
+                    - prefix: "orders/create"
+  CreateOrderFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub "CreateOrderFunction-${StageName}"
+      CodeUri: create_order/
+      Handler: app.lambda_handler
+      Runtime: python3.10
+      Events:
+        HttpPost:
+          Type: Api
+          Properties:
+            RestApiId: !Ref ApiGateway
+            Path: /order
+            Method: post
+  ShopifyOrderProcessingDLQ:
+    Type: AWS::SQS::Queue
+    Properties:
+      QueueName: ShopifyOrderProcessingDLQ
+  ApiGateway:
+    Type: AWS::Serverless::Api
+    Properties:
+      StageName: !Ref StageName
+Outputs:
+  OrderProcessingFunction:
+    Description: "Lambda Function ARN"
+    Value: !GetAtt ShopifyOrderProcessingFunction.Arn
+  CreateOrderFunction:
+    Description: "Lambda Function ARN"
+    Value: !GetAtt CreateOrderFunction.Arn
+  HttpApiEndpoint:
+    Description: The default endpoint ApiGateway.
+    Value: !Sub "https://${ApiGateway}.execute-api.${AWS::Region}.amazonaws.com/${StageName}/"
