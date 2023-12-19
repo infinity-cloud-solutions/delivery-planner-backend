@@ -5,7 +5,7 @@ from typing import Dict
 from typing import Any
 
 # Own modules
-from utils.aws import AWSClientManager
+from src.utils.aws import AWSClientManager
 
 # Third-party libraries
 from aws_lambda_powertools import Logger
@@ -31,12 +31,13 @@ class DynamoDBHandler:
         aws_resources_manager = AWSClientManager()
         dynamodb_resource = aws_resources_manager.dynamodb
         self.table = dynamodb_resource.Table(table_name)
+        self.logger = Logger()
 
     def insert_record(
         self, item: dict
     ) -> Dict[str, Any]:
         """This function is used to save a record to a database.
-        It takes in a dictionary, which is build from an AcqPayment Model, as an argument and attempts to put the item into the database.
+        It takes in a dictionary, which is build from a Order Model, as an argument and attempts to put the item into the database.
         If the response from the database is successful, it returns a status of "success".
         If not, it returns a status of "error" along with the HTTP status code and details about the error message.
         If there is an AWS ClientError, it logs information about the error and also returns a status of "error" along
@@ -53,40 +54,36 @@ class DynamoDBHandler:
                 Item=db_item
             )
             if response["ResponseMetadata"]["HTTPStatusCode"] == self.HTTP_STATUS_OK:
-                Logger.info(
+                self.logger.info(
                     "Order was created in DynamoDB"
                 )
                 return self.build_response_object(
                     status="success",
                     status_code=self.HTTP_STATUS_CREATED,
                     message="Record saved in DynamoDB",
-                    acquisition_payment_object=item,
                 )
             else:
                 message = response["Error"]["Message"]
-                Logger.error(f"Failed saving record: Details: {message}")
+                self.logger.error(f"Failed saving record: Details: {message}")
                 return self.build_response_object(
                     status="error",
                     status_code=response["ResponseMetadata"]["HTTPStatusCode"],
                     message=message,
-                    acquisition_payment_object=item,
                 )
         except ClientError as error:
             message = f"{error.response['Error']['Message']}. {error.response['Error']['Code']}"
-            Logger.error(f"ClientError when saving record: Details: {message}")
+            self.logger.error(f"ClientError when saving record: Details: {message}")
             return self.build_response_object(
                 status="error",
                 status_code=error.response["ResponseMetadata"]["HTTPStatusCode"],
                 message=message,
-                acquisition_payment_object=item,
             )
         except Exception as error:
-            Logger.error(f"Exception when saving record: Details: {error}")
+            self.logger.error(f"Exception when saving record: Details: {error}")
             return self.build_response_object(
                 status="error",
                 status_code=self.HTTP_STATUS_INTERNAL_SERVER_ERROR,
                 message=str(error),
-                acquisition_payment_object=item,
             )
 
     def build_response_object(

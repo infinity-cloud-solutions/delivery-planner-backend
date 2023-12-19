@@ -33,7 +33,7 @@ elif environment.lower() == "qa":
 
 elif environment.lower() == "local":
     CREATE_ORDER_ENDPOINT = "TODO"
-    ORDERS_TABLE_NAME = "TODO"
+    ORDERS_TABLE_NAME = "Orders"
 
 
 else:

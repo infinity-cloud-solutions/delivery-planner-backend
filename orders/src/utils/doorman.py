@@ -2,7 +2,7 @@
 import json
 
 # Own's modules
-from errors.util_error import UtilError
+from src.errors.util_error import UtilError
 
 # Third-party libraries
 from aws_lambda_powertools import Logger
@@ -67,9 +67,9 @@ class DoormanUtil(object):
 
         return response
 
-    def get_username_from_token():
+    def get_username_from_token(self):
         # ToDO
         return "Admin"
 
-    def auth_user():
+    def auth_user(self):
         return True
