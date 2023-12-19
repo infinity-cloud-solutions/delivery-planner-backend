@@ -6,7 +6,7 @@ from typing import List
 from datetime import datetime
 
 # Own's modules
-from src.utils.status import OrderStatus
+from order_modules.utils.status import OrderStatus
 
 
 class OrderHelper():

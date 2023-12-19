@@ -5,7 +5,7 @@ from typing import Dict
 from typing import Any
 
 # Own modules
-from src.utils.aws import AWSClientManager
+from order_modules.utils.aws import AWSClientManager
 
 # Third-party libraries
 from aws_lambda_powertools import Logger

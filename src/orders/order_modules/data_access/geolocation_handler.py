@@ -2,8 +2,8 @@
 from typing import Dict
 
 # Own's modules
-from src.errors.source_error import SourceError
-from src.utils.aws import AWSClientManager
+from order_modules.errors.source_error import SourceError
+from order_modules.utils.aws import AWSClientManager
 import settings
 
 from aws_lambda_powertools import Logger

@@ -2,7 +2,7 @@
 import json
 
 # Own's modules
-from src.errors.util_error import UtilError
+from order_modules.errors.util_error import UtilError
 
 # Third-party libraries
 from aws_lambda_powertools import Logger

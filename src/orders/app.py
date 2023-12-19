@@ -1,15 +1,15 @@
 # Python's libraries
 from typing import Dict
 from typing import Any
-import json
+# import json
 
 # Own's modules
-from src.dao.order_dao import OrderDAO
-from src.data_access.geolocation_handler import Geolocation
-from src.data_mapper.order_mapper import OrderHelper
-from src.models.order import HIBerryOrder
-from src.utils.doorman import DoormanUtil
-from src.errors.auth_error import AuthError
+from order_modules.dao.order_dao import OrderDAO
+from order_modules.data_access.geolocation_handler import Geolocation
+from order_modules.data_mapper.order_mapper import OrderHelper
+from order_modules.models.order import HIBerryOrder
+from order_modules.utils.doorman import DoormanUtil
+from order_modules.errors.auth_error import AuthError
 
 
 # Third-party libraries
@@ -78,34 +78,22 @@ def lambda_handler(event: Dict[str, Any], context: LambdaContext) -> Dict[str, A
 
     except ValidationError as validation_error:
         error_details = "Some fields failed validation"
-        if validation_error.error_cache:
+        if validation_error._error_cache:
             error_details = str(validation_error._error_cache)
         return doorman.build_response(
             payload={"message": error_details}, status_code=400
         )
 
     except AuthError:
-        logger.error(f"user {username} was not auth to create a new order")
+        error_details = f"user {username} was not auth to create a new order"
+        logger.error(error_details)
         return doorman.build_response(
             payload={"message": error_details}, status_code=403
         )
 
     except Exception as e:
-        logger.error(f"Error processing the order: {str(e)}")
+        error_details = f"Error processing the order: {e}"
+        logger.error(error_details)
         return doorman.build_response(
             payload={"message": error_details}, status_code=500
         )
-
-
-data = {
-    "client_name": "Test User",
-    "delivery_date": "2023-12-20",
-    "delivery_time": "9-1",
-    "delivery_address": "Aurelio Ortega 2699-A, Colonia Jardines Seattle, Zapopan, Jalisco, 45150",
-    "phone_number": "3312721289",
-    "cart_items": [{"name": "Berry", "quantity": 2, "price": 10}, {"name": "Mango", "quantity": 5, "price": 20}],
-    "total_amount": 150.00,
-    "payment_method": "cash"
-}
-
-lambda_handler({"body": json.dumps(data)}, None)

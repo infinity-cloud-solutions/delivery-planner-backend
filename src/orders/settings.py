@@ -9,6 +9,8 @@ from aws_lambda_powertools import Logger
 load_dotenv()
 logger = Logger()
 environment = os.environ.get('APP_ENVIRONMENT')
+if environment is None:
+    environment = "local"
 
 logger.info(f"Starting with environment: {environment}")
 

@@ -1,5 +1,5 @@
 # Own's modules
-from src.data_access.dynamo_handler import DynamoDBHandler
+from order_modules.data_access.dynamo_handler import DynamoDBHandler
 
 import settings
 
