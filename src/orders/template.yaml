@@ -5,7 +5,7 @@ Description: >
 
 Globals:
   Function:
-    Timeout: 3
+    Timeout: 7
 
 Parameters:
   ShopifyEventBusName:
@@ -56,7 +56,9 @@ Resources:
             RestApiId: !Ref ApiGateway
             Path: /order
             Method: post
-
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref OrdersTable
   ShopifyOrderIntegrationFunction:
     Type: AWS::Serverless::Function 
     Properties:
@@ -157,15 +159,15 @@ Resources:
       #             - HiBerryUserPool
       #             - Arn
 
-  HiBerryCognitoAuthorizer:
-    Type: AWS::ApiGateway::Authorizer
-    Properties:
-      Name: HiBerryCognitoAuthorizer
-      Type: COGNITO_USER_POOLS
-      IdentitySource: method.request.header.Authorization
-      RestApiId: !Ref ApiGateway
-      ProviderARNs:
-        - !GetAtt HiBerryUserPool.Arn
+  # HiBerryCognitoAuthorizer:
+  #   Type: AWS::ApiGateway::Authorizer
+  #   Properties:
+  #     Name: HiBerryCognitoAuthorizer
+  #     Type: COGNITO_USER_POOLS
+  #     IdentitySource: method.request.header.Authorization
+  #     RestApiId: !Ref ApiGateway
+  #     ProviderARNs:
+  #       - !GetAtt HiBerryUserPool.Arn
 
   LambdaInvokePermission:
     Type: AWS::Lambda::Permission
