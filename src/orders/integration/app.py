@@ -1,10 +1,15 @@
 import json
 import os
 import requests
+
 from aws_lambda_powertools import Logger
 from aws_lambda_powertools.utilities.typing import LambdaContext
-from processor import process_shopify_event
+from aws_lambda_powertools.utilities.parser import parse, ValidationError
+from aws_lambda_powertools.utilities.parser.envelopes import EventBridgeEnvelope
+
 from exceptions import ConfigurationError
+from data_mapper import ShopifyDataMapper
+from models import ShopifyPayload
 
 # Initialize logging
 logger = Logger()
@@ -28,27 +33,32 @@ def lambda_handler(event: dict, context: LambdaContext):
 
     """
     try:
-        logger.info(f"Shopify event:{json.dumps(event)}")
+        logger.info("Initializing Shopify Order Integration function")
 
-        # Extract Shopify webhook data
-        shopify_data = event['detail']['payload']
+        #logger.info(f"Shopify event:{json.dumps(event)}")
 
-        order_data = process_shopify_event(shopify_data)
+        # Extract Shopify event data
+        shopify_payload : ShopifyPayload = parse(event=event, model=ShopifyPayload, envelope=EventBridgeEnvelope)
 
-        # Send data to the CreateOrderFunction API
+        # Map order fields
+        shopify_mapper = ShopifyDataMapper()
+        order_data = shopify_mapper.map_order_data(shopify_payload.payload)
+
+        # # Send data to the CreateOrderFunction API
         logger.info(
-            f"Calling create order api with payload: {json.dumps(order_data)}")
+             f"Calling create order api with payload: {order_data}")
         
         response = requests.post(CREATE_ORDER_API_URL, json=order_data)
         response.raise_for_status()
 
-        logger.info(f"Response : {response.status_code}")
-
+        logger.info(f"Create order api response : {response.status_code}")
+        
+    except ValidationError as e:
+        logger.error(e)
+        raise
     except requests.exceptions.RequestException as e:
         logger.error(f"Error while sending request to create order: {str(e)}")
-        logger.error(f"Error event: {event}")
         raise
     except Exception as e:
         logger.error(f"Error processing the event: {str(e)}")
-        logger.error(f"Error event: {event}")
         raise
