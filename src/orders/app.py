@@ -71,13 +71,14 @@ def lambda_handler(event: Dict[str, Any], context: LambdaContext) -> Dict[str, A
         )
         dao = OrderDAO()
         dao.create_order(order_db_data)
+        # TODO handle create_order response
         logger.info("Order received and created")
         return doorman.build_response(
             payload={"message": "Record was created"}, status_code=201
         )
 
     except ValidationError as validation_error:
-        error_details = "Some fields failed validation"
+        error_details = f"Some fields failed validation: {validation_error}"
         if validation_error._error_cache:
             error_details = str(validation_error._error_cache)
         return doorman.build_response(

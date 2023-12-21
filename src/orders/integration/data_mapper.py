@@ -1,4 +1,5 @@
 from typing import Optional
+
 from models import ShopifyNoteAttribute, ShopifyOrder, ShopifyAddress
 from exceptions import StorePickupNotAllowed
 
@@ -25,7 +26,7 @@ class ShopifyDataMapper:
 
     def map_order_data(self, order: ShopifyOrder) -> dict:
         """
-        Process the Shopify order data and prepare the order data.
+        Map the Shopify order data into specific data format for the 'CreateOrderFunction'
 
         Parameters:
         order(ShopifyOrder): The ShopifyOrder from Shopify webhook event.
@@ -50,7 +51,7 @@ class ShopifyDataMapper:
         order_data = {
             "client_name": f"{order.customer.first_name} {order.customer.last_name}",
             "phone_number": address.phone,
-            "address": address.address1,
+            "delivery_address": address.address1,
             "latitude": address.latitude,
             "longitude": address.longitude,
             "delivery_date": delivery_date,
