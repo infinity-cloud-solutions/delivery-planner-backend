@@ -5,7 +5,7 @@ Description: >
 
 Globals:
   Function:
-    Timeout: 3
+    Timeout: 7
 
 Parameters:
   ShopifyEventBusName:
@@ -56,6 +56,38 @@ Resources:
             RestApiId: !Ref ApiGateway
             Path: /order
             Method: post
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref OrdersTable
+  ShopifyOrderIntegrationFunction:
+    Type: AWS::Serverless::Function 
+    Properties:
+      FunctionName: !Sub "ShopifyOrderIntegrationFunction-${StageName}"
+      CodeUri: integration/
+      Handler: app.lambda_handler
+      Runtime: python3.11
+      Architectures:
+      - x86_64
+      Environment: 
+        Variables:
+          CREATE_ORDER_API_URL: !Sub "https://${ApiGateway}.execute-api.${AWS::Region}.amazonaws.com/${StageName}/order"
+          POWERTOOLS_SERVICE_NAME: shopify-order-integration
+          POWERTOOLS_LOG_LEVEL: INFO
+      DeadLetterQueue:
+        Type: SQS
+        TargetArn: !GetAtt ShopifyOrderIntegrationDLQ.Arn
+      Events:
+        ShopifyOrder:
+          Type: EventBridgeRule
+          Properties:
+            EventBusName: !Ref ShopifyEventBusName
+            Pattern:
+              detail-type: 
+                - "shopifyWebhook"
+              detail:
+                metadata:
+                  X-Shopify-Topic:
+                    - prefix: "orders/create"
 
   HiBerryLocationIndex:
     Type: AWS::Location::PlaceIndex
@@ -109,33 +141,33 @@ Resources:
       GroupName: User
       UserPoolId: !Ref HiBerryUserPool
 
-  ShopifyOrderProcessingDLQ:
+  ShopifyOrderIntegrationDLQ:
     Type: AWS::SQS::Queue
     Properties:
-      QueueName: ShopifyOrderProcessingDLQ
+      QueueName: ShopifyOrderIntegrationDLQ
 
   ApiGateway:
     Type: AWS::Serverless::Api
     Properties:
       StageName: !Ref StageName
-      Auth:
-        DefaultAuthorizer: MyCognitoAuthorizer
-        Authorizers:
-            MyCognitoAuthorizer:
-              UserPoolArn:
-                Fn::GetAtt:
-                  - HiBerryUserPool
-                  - Arn
+      # Auth:
+      #   DefaultAuthorizer: MyCognitoAuthorizer
+      #   Authorizers:
+      #       MyCognitoAuthorizer:
+      #         UserPoolArn:
+      #           Fn::GetAtt:
+      #             - HiBerryUserPool
+      #             - Arn
 
-  HiBerryCognitoAuthorizer:
-    Type: AWS::ApiGateway::Authorizer
-    Properties:
-      Name: HiBerryCognitoAuthorizer
-      Type: COGNITO_USER_POOLS
-      IdentitySource: method.request.header.Authorization
-      RestApiId: !Ref ApiGateway
-      ProviderARNs:
-        - !GetAtt HiBerryUserPool.Arn
+  # HiBerryCognitoAuthorizer:
+  #   Type: AWS::ApiGateway::Authorizer
+  #   Properties:
+  #     Name: HiBerryCognitoAuthorizer
+  #     Type: COGNITO_USER_POOLS
+  #     IdentitySource: method.request.header.Authorization
+  #     RestApiId: !Ref ApiGateway
+  #     ProviderARNs:
+  #       - !GetAtt HiBerryUserPool.Arn
 
   LambdaInvokePermission:
     Type: AWS::Lambda::Permission
