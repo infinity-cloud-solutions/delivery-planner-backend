@@ -1,0 +1,96 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: >
+  sam-hiberry-app-products
+
+Globals:
+  Function:
+    Timeout: 120
+
+Parameters:
+  StageName:
+    Type: String
+    Default: dev
+    AllowedValues:
+      - local
+      - dev
+      - uat
+      - prod
+
+Resources:
+
+  ProductsTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: Products
+      AttributeDefinitions:
+        - AttributeName: name
+          AttributeType: S
+      KeySchema:
+        - AttributeName: name
+          KeyType: HASH
+      ProvisionedThroughput:
+        ReadCapacityUnits: 5
+        WriteCapacityUnits: 5
+
+  CreateProductFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub "CreateProductFunction-${StageName}"
+      CodeUri: .
+      Handler: lambda_function.lambda_handler
+      Runtime: python3.11
+      Environment:
+        Variables:
+          POWERTOOLS_SERVICE_NAME: create-product
+          POWERTOOLS_LOG_LEVEL: INFO
+          APP_ENVIRONMENT: !Ref StageName
+      Events:
+        HttpPost:
+          Type: Api
+          Properties:
+            RestApiId: !Ref ApiGateway
+            Path: /product
+            Method: post
+      Role: !GetAtt CreateProductRole.Arn
+
+  ApiGateway:
+    Type: AWS::Serverless::Api
+    Properties:
+      StageName: !Ref StageName
+
+  LambdaInvokePermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName: !GetAtt CreateProductFunction.Arn
+      Principal: apigateway.amazonaws.com
+
+  CreateProductRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub "CreateProductRole-${StageName}"
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+            Action: sts:AssumeRole
+      Policies:
+        - PolicyName: DynamoDBPutItemPolicy
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - dynamodb:PutItem
+                Resource: !GetAtt ProductsTable.Arn
+
+Outputs:
+  CreateProductFunction:
+    Description: "Lambda Function ARN"
+    Value: !GetAtt CreateProductFunction.Arn
+  HttpApiEndpoint:
+    Description: The default endpoint ApiGateway.
+    Value: !Sub "https://${ApiGateway}.execute-api.${AWS::Region}.amazonaws.com/${StageName}/"

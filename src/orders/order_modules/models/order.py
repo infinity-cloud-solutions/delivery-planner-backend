@@ -1,10 +1,17 @@
 from typing import List
+from typing import Optional
 
 from pydantic import BaseModel
 from pydantic import StrictStr
+from pydantic import StrictFloat
 from pydantic import confloat
 from pydantic import conint
 from pydantic import validator
+
+
+class Geolocation(BaseModel):
+    latitude: StrictFloat
+    longitud: StrictFloat
 
 
 class HIBerryProduct(BaseModel):
@@ -22,6 +29,8 @@ class HIBerryOrder(BaseModel):
     cart_items: List[HIBerryProduct]
     total_amount: confloat(ge=0.0)
     payment_method: StrictStr
+    geolocation: Optional[Geolocation]
+    source: Optional[StrictStr]
 
     @validator("total_amount", pre=True, always=True)
     def calculate_total_amount(cls, value, values):

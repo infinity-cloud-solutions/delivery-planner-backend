@@ -2,7 +2,6 @@
 from typing import Dict
 
 # Own's modules
-from order_modules.errors.source_error import SourceError
 from order_modules.utils.aws import AWSClientManager
 import settings
 
@@ -33,11 +32,11 @@ class Geolocation():
                         long = aws_repsonse["Results"][0]['Place']['Geometry']['Point'][0]
                         location = {"latitude": lat, "longitude": long}
                     else:
-                        raise SourceError("AWS Response was not successfull")
+                        logger.warning("AWS Response was not successfull")
                 except Exception as e:
-                    raise Exception(f"Something failed while fetching data from AWS. Details {e}")
+                    logger.warning(f"Something failed while fetching data from AWS. Details {e}")
             else:
-                raise TypeError("Input provided was not a string")
+                logger.warning("Input provided was not a string")
             return location
         else:
             return {"latitude": 20.721722843875, "longitude": -103.370054309085}
