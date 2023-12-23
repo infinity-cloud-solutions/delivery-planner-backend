@@ -28,6 +28,9 @@ class DoormanUtil(object):
                 _error=None,
                 _logger=self.logger,
             )
+        # Check if body is already a dict and return it directly
+        if isinstance(self.request['body'], dict):
+            return self.request['body']
         try:
             body = json.loads(self.request['body'])
         except Exception as e:

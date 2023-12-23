@@ -1,22 +1,27 @@
+import json
 import os
-import requests
 
 from exceptions import ConfigurationError, StorePickupNotAllowed
 from data_mapper import ShopifyDataMapper
 from models import ShopifyPayload
 
+import boto3
 from aws_lambda_powertools import Logger
 from aws_lambda_powertools.utilities.typing import LambdaContext
 from aws_lambda_powertools.utilities.parser import parse, ValidationError
 from aws_lambda_powertools.utilities.parser.envelopes import EventBridgeEnvelope
+from botocore.exceptions import ClientError
 
 
 # Initialize logging
 logger = Logger()
 
-CREATE_ORDER_API_URL = os.getenv('CREATE_ORDER_API_URL', None)
-if CREATE_ORDER_API_URL is None:
-    error_message = "Environment variable not configured: CREATE_ORDER_API_URL"
+# Initialize AWS Lambda client
+lambda_client = boto3.client('lambda')
+
+CREATE_ORDER_FUNCTION_NAME = os.getenv('CREATE_ORDER_FUNCTION_NAME')
+if CREATE_ORDER_FUNCTION_NAME is None:
+    error_message = "Environment variable not configured: CREATE_ORDER_FUNCTION_NAME"
     logger.error(error_message)
     raise ConfigurationError(error_message)
 
@@ -41,43 +46,43 @@ def lambda_handler(event: dict, context: LambdaContext):
             event=event, model=ShopifyPayload, envelope=EventBridgeEnvelope)
 
         # Map order fields
-        shopify_mapper = ShopifyDataMapper()
-        order_data = shopify_mapper.map_order_data(shopify_payload.payload)
+        shopify_mapper = ShopifyDataMapper(shopify_payload.payload)
+        order_data = shopify_mapper.map_order_data()
 
         # Send data to the CreateOrderFunction API
         logger.info(
-            f"Calling create order api with payload: {order_data}")
+            f"Calling {CREATE_ORDER_FUNCTION_NAME} with payload: {order_data}")
 
-        response = requests.post(CREATE_ORDER_API_URL, json=order_data)
-        response.raise_for_status()
+        # Invoke the CreateOrderFunction directly
+        response = lambda_client.invoke(
+            FunctionName=CREATE_ORDER_FUNCTION_NAME,
+            InvocationType='RequestResponse',  # Use 'Event' for async
+            Payload=json.dumps(order_data),
+        )
 
-        logger.info(f"Successful create order api response : {response.status_code}")
+        response_payload = json.loads(
+            response['Payload'].read().decode("utf-8"))
 
-    except StorePickupNotAllowed as e:
-        logger.error(f"Store pickup not allowed for this app: {str(e)}")
+        status_code = response_payload.get("statusCode")
+        body_str = response_payload.get("body")
+        body = json.loads(body_str) if body_str else {}
+        message = body.get("message", "No message provided")
 
-    except ValidationError as e:
-        logger.error(f"Validation error ocurred: {e.errors()}")
+        if status_code >= 400:
+            logger.error(
+                f"Create order function returned error {status_code=}, {message=} ")
+        else:
+            logger.info(f"Order created.")
+
+    except StorePickupNotAllowed as order_error:
+        logger.error(f"Store pickup not allowed for this app: {str(order_error)}")
+
+    except ValidationError as validation_error:
+        logger.error(f"Validation error ocurred: {validation_error.errors()}")
+
+    except ClientError as boto_error:
+        logger.error(f"Boto3 Client Error: {str(boto_error)}")
         
-    except requests.exceptions.HTTPError as e:
-        error_message = f"HTTP error occurred: {str(e)}"
-        logger.error(error_message)
-        logger.error(f"Response Body: {e.response.text}")
-        
-    except requests.exceptions.ConnectionError as e:
-        logger.error(f"Connection error occurred: {str(e)}")
-        raise
-        
-    except requests.exceptions.Timeout as e:
-        logger.error(f"Timeout error occurred: {str(e)}")
-        raise
-    
-    except requests.exceptions.RequestException as e:
-        error_message = f"Error while sending request to create order: {str(e)}"
-        if hasattr(e, 'response') and e.response is not None:
-            error_message += f"; Response Body: {e.response.text}"
-        logger.error(error_message)
-
     except Exception as e:
         logger.error(f"Error processing the event: {str(e)}")
         raise
