@@ -1,11 +1,11 @@
 AWSTemplateFormatVersion: '2010-09-09'
 Transform: AWS::Serverless-2016-10-31
 Description: >
-  sam-hiberry-app
+  sam-hiberry-app-orders
 
 Globals:
   Function:
-    Timeout: 3
+    Timeout: 120
 
 Parameters:
   ShopifyEventBusName:
@@ -118,14 +118,14 @@ Resources:
     Type: AWS::Serverless::Api
     Properties:
       StageName: !Ref StageName
-      Auth:
-        DefaultAuthorizer: MyCognitoAuthorizer
-        Authorizers:
-            MyCognitoAuthorizer:
-              UserPoolArn:
-                Fn::GetAtt:
-                  - HiBerryUserPool
-                  - Arn
+      # Auth:
+      #   DefaultAuthorizer: MyCognitoAuthorizer
+      #   Authorizers:
+      #       MyCognitoAuthorizer:
+      #         UserPoolArn:
+      #           Fn::GetAtt:
+      #             - HiBerryUserPool
+      #             - Arn
 
   HiBerryCognitoAuthorizer:
     Type: AWS::ApiGateway::Authorizer

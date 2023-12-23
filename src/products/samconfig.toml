@@ -4,7 +4,7 @@ version = 0.1
 
 [default]
 [default.global.parameters]
-stack_name = "sam-hiberry-app-orders"
+stack_name = "sam-hiberry-app-products"
 
 [default.build.parameters]
 cached = true
@@ -17,9 +17,8 @@ lint = true
 capabilities = "CAPABILITY_IAM"
 confirm_changeset = true
 resolve_s3 = true
-s3_prefix = "sam-hiberry-app-orders"
+s3_prefix = "sam-hiberry-app-products"
 region = "us-east-1"
-parameter_overrides = "ShopifyEventBusName=\"aws.partner/shopify.com/71471267841/ShopifySourceTest\" StageName=\"dev\""
 image_repositories = []
 
 [default.package.parameters]

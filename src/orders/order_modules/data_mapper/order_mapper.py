@@ -46,7 +46,7 @@ class OrderHelper():
             "created_at": datetime.now().isoformat(),
             "updated_by": None,
             "updated_at": None,
-            "errors": order_data.get("errors", []),
+            "errors": errors,
             "notes": None,
             "status": OrderStatus.CREATE.value,
             "delivery_sequence": None

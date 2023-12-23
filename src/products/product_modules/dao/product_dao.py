@@ -1,10 +1,10 @@
 # Own's modules
-from order_modules.data_access.dynamo_handler import DynamoDBHandler
+from product_modules.data_access.dynamo_handler import DynamoDBHandler
 
 import settings
 
 
-class OrderDAO:
+class ProductDAO:
     """
     A class for handling interactions with the DynamoDB table and the Lambda Function.
     """
@@ -13,19 +13,19 @@ class OrderDAO:
         """
         Initializes a new instance of the DAO class.
         """
-        self.orders_db = DynamoDBHandler(
-            table_name=settings.ORDERS_TABLE_NAME,
+        self.products_db = DynamoDBHandler(
+            table_name=settings.PRODUCTS_TABLE_NAME,
             partition_key="Id",
         )
 
-    def create_order(self, item: dict) -> dict:
+    def create_product(self, item: dict) -> dict:
         """
-        Attempts to insert a new record for an order into the DynamoDB table.
+        Attempts to insert a new record for a product into the DynamoDB table.
 
-        :param item: Order representation
+        :param item: Product representation
         :type item: dict
         :return: a dictionary that contains the response object
         :rtype: dict
         """
-        response = self.orders_db.insert_record(item)
+        response = self.products_db.insert_record(item)
         return response
