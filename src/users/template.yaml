@@ -1,0 +1,65 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: >
+  sam-hiberry-app-users
+
+Globals:
+  Function:
+    Timeout: 120
+
+Parameters:
+
+  StageName:
+    Type: String
+    Default: dev
+    AllowedValues:
+      - local
+      - dev
+      - uat
+      - prod
+Resources:
+
+  HiBerryUserPool:
+    Type: "AWS::Cognito::UserPool"
+    Properties:
+      UserPoolName: HiBerryInternalUsers
+      MfaConfiguration: "OFF"
+      AdminCreateUserConfig:
+        AllowAdminCreateUserOnly: false
+      Policies:
+        PasswordPolicy:
+          MinimumLength: 8
+      Schema:
+        - AttributeDataType: String
+          Name: email
+          Required: true
+      UsernameAttributes:
+        - email
+      VerificationMessageTemplate:
+        DefaultEmailOption: CONFIRM_WITH_CODE
+
+  HiBerryUserPoolClient:
+    Type: "AWS::Cognito::UserPoolClient"
+    Properties:
+      ClientName: HiBerryAppClient
+      UserPoolId: !Ref HiBerryUserPool
+      GenerateSecret: false
+      RefreshTokenValidity: 1
+      AccessTokenValidity: 1
+      IdTokenValidity: 1
+
+  MyUserPoolGroupAdmin:
+    Type: "AWS::Cognito::UserPoolGroup"
+    Properties:
+      GroupName: Admin
+      UserPoolId: !Ref HiBerryUserPool
+  MyUserPoolGroupManager:
+    Type: "AWS::Cognito::UserPoolGroup"
+    Properties:
+      GroupName: Manager
+      UserPoolId: !Ref HiBerryUserPool
+  MyUserPoolGroupUser:
+    Type: "AWS::Cognito::UserPoolGroup"
+    Properties:
+      GroupName: User
+      UserPoolId: !Ref HiBerryUserPool
