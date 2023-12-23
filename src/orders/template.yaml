@@ -70,7 +70,7 @@ Resources:
       - x86_64
       Environment: 
         Variables:
-          CREATE_ORDER_API_URL: !Sub "https://${ApiGateway}.execute-api.${AWS::Region}.amazonaws.com/${StageName}/order"
+          CREATE_ORDER_FUNCTION_NAME: !Ref CreateOrderFunction
           POWERTOOLS_SERVICE_NAME: shopify-order-integration
           POWERTOOLS_LOG_LEVEL: INFO
       DeadLetterQueue:
@@ -88,7 +88,9 @@ Resources:
                 metadata:
                   X-Shopify-Topic:
                     - prefix: "orders/create"
-
+      Policies:
+        - LambdaInvokePolicy:
+            FunctionName: !Ref CreateOrderFunction
   HiBerryLocationIndex:
     Type: AWS::Location::PlaceIndex
     Properties:
