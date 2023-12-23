@@ -31,7 +31,7 @@ class ShopifyOrder(BaseModel):
     billing_address: Union[ShopifyAddress, None] = None
     shipping_address: Union[ShopifyAddress, None] = None
     line_items: list[ShopifyLineItem]
-    total_price: float
+    current_subtotal_price: float
     created_at: StrictStr
     updated_at: StrictStr
     note: Union[StrictStr, None] = None

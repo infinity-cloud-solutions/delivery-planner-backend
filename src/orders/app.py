@@ -78,7 +78,7 @@ def lambda_handler(event: Dict[str, Any], context: LambdaContext) -> Dict[str, A
         )
 
     except ValidationError as validation_error:
-        error_details = f"Some fields failed validation: {validation_error}"
+        error_details = f"Some fields failed validation: {validation_error.errors()}"
         if validation_error._error_cache:
             error_details = str(validation_error._error_cache)
         return doorman.build_response(
