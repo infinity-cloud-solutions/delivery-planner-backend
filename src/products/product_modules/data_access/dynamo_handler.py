@@ -43,7 +43,7 @@ class DynamoDBHandler:
         If there is an AWS ClientError, it logs information about the error and also returns a status of "error" along
         with the HTTP status code and details about the error message.
 
-        :param item: ApprovedModel representation built as a dict
+        :param item: product representation built as a dict
         :type item: dict
         :return: A summary of the put_item action
         :rtype: Dict[str, Any]
@@ -60,7 +60,7 @@ class DynamoDBHandler:
                 return self.build_response_object(
                     status="success",
                     status_code=self.HTTP_STATUS_CREATED,
-                    message="Record saved in DynamoDB",
+                    message="Record saved in DynamoDB"
                 )
             else:
                 message = response["Error"]["Message"]
@@ -68,7 +68,7 @@ class DynamoDBHandler:
                 return self.build_response_object(
                     status="error",
                     status_code=response["ResponseMetadata"]["HTTPStatusCode"],
-                    message=message,
+                    message=message
                 )
         except ClientError as error:
             message = f"{error.response['Error']['Message']}. {error.response['Error']['Code']}"
@@ -76,14 +76,62 @@ class DynamoDBHandler:
             return self.build_response_object(
                 status="error",
                 status_code=error.response["ResponseMetadata"]["HTTPStatusCode"],
-                message=message,
+                message=message
             )
         except Exception as error:
             self.logger.error(f"Exception when saving record: Details: {error}")
             return self.build_response_object(
                 status="error",
                 status_code=self.HTTP_STATUS_INTERNAL_SERVER_ERROR,
-                message=str(error),
+                message=str(error)
+            )
+
+    def scan_table(
+        self
+    ) -> Dict[str, Any]:
+        """This function is used to fetch all the records in the table.
+        If the response from the database is successful, it returns a status of "success".
+        If not, it returns a status of "error" along with the HTTP status code and details about the error message.
+        If there is an AWS ClientError, it logs information about the error and also returns a status of "error" along
+        with the HTTP status code and details about the error message.
+
+        :return: A summary of the put_item action
+        :rtype: Dict[str, Any]
+        """
+        try:
+            response = self.table.scan()
+            if response["ResponseMetadata"]["HTTPStatusCode"] == self.HTTP_STATUS_OK:
+                self.logger.info(
+                    "Products were retrieved from DynamoDB"
+                )
+                return self.build_response_object(
+                    status="success",
+                    status_code=self.HTTP_STATUS_CREATED,
+                    message="Record saved in DynamoDB",
+                    payload=response["Items"]
+                )
+            else:
+                message = response["Error"]["Message"]
+                self.logger.error(f"Failed saving record: Details: {message}")
+                return self.build_response_object(
+                    status="error",
+                    status_code=response["ResponseMetadata"]["HTTPStatusCode"],
+                    message=message
+                )
+        except ClientError as error:
+            message = f"{error.response['Error']['Message']}. {error.response['Error']['Code']}"
+            self.logger.error(f"ClientError when saving record: Details: {message}")
+            return self.build_response_object(
+                status="error",
+                status_code=error.response["ResponseMetadata"]["HTTPStatusCode"],
+                message=message
+            )
+        except Exception as error:
+            self.logger.error(f"Exception when saving record: Details: {error}")
+            return self.build_response_object(
+                status="error",
+                status_code=self.HTTP_STATUS_INTERNAL_SERVER_ERROR,
+                message=str(error)
             )
 
     def build_response_object(
@@ -91,6 +139,7 @@ class DynamoDBHandler:
         status: str,
         status_code: int,
         message: str,
+        payload: Dict[str, Any] = None
     ) -> Dict[str, Any]:
         """
         This method maps an status code a message into the response dictionary
@@ -101,6 +150,8 @@ class DynamoDBHandler:
         :type status_code: int
         :param message: A string that contains the message to be returned
         :type error_message: str
+        :param payload: Object with data from DynamoDb
+        :type error_message: dict
         :return: a dictionary with the message
         :rtype: Dict[str, Any]
         """
@@ -109,4 +160,5 @@ class DynamoDBHandler:
             "status": status,
             "status_code": status_code,
             "message": message,
+            "payload": payload
         }

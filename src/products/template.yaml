@@ -38,7 +38,7 @@ Resources:
     Properties:
       FunctionName: !Sub "CreateProductFunction-${StageName}"
       CodeUri: .
-      Handler: lambda_function.lambda_handler
+      Handler: lambda_function.create_product
       Runtime: python3.11
       Environment:
         Variables:
@@ -53,6 +53,27 @@ Resources:
             Path: /product
             Method: post
       Role: !GetAtt CreateProductRole.Arn
+
+  GetAllProductsFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub "GetAllProductsFunction-${StageName}"
+      CodeUri: .
+      Handler: lambda_function.get_all_products
+      Runtime: python3.11
+      Environment:
+        Variables:
+          POWERTOOLS_SERVICE_NAME: get-all-products
+          POWERTOOLS_LOG_LEVEL: INFO
+          APP_ENVIRONMENT: !Ref StageName
+      Events:
+        HttpPost:
+          Type: Api
+          Properties:
+            RestApiId: !Ref ApiGateway
+            Path: /product
+            Method: get
+      Role: !GetAtt GetAllProductsRole.Arn
 
   ApiGateway:
     Type: AWS::Serverless::Api
@@ -85,6 +106,27 @@ Resources:
               - Effect: Allow
                 Action:
                   - dynamodb:PutItem
+                Resource: !GetAtt ProductsTable.Arn
+
+  GetAllProductsRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub "CreateProductRole-${StageName}"
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+            Action: sts:AssumeRole
+      Policies:
+        - PolicyName: QueryDynamoDBPolicy
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - dynamodb:Scan
                 Resource: !GetAtt ProductsTable.Arn
 
 Outputs:
