@@ -16,6 +16,7 @@ Parameters:
       - dev
       - uat
       - prod
+
 Resources:
 
   ProductsTable:
@@ -25,7 +26,6 @@ Resources:
       AttributeDefinitions:
         - AttributeName: name
           AttributeType: S
-
       KeySchema:
         - AttributeName: name
           KeyType: HASH
@@ -44,7 +44,7 @@ Resources:
         Variables:
           POWERTOOLS_SERVICE_NAME: create-product
           POWERTOOLS_LOG_LEVEL: INFO
-          ENV: !Ref StageName
+          APP_ENVIRONMENT: !Ref StageName
       Events:
         HttpPost:
           Type: Api
@@ -52,6 +52,7 @@ Resources:
             RestApiId: !Ref ApiGateway
             Path: /product
             Method: post
+      Role: !GetAtt CreateProductRole.Arn
 
   ApiGateway:
     Type: AWS::Serverless::Api
@@ -64,6 +65,27 @@ Resources:
       Action: lambda:InvokeFunction
       FunctionName: !GetAtt CreateProductFunction.Arn
       Principal: apigateway.amazonaws.com
+
+  CreateProductRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub "CreateProductRole-${StageName}"
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+            Action: sts:AssumeRole
+      Policies:
+        - PolicyName: DynamoDBPutItemPolicy
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - dynamodb:PutItem
+                Resource: !GetAtt ProductsTable.Arn
 
 Outputs:
   CreateProductFunction:
