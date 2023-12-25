@@ -12,10 +12,10 @@ Parameters:
     Type: String
   StageName:
     Type: String
-    Default: dev
+    Default: development
     AllowedValues:
       - local
-      - dev
+      - development
       - uat
       - prod
 Resources:
