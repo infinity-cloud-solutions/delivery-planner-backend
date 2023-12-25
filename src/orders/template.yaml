@@ -134,7 +134,14 @@ Resources:
                 Action:
                   - dynamodb:PutItem
                 Resource: !GetAtt OrdersTable.Arn
-
+        - PolicyName: LocationServiceAccess
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - geo:SearchPlaceIndexForText
+                Resource: !GetAtt HiBerryLocationIndex.Arn
   LambdaInvokeRole:
       Type: AWS::IAM::Role
       Properties:
