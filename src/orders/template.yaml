@@ -12,10 +12,10 @@ Parameters:
     Type: String
   StageName:
     Type: String
-    Default: dev
+    Default: development
     AllowedValues:
       - local
-      - dev
+      - development
       - uat
       - prod
 Resources:
@@ -123,6 +123,8 @@ Resources:
             Principal:
               Service: lambda.amazonaws.com
             Action: sts:AssumeRole
+      ManagedPolicyArns:
+          - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
       Policies:
         - PolicyName: DynamoDBPutItemPolicy
           PolicyDocument:
@@ -132,7 +134,14 @@ Resources:
                 Action:
                   - dynamodb:PutItem
                 Resource: !GetAtt OrdersTable.Arn
-
+        - PolicyName: LocationServiceAccess
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - geo:SearchPlaceIndexForText
+                Resource: !GetAtt HiBerryLocationIndex.Arn
   LambdaInvokeRole:
       Type: AWS::IAM::Role
       Properties:
