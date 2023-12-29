@@ -18,3 +18,4 @@ jobs:
       run: |
         make install
         make test
+      working-directory: ./tests
