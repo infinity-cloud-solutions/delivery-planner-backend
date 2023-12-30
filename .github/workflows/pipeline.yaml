@@ -1,0 +1,24 @@
+name: Lambda functions pipeline
+# Unittest only so far.
+
+on: [push, pull_request]
+
+jobs:
+  run_tests:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Set up Python 3.11
+      uses: actions/setup-python@v2
+      with:
+        python-version: '3.11'  # Set this to the Python version you're using
+    - name: Install dependencies
+      run: |
+        make install
+      working-directory: ./tests
+    - name: Run tests
+      run: |
+        make test
+      working-directory: ./tests

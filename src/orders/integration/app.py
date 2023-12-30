@@ -16,16 +16,6 @@ from botocore.exceptions import ClientError
 # Initialize logging
 logger = Logger()
 
-# Initialize AWS Lambda client
-lambda_client = boto3.client('lambda')
-
-CREATE_ORDER_FUNCTION_NAME = os.getenv('CREATE_ORDER_FUNCTION_NAME')
-if CREATE_ORDER_FUNCTION_NAME is None:
-    error_message = "Environment variable not configured: CREATE_ORDER_FUNCTION_NAME"
-    logger.error(error_message)
-    raise ConfigurationError(error_message)
-
-
 def lambda_handler(event: dict, context: LambdaContext):
     """
     Handler function for AWS Lambda to process Shopify order/create events.
@@ -38,6 +28,12 @@ def lambda_handler(event: dict, context: LambdaContext):
     No specific return. Because of async invoke, the value is discarded.
 
     """
+    CREATE_ORDER_FUNCTION_NAME = os.getenv('CREATE_ORDER_FUNCTION_NAME')
+    if CREATE_ORDER_FUNCTION_NAME is None:
+        error_message = "Environment variable not configured: CREATE_ORDER_FUNCTION_NAME"
+        logger.error(error_message)
+        raise ConfigurationError(error_message)
+        
     try:
         logger.info("Initializing Shopify Order Integration function")
 
@@ -54,6 +50,8 @@ def lambda_handler(event: dict, context: LambdaContext):
             f"Calling {CREATE_ORDER_FUNCTION_NAME} with payload: {order_data}")
 
         # Invoke the CreateOrderFunction directly
+        lambda_client = boto3.client('lambda')
+
         response = lambda_client.invoke(
             FunctionName=CREATE_ORDER_FUNCTION_NAME,
             InvocationType='RequestResponse',  # Use 'Event' for async
@@ -82,6 +80,7 @@ def lambda_handler(event: dict, context: LambdaContext):
 
     except ClientError as boto_error:
         logger.error(f"Boto3 Client Error: {str(boto_error)}")
+        raise
         
     except Exception as e:
         logger.error(f"Error processing the event: {str(e)}")

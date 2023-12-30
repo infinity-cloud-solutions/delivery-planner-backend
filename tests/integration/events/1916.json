@@ -1,0 +1,395 @@
+{
+    "version": "0",
+    "id": "ff5ce431-4f88-a781-d9e5-4177a6afb7af",
+    "detail-type": "shopifyWebhook",
+    "source": "aws.partner/shopify.com/888888888/SourceName",
+    "account": "501501501501",
+    "time": "2023-12-19T14:52:35Z",
+    "region": "us-east-1",
+    "resources": [],
+    "detail": {
+        "payload": {
+            "id": 5555555555555,
+            "admin_graphql_api_id": "gid://shopify/Order/5555555555555",
+            "app_id": 580111,
+            "browser_ip": "111.111.111.111",
+            "buyer_accepts_marketing": true,
+            "cancel_reason": null,
+            "cancelled_at": null,
+            "cart_token": "c1-2fae758c04ac9bcece20da43a504d95f",
+            "checkout_id": 34536282292450,
+            "checkout_token": "cbcbcbcbcbcbcbcbcbcbcbcbcb",
+            "client_details": {
+                "accept_language": "es-MX",
+                "browser_height": null,
+                "browser_ip": "111.111.111.111",
+                "browser_width": null,
+                "session_hash": null,
+                "user_agent": "Mozilla/5.0 (iPhone; CPU iPhone OS 17_1_2 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/21B101 [FBAN/FBIOS;FBAV/444.0.0.29.113;FBBV/546116613;FBDV/iPhone14,3;FBMD/iPhone;FBSN/iOS;FBSV/17.1.2;FBSS/3;FBID/phone;FBLC/es_LA;FBOP/5;FBRV/548219575]"
+            },
+            "closed_at": null,
+            "confirmation_number": "UUUUUUUB2",
+            "confirmed": true,
+            "contact_email": "user@mail.com",
+            "created_at": "2023-12-19T08:52:31-06:00",
+            "currency": "MXN",
+            "current_subtotal_price": "400.00",
+            "current_subtotal_price_set": {
+                "shop_money": {
+                    "amount": "400.00",
+                    "currency_code": "MXN"
+                },
+                "presentment_money": {
+                    "amount": "400.00",
+                    "currency_code": "MXN"
+                }
+            },
+            "current_total_additional_fees_set": null,
+            "current_total_discounts": "0.00",
+            "current_total_discounts_set": {
+                "shop_money": {
+                    "amount": "0.00",
+                    "currency_code": "MXN"
+                },
+                "presentment_money": {
+                    "amount": "0.00",
+                    "currency_code": "MXN"
+                }
+            },
+            "current_total_duties_set": null,
+            "current_total_price": "455.00",
+            "current_total_price_set": {
+                "shop_money": {
+                    "amount": "455.00",
+                    "currency_code": "MXN"
+                },
+                "presentment_money": {
+                    "amount": "455.00",
+                    "currency_code": "MXN"
+                }
+            },
+            "current_total_tax": "0.00",
+            "current_total_tax_set": {
+                "shop_money": {
+                    "amount": "0.00",
+                    "currency_code": "MXN"
+                },
+                "presentment_money": {
+                    "amount": "0.00",
+                    "currency_code": "MXN"
+                }
+            },
+            "customer_locale": "es-MX",
+            "device_id": null,
+            "discount_codes": [],
+            "email": "user@mail.com",
+            "estimated_taxes": false,
+            "financial_status": "pending",
+            "fulfillment_status": null,
+            "landing_site": "/collections/all/products/mix-ponche-navideno?fbclid=IwAR1GzHcdZ9NT9GYxzlbZ5uKs5UIjFuvmQyQkOb922tgTs12ouGShMp3RNgY_aem_Ad9XDZTBD-QrHfwYdJAil8xJzo-ixPInRSaQXo5_DSYAlX1oR1VJVqa1Gk0KoVMptPI",
+            "landing_site_ref": null,
+            "location_id": null,
+            "merchant_of_record_app_id": null,
+            "name": "#1916",
+            "note": null,
+            "note_attributes": [
+                {
+                    "name": "Order Fulfillment Type",
+                    "value": "Local Delivery"
+                },
+                {
+                    "name": "Slot First Loaded TimeStamp",
+                    "value": "1702997325266"
+                },
+                {
+                    "name": "Order Due Date",
+                    "value": "Wed, 20 Dec 2023"
+                },
+                {
+                    "name": "Order Due Time",
+                    "value": "8 AM - 1 PM"
+                },
+                {
+                    "name": "Translated Order Due Date",
+                    "value": "Mi\u00e9rcoles, 20 Diciembre 2023"
+                },
+                {
+                    "name": "Translated Order Due Time",
+                    "value": "8 am - 1 pm"
+                }
+            ],
+            "number": 916,
+            "order_number": 1916,
+            "order_status_url": "https://shopifystore.mx/44444444444/orders/vvvvvvvvvvvvvvvvvvvvvvv/authenticate?key=33333333333333333333",
+            "original_total_additional_fees_set": null,
+            "original_total_duties_set": null,
+            "payment_gateway_names": [
+                "Conekta"
+            ],
+            "phone": null,
+            "po_number": null,
+            "presentment_currency": "MXN",
+            "processed_at": "2023-12-19T08:52:29-06:00",
+            "reference": "838383838383838383883",
+            "referring_site": "http://m.facebook.com",
+            "source_identifier": "838383838383838383883",
+            "source_name": "web",
+            "source_url": null,
+            "subtotal_price": "400.00",
+            "subtotal_price_set": {
+                "shop_money": {
+                    "amount": "400.00",
+                    "currency_code": "MXN"
+                },
+                "presentment_money": {
+                    "amount": "400.00",
+                    "currency_code": "MXN"
+                }
+            },
+            "tags": "20 Dec 2023, 8 AM - 1 PM, Local Delivery",
+            "tax_exempt": false,
+            "tax_lines": [],
+            "taxes_included": true,
+            "test": false,
+            "token": "vvvvvvvvvvvvvvvvvvvvvvv",
+            "total_discounts": "0.00",
+            "total_discounts_set": {
+                "shop_money": {
+                    "amount": "0.00",
+                    "currency_code": "MXN"
+                },
+                "presentment_money": {
+                    "amount": "0.00",
+                    "currency_code": "MXN"
+                }
+            },
+            "total_line_items_price": "400.00",
+            "total_line_items_price_set": {
+                "shop_money": {
+                    "amount": "400.00",
+                    "currency_code": "MXN"
+                },
+                "presentment_money": {
+                    "amount": "400.00",
+                    "currency_code": "MXN"
+                }
+            },
+            "total_outstanding": "455.00",
+            "total_price": "455.00",
+            "total_price_set": {
+                "shop_money": {
+                    "amount": "455.00",
+                    "currency_code": "MXN"
+                },
+                "presentment_money": {
+                    "amount": "455.00",
+                    "currency_code": "MXN"
+                }
+            },
+            "total_shipping_price_set": {
+                "shop_money": {
+                    "amount": "55.00",
+                    "currency_code": "MXN"
+                },
+                "presentment_money": {
+                    "amount": "55.00",
+                    "currency_code": "MXN"
+                }
+            },
+            "total_tax": "0.00",
+            "total_tax_set": {
+                "shop_money": {
+                    "amount": "0.00",
+                    "currency_code": "MXN"
+                },
+                "presentment_money": {
+                    "amount": "0.00",
+                    "currency_code": "MXN"
+                }
+            },
+            "total_tip_received": "0.00",
+            "total_weight": 0,
+            "updated_at": "2023-12-19T08:52:34-06:00",
+            "user_id": null,
+            "billing_address": {
+                "first_name": "UserName",
+                "address1": "Calle Something  N. 1111",
+                "phone": "11 1111 1222",
+                "city": "CityX",
+                "zip": "22222",
+                "province": "StateY",
+                "country": "Mexico",
+                "last_name": "LastName",
+                "address2": null,
+                "company": null,
+                "latitude": null,
+                "longitude": null,
+                "name": "UserName LastName",
+                "country_code": "MX",
+                "province_code": "SY"
+            },
+            "customer": {
+                "id": 7777777777777,
+                "email": "user@mail.com",
+                "accepts_marketing": true,
+                "created_at": "2023-12-19T08:50:33-06:00",
+                "updated_at": "2023-12-19T08:52:32-06:00",
+                "first_name": "UserName",
+                "last_name": "LastName",
+                "state": "disabled",
+                "note": null,
+                "verified_email": true,
+                "multipass_identifier": null,
+                "tax_exempt": false,
+                "phone": null,
+                "email_marketing_consent": {
+                    "state": "subscribed",
+                    "opt_in_level": "single_opt_in",
+                    "consent_updated_at": "2023-12-19T08:52:32-06:00"
+                },
+                "sms_marketing_consent": null,
+                "tags": "",
+                "currency": "MXN",
+                "accepts_marketing_updated_at": "2023-12-19T08:52:32-06:00",
+                "marketing_opt_in_level": "single_opt_in",
+                "tax_exemptions": [],
+                "admin_graphql_api_id": "gid://shopify/Customer/7777777777777",
+                "default_address": {
+                    "id": 8666264273122,
+                    "customer_id": 7777777777777,
+                    "first_name": "UserName",
+                    "last_name": "LastName",
+                    "company": null,
+                    "address1": "Calle Something  N. 1111",
+                    "address2": null,
+                    "city": "CityX",
+                    "province": "StateY",
+                    "country": "Mexico",
+                    "zip": "22222",
+                    "phone": "11 1111 1222",
+                    "name": "UserName LastName",
+                    "province_code": "SY",
+                    "country_code": "MX",
+                    "country_name": "Mexico",
+                    "default": true
+                }
+            },
+            "discount_applications": [],
+            "fulfillments": [],
+            "line_items": [
+                {
+                    "id": 13504480379106,
+                    "admin_graphql_api_id": "gid://shopify/LineItem/13504480379106",
+                    "fulfillable_quantity": 2,
+                    "fulfillment_service": "manual",
+                    "fulfillment_status": null,
+                    "gift_card": false,
+                    "grams": 0,
+                    "name": "MIX PONCHE NAVIDE\u00d1O",
+                    "price": "200.00",
+                    "price_set": {
+                        "shop_money": {
+                            "amount": "200.00",
+                            "currency_code": "MXN"
+                        },
+                        "presentment_money": {
+                            "amount": "200.00",
+                            "currency_code": "MXN"
+                        }
+                    },
+                    "product_exists": true,
+                    "product_id": 7926439641314,
+                    "properties": [],
+                    "quantity": 2,
+                    "requires_shipping": true,
+                    "sku": "",
+                    "taxable": false,
+                    "title": "MIX PONCHE NAVIDE\u00d1O",
+                    "total_discount": "0.00",
+                    "total_discount_set": {
+                        "shop_money": {
+                            "amount": "0.00",
+                            "currency_code": "MXN"
+                        },
+                        "presentment_money": {
+                            "amount": "0.00",
+                            "currency_code": "MXN"
+                        }
+                    },
+                    "variant_id": 43544524194018,
+                    "variant_inventory_management": "shopify",
+                    "variant_title": null,
+                    "vendor": "Hiberry",
+                    "tax_lines": [],
+                    "duties": [],
+                    "discount_allocations": []
+                }
+            ],
+            "payment_terms": null,
+            "refunds": [],
+            "shipping_address": {
+                "first_name": "UserName",
+                "address1": "Calle Something  N. 1111",
+                "phone": "11 1111 1222",
+                "city": "CityX",
+                "zip": "22222",
+                "province": "StateY",
+                "country": "Mexico",
+                "last_name": "LastName",
+                "address2": null,
+                "company": null,
+                "latitude": 11.1111111,
+                "longitude": -222.2222222,
+                "name": "UserName LastName",
+                "country_code": "MX",
+                "province_code": "SY"
+            },
+            "shipping_lines": [
+                {
+                    "id": 4467522240738,
+                    "carrier_identifier": "650f1a14fa979ec5c74d063e968411d4",
+                    "code": "Local Delivery",
+                    "discounted_price": "55.00",
+                    "discounted_price_set": {
+                        "shop_money": {
+                            "amount": "55.00",
+                            "currency_code": "MXN"
+                        },
+                        "presentment_money": {
+                            "amount": "55.00",
+                            "currency_code": "MXN"
+                        }
+                    },
+                    "phone": "11 1111 1222",
+                    "price": "55.00",
+                    "price_set": {
+                        "shop_money": {
+                            "amount": "55.00",
+                            "currency_code": "MXN"
+                        },
+                        "presentment_money": {
+                            "amount": "55.00",
+                            "currency_code": "MXN"
+                        }
+                    },
+                    "requested_fulfillment_service_id": null,
+                    "source": "shopify",
+                    "title": "Local Delivery",
+                    "tax_lines": [],
+                    "discount_allocations": []
+                }
+            ]
+        },
+        "metadata": {
+            "Content-Type": "application/json",
+            "X-Shopify-Topic": "orders/create",
+            "X-Shopify-Shop-Domain": "astore.myshopify.com",
+            "X-Shopify-Order-Id": "5555555555555",
+            "X-Shopify-Test": "false",
+            "X-Shopify-Hmac-SHA256": "qdjYyG5k++KgWjRkZUveXylPHlssBugs01D4n+k/3FU=",
+            "X-Shopify-Webhook-Id": "80bb82f9-0396-43fd-8449-0468245c4438",
+            "X-Shopify-API-Version": "2023-10",
+            "X-Shopify-Triggered-At": "2023-12-19T14:52:33.315809304Z"
+        }
+    }
+}
