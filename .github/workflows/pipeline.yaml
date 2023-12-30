@@ -14,8 +14,11 @@ jobs:
       uses: actions/setup-python@v2
       with:
         python-version: '3.11'  # Set this to the Python version you're using
-    - name: Install dependencies and Run Tests
+    - name: Install dependencies
       run: |
         make install
+      working-directory: ./tests
+    - name: Run tests
+      run: |
         make test
       working-directory: ./tests
