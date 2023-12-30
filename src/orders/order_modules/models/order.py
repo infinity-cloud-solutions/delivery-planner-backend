@@ -1,5 +1,5 @@
+from datetime import datetime
 from typing import List
-from typing import Optional
 
 from pydantic import BaseModel
 from pydantic import StrictStr
@@ -29,8 +29,8 @@ class HIBerryOrder(BaseModel):
     cart_items: List[HIBerryProduct]
     total_amount: confloat(ge=0.0)
     payment_method: StrictStr
-    geolocation: Optional[Geolocation]
-    source: Optional[StrictStr]
+    geolocation: Geolocation | None = None
+    source: int | None = None
 
     @validator("total_amount", pre=True, always=True)
     def calculate_total_amount(cls, value, values):
@@ -40,3 +40,13 @@ class HIBerryOrder(BaseModel):
             raise ValueError("Provided total_amount does not match the calculated total from cart_items.")
 
         return calculated_total
+    
+    @validator('delivery_date')
+    def validate_delivery_date_format(cls, value):
+        try:
+            datetime.strptime(value, "%Y-%m-%d")
+            return value
+        except ValueError:
+            raise ValueError(f"delivery_date must be in yyyy-mm-dd format, got {value}")
+
+
