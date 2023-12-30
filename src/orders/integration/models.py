@@ -43,7 +43,7 @@ class ShopifyOrder(BaseModel):
         Returns:
         list[dict]: A list of dictionaries representing each line item.
         """
-        return [item.dict() for item in self.line_items]
+        return [item.model_dump() for item in self.line_items]
 
 
 class ShopifyPayload(BaseModel):
