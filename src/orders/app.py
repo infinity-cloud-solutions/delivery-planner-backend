@@ -13,7 +13,7 @@ from order_modules.errors.auth_error import AuthError
 
 
 # Third-party libraries
-from pydantic.error_wrappers import ValidationError
+from pydantic import ValidationError
 from aws_lambda_powertools import Logger
 from aws_lambda_powertools.utilities.typing import LambdaContext
 
@@ -79,8 +79,6 @@ def lambda_handler(event: Dict[str, Any], context: LambdaContext) -> Dict[str, A
 
     except ValidationError as validation_error:
         error_details = f"Some fields failed validation: {validation_error.errors()}"
-        if validation_error._error_cache:
-            error_details = str(validation_error._error_cache)
         return doorman.build_response(
             payload={"message": error_details}, status_code=400
         )

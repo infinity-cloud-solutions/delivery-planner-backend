@@ -7,5 +7,4 @@ install:
 	source ./.venv/bin/activate && ${PIP} install -r requirements.txt
 
 test:
-	source ./.venv/bin/activate  &&  python -m unittest -v create_order/test_*.py
-	source ./.venv/bin/activate  &&  python -m unittest -v integration/test_*.py
+	source ./.venv/bin/activate  &&  pytest -v
