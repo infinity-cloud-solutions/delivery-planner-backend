@@ -16,7 +16,7 @@ from aws_lambda_powertools import Logger
 from aws_lambda_powertools.utilities.typing import LambdaContext
 
 
-def lambda_handler(event: Dict[str, Any], context: LambdaContext) -> Dict[str, Any]:
+def create_product(event: Dict[str, Any], context: LambdaContext) -> Dict[str, Any]:
     """This function is the entry point of this process that wil receive a payload as an input
     an will attempt to create an entry in DynamoDB.
 
@@ -78,4 +78,49 @@ def lambda_handler(event: Dict[str, Any], context: LambdaContext) -> Dict[str, A
         logger.error(error_details)
         return doorman.build_response(
             payload={"message": error_details}, status_code=500
+        )
+
+
+def get_all_products(event: Dict[str, Any], context: LambdaContext) -> Dict[str, Any]:
+    """This function is the entry point of this process that scan product table and return all the elements.
+
+    :param event: Custom object that can come from an APIGateway.
+    :type event: Dict
+    :param context: Regular lambda function context
+    :type context: LambdaContext
+    :return: Custom object with the reponse from the lambda, it could be a 200, if the resources were found
+    or >= 400 if theras was an error
+    :rtype: Dict
+    """
+
+    logger = Logger()
+    logger.info("Initializing Get All Products function")
+    try:
+        doorman = DoormanUtil(event, logger)
+        username = doorman.get_username_from_token()
+        is_auth = doorman.auth_user()
+        if is_auth is False:
+            raise AuthError("User is not allow to retrieve products")
+
+        dao = ProductDAO()
+        products = dao.fetch_products()
+        output_data = products
+        return doorman.build_response(
+            payload=output_data, status_code=200
+        )
+
+    except AuthError:
+        error_details = f"user {username} was not auth to create a fetch products"
+        logger.error(error_details)
+        output_data = {"message": error_details}
+        return doorman.build_response(
+            payload=output_data, status_code=403
+        )
+
+    except Exception as e:
+        error_details = f"Error processing the request to fetch products: {e}"
+        logger.error(error_details)
+        output_data = {"message": error_details}
+        return doorman.build_response(
+            payload=output_data, status_code=500
         )
