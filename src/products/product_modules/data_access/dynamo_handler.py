@@ -106,7 +106,7 @@ class DynamoDBHandler:
                 )
                 return self.build_response_object(
                     status="success",
-                    status_code=self.HTTP_STATUS_CREATED,
+                    status_code=self.HTTP_STATUS_OK,
                     message=f"{len(response['Items'])} were found in DynamoDB Products table",
                     payload=response["Items"]
                 )
