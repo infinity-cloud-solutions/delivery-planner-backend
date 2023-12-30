@@ -26,8 +26,10 @@ Resources:
       AttributeDefinitions:
         - AttributeName: name
           AttributeType: S
+        - AttributeName: sku   
+          AttributeType: S
       KeySchema:
-        - AttributeName: name
+        - AttributeName: sku
           KeyType: HASH
       ProvisionedThroughput:
         ReadCapacityUnits: 5

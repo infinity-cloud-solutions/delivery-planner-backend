@@ -9,11 +9,12 @@ class TestShopifyDataMapper(TestCase):
     def setUp(self):
         customer = ShopifyCustomer(first_name="John", last_name="Doe")
         shipping_address = ShopifyAddress(address1="123 Happy St", phone="1234567890", latitude=20.0, longitude=-105.0)
-        line_items = [ShopifyLineItem(name="Product 1", price=100.0, quantity=2)]
+        line_items = [ShopifyLineItem(name="Product 1", price=100.0, quantity=2, sku='HK2020')]
         
         self.valid_order = ShopifyOrder(customer=customer,
                                         shipping_address=shipping_address,
-                                        note_attributes=[ShopifyNoteAttribute(name='Order Due Date', value='Wed, 20 Dec 2023')],
+                                        note_attributes=[ShopifyNoteAttribute(name='Order Due Date', value='Wed, 20 Dec 2023'),
+                                                         ShopifyNoteAttribute(name='Order Due Time', value='8 AM - 1 PM')],
                                         line_items=line_items,
                                         current_subtotal_price=200.0)
 
@@ -60,6 +61,20 @@ class TestShopifyDataMapper(TestCase):
             mapper._check_order_is_allowed() 
 
     def test_map_order_data(self):
+        expected = {
+            "client_name": "John Doe",
+            "phone_number": "1234567890",
+            "delivery_address": "123 Happy St",
+            "latitude": 20.0,
+            "longitude": -105.0,
+            "delivery_date": "2023-12-20",
+            "delivery_time": "8 AM - 1 PM",
+            "cart_items": [{"name": "Product 1", "price": 100.0 ,"quantity": 2, "sku": "HK2020"}],
+            "total_amount": 200.0,
+            "payment_method": '',
+            "source": 0,
+            "notes": None
+        }
         mapper = ShopifyDataMapper(self.valid_order)
         result = mapper.map_order_data()
         self.assertIsInstance(result, dict)
@@ -70,4 +85,6 @@ class TestShopifyDataMapper(TestCase):
         self.assertIn("longitude", body)
         self.assertIn("delivery_date", body)
         self.assertEqual(body["delivery_date"], "2023-12-20")
+        self.assertEqual(expected, body)
+
         # TODO MORE CHECKS!

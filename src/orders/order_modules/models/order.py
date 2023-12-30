@@ -15,6 +15,7 @@ class Geolocation(BaseModel):
 
 
 class HIBerryProduct(BaseModel):
+    sku: StrictStr
     name: StrictStr
     quantity: conint(ge=0)
     price: confloat(ge=0.0)

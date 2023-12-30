@@ -15,26 +15,21 @@ if environment is None:
 logger.info(f"Starting with environment: {environment}")
 
 if environment.lower() == "prod":
-    CREATE_ORDER_ENDPOINT = "TODO"
-    ORDERS_TABLE_NAME = "TODO"
+    ORDERS_TABLE_NAME = "Orders"
 
 elif environment.lower() == "development":
-    CREATE_ORDER_ENDPOINT = "TODO"
-    ORDERS_TABLE_NAME = "TODO"
+    ORDERS_TABLE_NAME = "Orders"
 
 
 elif environment.lower() == "uat":
-    CREATE_ORDER_ENDPOINT = "TODO"
-    ORDERS_TABLE_NAME = "TODO"
+    ORDERS_TABLE_NAME = "Orders"
 
 
 elif environment.lower() == "qa":
-    CREATE_ORDER_ENDPOINT = "TODO"
-    ORDERS_TABLE_NAME = "TODO"
+    ORDERS_TABLE_NAME = "Orders"
 
 
 elif environment.lower() == "local":
-    CREATE_ORDER_ENDPOINT = "TODO"
     ORDERS_TABLE_NAME = "Orders"
 
 
