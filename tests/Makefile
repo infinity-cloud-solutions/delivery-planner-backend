@@ -7,5 +7,5 @@ install:
 	source ./.venv/bin/activate && ${PIP} install -r requirements.txt
 
 test:
-	source ./.venv/bin/activate  &&  python -m unittest create_order/test_lambda_handler.py
-	source ./.venv/bin/activate  &&  python -m unittest -v integration/test_shopify_data_mapper.py
+	source ./.venv/bin/activate  &&  python -m unittest -v create_order/test_*.py
+	source ./.venv/bin/activate  &&  python -m unittest -v integration/test_*.py
