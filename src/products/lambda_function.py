@@ -16,7 +16,7 @@ from aws_lambda_powertools import Logger
 from aws_lambda_powertools.utilities.typing import LambdaContext
 
 
-def creat_product(event: Dict[str, Any], context: LambdaContext) -> Dict[str, Any]:
+def create_product(event: Dict[str, Any], context: LambdaContext) -> Dict[str, Any]:
     """This function is the entry point of this process that wil receive a payload as an input
     an will attempt to create an entry in DynamoDB.
 
@@ -104,21 +104,23 @@ def get_all_products(event: Dict[str, Any], context: LambdaContext) -> Dict[str,
 
         dao = ProductDAO()
         products = dao.fetch_products()
-        logger.info(f"{len(products)} products were fetched")
+        output_data = products
         return doorman.build_response(
-            payload={"message": "Record was created", "data": products}, status_code=200
+            payload=output_data, status_code=200
         )
 
     except AuthError:
         error_details = f"user {username} was not auth to create a fetch products"
         logger.error(error_details)
+        output_data = {"message": error_details}
         return doorman.build_response(
-            payload={"message": error_details}, status_code=403
+            payload=output_data, status_code=403
         )
 
     except Exception as e:
         error_details = f"Error processing the request to fetch products: {e}"
         logger.error(error_details)
+        output_data = {"message": error_details}
         return doorman.build_response(
-            payload={"message": error_details}, status_code=500
+            payload=output_data, status_code=500
         )

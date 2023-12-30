@@ -59,11 +59,12 @@ class DoormanUtil(object):
             "isBase64Encoded": False,
             "statusCode": status_code,
             "headers": {
+                "Content-Type": "application/json",
                 "Access-Control-Allow-Origin": "*",
                 "Access-Control-Allow-Headers": "Content-Type,Authorization,x-apigateway-header,X-Amz-Date,X-Api-Key,X-Amz-Security-Token",
                 "Access-Control-Allow-Methods": "GET, POST, PATCH, OPTIONS, DELETE",
             },
-            "body": json.dumps({"message": payload["message"], "data": payload["data"]}, cls=DecimalEncoder),
+            "body": json.dumps(payload, cls=DecimalEncoder)
         }
 
         return response

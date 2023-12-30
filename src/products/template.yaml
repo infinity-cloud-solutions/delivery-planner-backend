@@ -6,6 +6,26 @@ Description: >
 Globals:
   Function:
     Timeout: 120
+  Api:
+    Cors:
+        AllowHeaders: "'Content-Type,Authorization,authorization,X-Amz-Date,X-Api-Key,X-Amz-Security-Token'"
+        AllowOrigin: "'*'"
+        MaxAge: "'3600'"
+        AllowMethods: "'HEAD,OPTIONS,POST,GET,PUT,DELETE'"
+        AllowCredentials: "'false'"
+    GatewayResponses:
+        DEFAULT_4xx:
+            ResponseParameters:
+                Headers:
+                    Access-Control-Allow-Headers: "'Content-Type,Authorization,authorization,X-Amz-Date,X-Api-Key,X-Amz-Security-Token'"
+                    Access-Control-Allow-Origin: "'*'"
+                    Access-Control-Allow-Methods: "'HEAD,OPTIONS,POST,GET,PUT,DELETE'"
+        DEFAULT_5xx:
+            ResponseParameters:
+                Headers:
+                    Access-Control-Allow-Headers: "'Content-Type,Authorization,authorization,X-Amz-Date,X-Api-Key,X-Amz-Security-Token'"
+                    Access-Control-Allow-Origin: "'*'"
+                    Access-Control-Allow-Methods: "'HEAD,OPTIONS,POST,GET,PUT,DELETE'"
 
 Parameters:
   StageName:
@@ -111,7 +131,7 @@ Resources:
   GetAllProductsRole:
     Type: AWS::IAM::Role
     Properties:
-      RoleName: !Sub "CreateProductRole-${StageName}"
+      RoleName: !Sub "GetAllProductsRole-${StageName}"
       AssumeRolePolicyDocument:
         Version: '2012-10-17'
         Statement:
@@ -128,6 +148,16 @@ Resources:
                 Action:
                   - dynamodb:Scan
                 Resource: !GetAtt ProductsTable.Arn
+        - PolicyName: CloudWatchLogsPolicy
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - logs:CreateLogGroup
+                  - logs:CreateLogStream
+                  - logs:PutLogEvents
+                Resource: "*"
 
 Outputs:
   CreateProductFunction:
