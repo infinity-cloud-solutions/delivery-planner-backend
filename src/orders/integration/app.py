@@ -16,9 +16,6 @@ from botocore.exceptions import ClientError
 # Initialize logging
 logger = Logger()
 
-# Initialize AWS Lambda client
-lambda_client = boto3.client('lambda')
-
 def lambda_handler(event: dict, context: LambdaContext):
     """
     Handler function for AWS Lambda to process Shopify order/create events.
@@ -36,7 +33,7 @@ def lambda_handler(event: dict, context: LambdaContext):
         error_message = "Environment variable not configured: CREATE_ORDER_FUNCTION_NAME"
         logger.error(error_message)
         raise ConfigurationError(error_message)
-    
+        
     try:
         logger.info("Initializing Shopify Order Integration function")
 
@@ -53,6 +50,8 @@ def lambda_handler(event: dict, context: LambdaContext):
             f"Calling {CREATE_ORDER_FUNCTION_NAME} with payload: {order_data}")
 
         # Invoke the CreateOrderFunction directly
+        lambda_client = boto3.client('lambda')
+
         response = lambda_client.invoke(
             FunctionName=CREATE_ORDER_FUNCTION_NAME,
             InvocationType='RequestResponse',  # Use 'Event' for async
