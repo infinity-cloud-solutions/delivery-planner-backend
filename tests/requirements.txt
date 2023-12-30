@@ -1,5 +1,6 @@
 pytest
 aws-lambda-powertools
+aws-lambda-powertools[parser]
 pydantic==1.9.1
 python-dotenv==1.0.0
 boto3
