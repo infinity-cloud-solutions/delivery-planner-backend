@@ -124,8 +124,8 @@ class ShopifyDataMapper:
             # TODO Discuss order.total_price = products + shipping vs current_subtotal_price=products
             "total_amount": self.order.current_subtotal_price,
             "payment_method": ','.join(self.order.payment_gateway_names),
-            "created_by": self.SHOPIFY_ID,
-            "notes": self.order.note,
+            "source": self.SHOPIFY_ID,
+            "notes": self.order.note
         }
 
         return {"body": order_data}
