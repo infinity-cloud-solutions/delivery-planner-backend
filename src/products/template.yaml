@@ -70,7 +70,7 @@ Resources:
           Type: Api
           Properties:
             RestApiId: !Ref ApiGateway
-            Path: /product
+            Path: /products
             Method: post
       Role: !GetAtt CreateProductRole.Arn
 
@@ -91,7 +91,7 @@ Resources:
           Type: Api
           Properties:
             RestApiId: !Ref ApiGateway
-            Path: /product
+            Path: /products
             Method: get
       Role: !GetAtt GetAllProductsRole.Arn
 
@@ -127,6 +127,16 @@ Resources:
                 Action:
                   - dynamodb:PutItem
                 Resource: !GetAtt ProductsTable.Arn
+        - PolicyName: CloudWatchLogsPolicy
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - logs:CreateLogGroup
+                  - logs:CreateLogStream
+                  - logs:PutLogEvents
+                Resource: "*"
 
   GetAllProductsRole:
     Type: AWS::IAM::Role

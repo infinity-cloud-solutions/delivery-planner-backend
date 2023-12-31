@@ -30,6 +30,7 @@ class OrderHelper():
         """
 
         items = [item.__dict__ for item in order_data.get("cart_items", [])]
+        status = OrderStatus.ERROR.value if errors else OrderStatus.CREATED.value
         data = {
             "id": str(uuid.uuid4()),
             "client_name": order_data.get("client_name"),
@@ -48,7 +49,7 @@ class OrderHelper():
             "updated_at": None,
             "errors": errors,
             "notes": None,
-            "status": OrderStatus.CREATE.value,
+            "status": status,
             "delivery_sequence": None
         }
         return data

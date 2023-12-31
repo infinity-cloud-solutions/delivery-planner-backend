@@ -2,8 +2,8 @@ from enum import Enum
 
 
 class OrderStatus(Enum):
-    CREATE = "Create"
+    CREATED = "Created"
     PROGRAMMED = "Programmed"
     ON_TRANSIT = "On Transit"
-    RESCHEDULE = "Reschedule"
+    RESCHEDULED = "Rescheduled"
     ERROR = "Error"
