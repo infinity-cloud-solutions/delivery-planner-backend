@@ -31,6 +31,8 @@ Resources:
       KeySchema:
         - AttributeName: sku
           KeyType: HASH
+        - AttributeName: name
+          KeyType: RANGE
       ProvisionedThroughput:
         ReadCapacityUnits: 5
         WriteCapacityUnits: 5
