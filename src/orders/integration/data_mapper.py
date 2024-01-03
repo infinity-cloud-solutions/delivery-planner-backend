@@ -43,7 +43,37 @@ class ShopifyDataMapper:
             if attribute.name == attribute_name:
                 return attribute.value
         return None
+    
+    def _determine_payment_method(self) -> Optional[str]:
+        """
+        Determines the payment method string based on the list of payment method identifiers
+        of self.order.payment_gateway_names.
+        Rules:
+            - If no payment methods are provided, returns None.
+            - If multiple payment methods are used, returns "MULTIPLE".
+            - If a single "Conekta" payment method is used, returns "CARD".
+            - If a single "paypal" payment method is used, returns "PAYPAL".
+            - For all other cases or unrecognized single payment methods, returns "OTHER".
 
+        Returns:
+            - str: A string representing the categorized payment method or None if no payment methods are provided.
+        """
+        payment_methods = self.order.payment_gateway_names
+        if not payment_methods:
+            return None
+        elif len(payment_methods) > 1:
+            # Case shouldn't appear with current Hiberry theme setup
+            return "MULTIPLE" 
+        else:
+            payment_method = payment_methods[0].lower()
+            if payment_method == "conekta":
+                return "CARD"
+            elif payment_method == "paypal":
+                return "PAYPAL"
+            else:
+                # Case shouldn't appear with current Hiberry theme setup
+                return "OTHER"
+            
     def _get_coordinate(self, attribute_name: str) -> Optional[float]:
         """
         Retrieves the latitude or longitude from the shipping address, or falls back to the billing address if necessary.
@@ -121,9 +151,8 @@ class ShopifyDataMapper:
             "delivery_date": self._get_delivery_date(),
             "delivery_time": delivery_time,
             "cart_items": self.order.line_items_to_dict(),
-            # TODO Discuss order.total_price = products + shipping vs current_subtotal_price=products
             "total_amount": self.order.current_subtotal_price,
-            "payment_method": ','.join(self.order.payment_gateway_names),
+            "payment_method": self._determine_payment_method(),
             "source": self.SHOPIFY_ID,
             "notes": self.order.note
         }
