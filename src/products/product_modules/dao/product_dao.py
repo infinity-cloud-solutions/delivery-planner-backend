@@ -29,3 +29,14 @@ class ProductDAO:
         """
         response = self.products_db.insert_record(item)
         return response
+
+    def fetch_products(self) -> dict:
+        """
+        Attempts to fetch all the records from DynamoDB table.
+
+        :return: a dictionary that contains the response object
+        :rtype: dict
+        """
+        response = self.products_db.scan_table()
+        items = response["payload"]
+        return items

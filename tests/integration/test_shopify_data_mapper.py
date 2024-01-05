@@ -25,6 +25,15 @@ class TestShopifyDataMapper(TestCase):
                                           line_items=line_items,
                                           current_subtotal_price=200.0)
 
+        self.valid_order_with_paypal = self.valid_order.copy(
+            update={"payment_gateway_names": ['paypal']})
+        
+        self.valid_order_with_multiple_methods = self.valid_order.copy(
+                    update={"payment_gateway_names": ['paypal', 'Conekta']})
+        
+        self.invalid_order_with_other_method = self.valid_order.copy(
+            update={"payment_gateway_names": ['abc']})
+        
     def test_format_delivery_date_valid(self):
         mapper = ShopifyDataMapper(self.valid_order)
         formatted_date = mapper._get_delivery_date()
@@ -58,8 +67,28 @@ class TestShopifyDataMapper(TestCase):
     def test_check_order_is_allowed_invalid(self):
         mapper = ShopifyDataMapper(self.invalid_order)
         with self.assertRaises(StorePickupNotAllowed):
-            mapper._check_order_is_allowed() 
+            mapper._check_order_is_allowed()
 
+    def test_determine_payment_method_empty(self):
+        mapper = ShopifyDataMapper(self.invalid_order)
+        self.assertIsNone(mapper._determine_payment_status())
+
+    def test_determine_payment_method_single_conekta(self):
+        mapper = ShopifyDataMapper(self.valid_order)
+        self.assertEqual(mapper._determine_payment_status(), "PAID")
+
+    def test_determine_payment_method_single_paypal(self):
+        mapper = ShopifyDataMapper(self.valid_order_with_paypal)
+        self.assertEqual(mapper._determine_payment_status(), "PAID")
+        
+    def test_determine_payment_method_multiple(self):
+        mapper = ShopifyDataMapper(self.valid_order_with_multiple_methods)
+        self.assertEqual(mapper._determine_payment_status(), "PAID")
+        
+    def test_determine_payment_other_method(self):
+        mapper = ShopifyDataMapper(self.invalid_order_with_other_method)
+        self.assertEqual(mapper._determine_payment_status(), "PAID")
+        
     def test_map_order_data(self):
         expected = {
             "client_name": "John Doe",
@@ -86,5 +115,3 @@ class TestShopifyDataMapper(TestCase):
         self.assertIn("delivery_date", body)
         self.assertEqual(body["delivery_date"], "2023-12-20")
         self.assertEqual(expected, body)
-
-        # TODO MORE CHECKS!

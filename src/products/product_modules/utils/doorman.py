@@ -3,6 +3,7 @@ import json
 
 # Own's modules
 from product_modules.errors.util_error import UtilError
+from product_modules.utils.encoders import DecimalEncoder
 
 # Third-party libraries
 from aws_lambda_powertools import Logger
@@ -58,11 +59,12 @@ class DoormanUtil(object):
             "isBase64Encoded": False,
             "statusCode": status_code,
             "headers": {
+                "Content-Type": "application/json",
                 "Access-Control-Allow-Origin": "*",
                 "Access-Control-Allow-Headers": "Content-Type,Authorization,x-apigateway-header,X-Amz-Date,X-Api-Key,X-Amz-Security-Token",
                 "Access-Control-Allow-Methods": "GET, POST, PATCH, OPTIONS, DELETE",
             },
-            "body": json.dumps({"message": payload["message"]}),
+            "body": json.dumps(payload, cls=DecimalEncoder)
         }
 
         return response

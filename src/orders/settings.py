@@ -13,24 +13,33 @@ if environment is None:
     environment = "local"
 
 logger.info(f"Starting with environment: {environment}")
+ORDERS_PRIMARY_KEY = "delivery_date"
 
 if environment.lower() == "prod":
+    CREATE_ORDER_ENDPOINT = "TODO"
     ORDERS_TABLE_NAME = "Orders"
+    PRODUCTS_TABLE_NAME = "Products"
 
 elif environment.lower() == "development":
+    CREATE_ORDER_ENDPOINT = "TODO"
     ORDERS_TABLE_NAME = "Orders"
+    PRODUCTS_TABLE_NAME = "Products"
 
 
 elif environment.lower() == "uat":
+    CREATE_ORDER_ENDPOINT = "TODO"
     ORDERS_TABLE_NAME = "Orders"
+    PRODUCTS_TABLE_NAME = "Products"
 
 
 elif environment.lower() == "qa":
+    CREATE_ORDER_ENDPOINT = "TODO"
     ORDERS_TABLE_NAME = "Orders"
-
+    PRODUCTS_TABLE_NAME = "Products"
 
 elif environment.lower() == "local":
     ORDERS_TABLE_NAME = "Orders"
+    PRODUCTS_TABLE_NAME = "Products"
 
 
 else:

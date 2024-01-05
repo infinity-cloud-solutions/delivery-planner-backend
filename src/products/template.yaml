@@ -6,6 +6,26 @@ Description: >
 Globals:
   Function:
     Timeout: 120
+  Api:
+    Cors:
+        AllowHeaders: "'Content-Type,Authorization,authorization,X-Amz-Date,X-Api-Key,X-Amz-Security-Token'"
+        AllowOrigin: "'*'"
+        MaxAge: "'3600'"
+        AllowMethods: "'HEAD,OPTIONS,POST,GET,PUT,DELETE'"
+        AllowCredentials: "'false'"
+    GatewayResponses:
+        DEFAULT_4xx:
+            ResponseParameters:
+                Headers:
+                    Access-Control-Allow-Headers: "'Content-Type,Authorization,authorization,X-Amz-Date,X-Api-Key,X-Amz-Security-Token'"
+                    Access-Control-Allow-Origin: "'*'"
+                    Access-Control-Allow-Methods: "'HEAD,OPTIONS,POST,GET,PUT,DELETE'"
+        DEFAULT_5xx:
+            ResponseParameters:
+                Headers:
+                    Access-Control-Allow-Headers: "'Content-Type,Authorization,authorization,X-Amz-Date,X-Api-Key,X-Amz-Security-Token'"
+                    Access-Control-Allow-Origin: "'*'"
+                    Access-Control-Allow-Methods: "'HEAD,OPTIONS,POST,GET,PUT,DELETE'"
 
 Parameters:
   StageName:
@@ -42,7 +62,7 @@ Resources:
     Properties:
       FunctionName: !Sub "CreateProductFunction-${StageName}"
       CodeUri: .
-      Handler: lambda_function.lambda_handler
+      Handler: lambda_function.create_product
       Runtime: python3.11
       Environment:
         Variables:
@@ -54,9 +74,30 @@ Resources:
           Type: Api
           Properties:
             RestApiId: !Ref ApiGateway
-            Path: /product
+            Path: /products
             Method: post
       Role: !GetAtt CreateProductRole.Arn
+
+  GetAllProductsFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub "GetAllProductsFunction-${StageName}"
+      CodeUri: .
+      Handler: lambda_function.get_all_products
+      Runtime: python3.11
+      Environment:
+        Variables:
+          POWERTOOLS_SERVICE_NAME: get-all-products
+          POWERTOOLS_LOG_LEVEL: INFO
+          APP_ENVIRONMENT: !Ref StageName
+      Events:
+        HttpPost:
+          Type: Api
+          Properties:
+            RestApiId: !Ref ApiGateway
+            Path: /products
+            Method: get
+      Role: !GetAtt GetAllProductsRole.Arn
 
   ApiGateway:
     Type: AWS::Serverless::Api
@@ -90,6 +131,47 @@ Resources:
                 Action:
                   - dynamodb:PutItem
                 Resource: !GetAtt ProductsTable.Arn
+        - PolicyName: CloudWatchLogsPolicy
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - logs:CreateLogGroup
+                  - logs:CreateLogStream
+                  - logs:PutLogEvents
+                Resource: "*"
+
+  GetAllProductsRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub "GetAllProductsRole-${StageName}"
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+            Action: sts:AssumeRole
+      Policies:
+        - PolicyName: QueryDynamoDBPolicy
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - dynamodb:Scan
+                Resource: !GetAtt ProductsTable.Arn
+        - PolicyName: CloudWatchLogsPolicy
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - logs:CreateLogGroup
+                  - logs:CreateLogStream
+                  - logs:PutLogEvents
+                Resource: "*"
 
 Outputs:
   CreateProductFunction:
