@@ -71,23 +71,23 @@ class TestShopifyDataMapper(TestCase):
 
     def test_determine_payment_method_empty(self):
         mapper = ShopifyDataMapper(self.invalid_order)
-        self.assertIsNone(mapper._determine_payment_method())
+        self.assertIsNone(mapper._determine_payment_status())
 
     def test_determine_payment_method_single_conekta(self):
         mapper = ShopifyDataMapper(self.valid_order)
-        self.assertEqual(mapper._determine_payment_method(), "CARD")
+        self.assertEqual(mapper._determine_payment_status(), "PAID")
 
     def test_determine_payment_method_single_paypal(self):
         mapper = ShopifyDataMapper(self.valid_order_with_paypal)
-        self.assertEqual(mapper._determine_payment_method(), "PAYPAL")
+        self.assertEqual(mapper._determine_payment_status(), "PAID")
         
     def test_determine_payment_method_multiple(self):
         mapper = ShopifyDataMapper(self.valid_order_with_multiple_methods)
-        self.assertEqual(mapper._determine_payment_method(), "MULTIPLE")
+        self.assertEqual(mapper._determine_payment_status(), "PAID")
         
     def test_determine_payment_other_method(self):
         mapper = ShopifyDataMapper(self.invalid_order_with_other_method)
-        self.assertEqual(mapper._determine_payment_method(), "OTHER")
+        self.assertEqual(mapper._determine_payment_status(), "PAID")
         
     def test_map_order_data(self):
         mapper = ShopifyDataMapper(self.valid_order)

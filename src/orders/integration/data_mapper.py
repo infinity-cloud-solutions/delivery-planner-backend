@@ -44,35 +44,21 @@ class ShopifyDataMapper:
                 return attribute.value
         return None
     
-    def _determine_payment_method(self) -> Optional[str]:
+    def _determine_payment_status(self) -> Optional[str]:
         """
-        Determines the payment method string based on the list of payment method identifiers
+        Determines the payment status based on the list of payment method identifiers
         of self.order.payment_gateway_names.
         Rules:
             - If no payment methods are provided, returns None.
-            - If multiple payment methods are used, returns "MULTIPLE".
-            - If a single "Conekta" payment method is used, returns "CARD".
-            - If a single "paypal" payment method is used, returns "PAYPAL".
-            - For all other cases or unrecognized single payment methods, returns "OTHER".
-
+            - If one or multiple payment methods are used, returns "PAID".
         Returns:
-            - str: A string representing the categorized payment method or None if no payment methods are provided.
+            - str: "PAID" if any payment method is used, None otherwise.
         """
         payment_methods = self.order.payment_gateway_names
         if not payment_methods:
             return None
-        elif len(payment_methods) > 1:
-            # Case shouldn't appear with current Hiberry theme setup
-            return "MULTIPLE" 
-        else:
-            payment_method = payment_methods[0].lower()
-            if payment_method == "conekta":
-                return "CARD"
-            elif payment_method == "paypal":
-                return "PAYPAL"
-            else:
-                # Case shouldn't appear with current Hiberry theme setup
-                return "OTHER"
+        elif len(payment_methods) >= 1:
+            return "PAID" 
             
     def _get_coordinate(self, attribute_name: str) -> Optional[float]:
         """
@@ -152,7 +138,7 @@ class ShopifyDataMapper:
             "delivery_time": delivery_time,
             "cart_items": self.order.line_items_to_dict(),
             "total_amount": self.order.current_subtotal_price,
-            "payment_method": self._determine_payment_method(),
+            "payment_method": self._determine_payment_status(),
             "source": self.SHOPIFY_ID,
             "notes": self.order.note
         }
