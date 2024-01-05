@@ -37,9 +37,7 @@ elif environment.lower() == "qa":
     ORDERS_TABLE_NAME = "Orders"
     PRODUCTS_TABLE_NAME = "Products"
 
-
 elif environment.lower() == "local":
-    CREATE_ORDER_ENDPOINT = "TODO"
     ORDERS_TABLE_NAME = "Orders"
     PRODUCTS_TABLE_NAME = "Products"
 

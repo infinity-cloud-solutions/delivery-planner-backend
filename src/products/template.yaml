@@ -46,9 +46,13 @@ Resources:
       AttributeDefinitions:
         - AttributeName: name
           AttributeType: S
+        - AttributeName: sku   
+          AttributeType: S
       KeySchema:
-        - AttributeName: name
+        - AttributeName: sku
           KeyType: HASH
+        - AttributeName: name
+          KeyType: RANGE
       ProvisionedThroughput:
         ReadCapacityUnits: 5
         WriteCapacityUnits: 5

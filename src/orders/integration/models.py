@@ -21,6 +21,7 @@ class ShopifyCustomer(BaseModel):
 
 
 class ShopifyLineItem(BaseModel):
+    sku: StrictStr | None = None
     name: StrictStr
     price: float
     quantity: int

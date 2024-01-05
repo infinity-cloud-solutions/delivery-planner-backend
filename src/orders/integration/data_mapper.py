@@ -95,7 +95,9 @@ class ShopifyDataMapper:
             ValueError: If the 'Order Due Date' is not in the expected format or is missing.
         """
         delivery_date = self._get_note_value('Order Due Date')
-        return self._format_delivery_date(delivery_date)
+        if delivery_date is not None:
+            return self._format_delivery_date(delivery_date)
+        return None
 
     def _check_order_is_allowed(self):
         """
