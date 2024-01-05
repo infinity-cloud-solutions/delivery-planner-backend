@@ -43,7 +43,23 @@ class ShopifyDataMapper:
             if attribute.name == attribute_name:
                 return attribute.value
         return None
-
+    
+    def _determine_payment_status(self) -> Optional[str]:
+        """
+        Determines the payment status based on the list of payment method identifiers
+        of self.order.payment_gateway_names.
+        Rules:
+            - If no payment methods are provided, returns None.
+            - If one or multiple payment methods are used, returns "PAID".
+        Returns:
+            - str: "PAID" if any payment method is used, None otherwise.
+        """
+        payment_methods = self.order.payment_gateway_names
+        if not payment_methods:
+            return None
+        elif len(payment_methods) >= 1:
+            return "PAID" 
+            
     def _get_coordinate(self, attribute_name: str) -> Optional[float]:
         """
         Retrieves the latitude or longitude from the shipping address, or falls back to the billing address if necessary.
@@ -121,9 +137,8 @@ class ShopifyDataMapper:
             "delivery_date": self._get_delivery_date(),
             "delivery_time": delivery_time,
             "cart_items": self.order.line_items_to_dict(),
-            # TODO Discuss order.total_price = products + shipping vs current_subtotal_price=products
             "total_amount": self.order.current_subtotal_price,
-            "payment_method": ','.join(self.order.payment_gateway_names),
+            "payment_method": self._determine_payment_status(),
             "source": self.SHOPIFY_ID,
             "notes": self.order.note
         }
