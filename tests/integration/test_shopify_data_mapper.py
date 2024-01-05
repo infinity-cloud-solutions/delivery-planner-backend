@@ -15,6 +15,7 @@ class TestShopifyDataMapper(TestCase):
                                         shipping_address=shipping_address,
                                         note_attributes=[ShopifyNoteAttribute(name='Order Due Date', value='Wed, 20 Dec 2023'),
                                                          ShopifyNoteAttribute(name='Order Due Time', value='8 AM - 1 PM')],
+                                        payment_gateway_names=['Conekta'],
                                         line_items=line_items,
                                         current_subtotal_price=200.0)
 
@@ -100,7 +101,7 @@ class TestShopifyDataMapper(TestCase):
             "delivery_time": "8 AM - 1 PM",
             "cart_items": [{"name": "Product 1", "price": 100.0 ,"quantity": 2, "sku": "HK2020"}],
             "total_amount": 200.0,
-            "payment_method": '',
+            "payment_method": 'PAID',
             "source": 0,
             "notes": None
         }
