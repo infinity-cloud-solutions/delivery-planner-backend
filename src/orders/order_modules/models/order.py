@@ -40,7 +40,7 @@ class HIBerryOrder(BaseModel):
             raise ValueError("Provided total_amount does not match the calculated total from cart_items.")
 
         return calculated_total
-    
+
     @validator('delivery_date')
     def validate_delivery_date_format(cls, value):
         try:
@@ -48,5 +48,3 @@ class HIBerryOrder(BaseModel):
             return value
         except ValueError:
             raise ValueError(f"delivery_date must be in yyyy-mm-dd format, got {value}")
-
-
