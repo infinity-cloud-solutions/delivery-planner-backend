@@ -3,7 +3,7 @@ from unittest.mock import patch
 import json
 import os
 
-from src.orders.app import lambda_handler
+from src.orders.app import create_order
 
 
 class TestCreateOrderLambdaHandler(TestCase):
@@ -63,7 +63,7 @@ class TestCreateOrderLambdaHandler(TestCase):
         doorman_mocked.return_value.build_response.return_value = response
         geolocation_mocked.return_value = {"latitude": 20.12, "longitude": -103.12}
         dao_mocked.return_value = None
-        observed = lambda_handler({"body": json.dumps(self.valid_input)}, None)
+        observed = create_order({"body": json.dumps(self.valid_input)}, None)
         expected = response
 
         self.assertEqual(observed, expected)
@@ -92,7 +92,7 @@ class TestCreateOrderLambdaHandler(TestCase):
         doorman_mocked.return_value.get_body_from_request.return_value = self.invalid_input
         geolocation_mocked.return_value = {"latitude": 20.12, "longitude": -103.12}
         doorman_mocked.return_value.build_response.return_value = response
-        observed = lambda_handler({"body": json.dumps(self.invalid_input)}, None)
+        observed = create_order({"body": json.dumps(self.invalid_input)}, None)
         expected = response
 
         self.assertEqual(observed, expected)
@@ -124,7 +124,7 @@ class TestCreateOrderLambdaHandler(TestCase):
         doorman_mocked.return_value.build_response.return_value = response
         geolocation_mocked.return_value = {"latitude": 20.12, "longitude": -103.12}
         dao_mocked.return_value = None
-        observed = lambda_handler({"body": json.dumps(self.valid_input)}, None)
+        observed = create_order({"body": json.dumps(self.valid_input)}, None)
         expected = response
 
         self.assertEqual(observed, expected)
@@ -156,7 +156,7 @@ class TestCreateOrderLambdaHandler(TestCase):
         doorman_mocked.return_value.build_response.return_value = response
         geolocation_mocked.side_effect = Exception("Mocked")
         dao_mocked.return_value = None
-        observed = lambda_handler({"body": json.dumps(self.valid_input)}, None)
+        observed = create_order({"body": json.dumps(self.valid_input)}, None)
         expected = response
 
         self.assertEqual(observed, expected)

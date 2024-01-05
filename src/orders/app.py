@@ -11,6 +11,7 @@ from order_modules.models.order import HIBerryOrder
 from order_modules.utils.doorman import DoormanUtil
 from order_modules.errors.auth_error import AuthError
 
+from settings import ORDERS_PRIMARY_KEY
 
 # Third-party libraries
 from pydantic import ValidationError
@@ -18,7 +19,7 @@ from aws_lambda_powertools import Logger
 from aws_lambda_powertools.utilities.typing import LambdaContext
 
 
-def lambda_handler(event: Dict[str, Any], context: LambdaContext) -> Dict[str, Any]:
+def create_order(event: Dict[str, Any], context: LambdaContext) -> Dict[str, Any]:
     """This function is the entry point of this process that wil receive a payload as an input
     an will attempt to create an entry in DynamoDB.
 
@@ -71,10 +72,10 @@ def lambda_handler(event: Dict[str, Any], context: LambdaContext) -> Dict[str, A
         )
         dao = OrderDAO()
         dao.create_order(order_db_data)
-        # TODO handle create_order response
         logger.info("Order received and created")
+        output_data = {"status": order_db_data["status"]}
         return doorman.build_response(
-            payload={"message": "Record was created"}, status_code=201
+            payload=output_data, status_code=201
         )
 
     except ValidationError as validation_error:
@@ -95,4 +96,56 @@ def lambda_handler(event: Dict[str, Any], context: LambdaContext) -> Dict[str, A
         logger.error(error_details)
         return doorman.build_response(
             payload={"message": error_details}, status_code=500
+        )
+
+
+def retrieve_orders(event: Dict[str, Any], context: LambdaContext) -> Dict[str, Any]:
+    """This function is the entry point of this process that queries orders table and return all the elements for specific date.
+
+    :param event: Custom object that can come from an APIGateway.
+    :type event: Dict
+    :param context: Regular lambda function context
+    :type context: LambdaContext
+    :return: Custom object with the reponse from the lambda, it could be a 200, if the resources were found
+    or >= 400 if theras was an error
+    :rtype: Dict
+    """
+
+    logger = Logger()
+    logger.info("Initializing Get All Orders function")
+    try:
+        doorman = DoormanUtil(event, logger)
+        username = doorman.get_username_from_token()
+        is_auth = doorman.auth_user()
+        if is_auth is False:
+            raise AuthError("User is not allow to retrieve orders")
+
+        filter_date = doorman.get_query_param_from_request(
+            _query_param_name="date",
+            _is_required=True
+        )
+        dao = OrderDAO()
+        orders = dao.fetch_orders(
+            primary_key=ORDERS_PRIMARY_KEY,
+            query_value=filter_date
+        )
+        output_data = orders["payload"]
+        return doorman.build_response(
+            payload=output_data, status_code=200
+        )
+
+    except AuthError:
+        error_details = f"user {username} was not auth to fetch orders"
+        logger.error(error_details)
+        output_data = {"message": error_details}
+        return doorman.build_response(
+            payload=output_data, status_code=403
+        )
+
+    except Exception as e:
+        error_details = f"Error processing the request to fetch orders: {e}"
+        logger.error(error_details)
+        output_data = {"message": error_details}
+        return doorman.build_response(
+            payload=output_data, status_code=500
         )
