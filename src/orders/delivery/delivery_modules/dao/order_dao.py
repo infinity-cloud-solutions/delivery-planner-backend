@@ -1,7 +1,12 @@
-# Own's modules
-from order_modules.data_access.dynamo_handler import DynamoDBHandler
+# Python libraries
+from typing import Dict
+from typing import List
+from typing import Any
 
-import settings
+# Own's modules
+from delivery_modules.data_access.dynamo_handler import DynamoDBHandler
+
+from settings import ORDERS_TABLE_NAME
 
 # Third-party libraries
 from boto3.dynamodb.conditions import Key
@@ -17,11 +22,11 @@ class OrderDAO:
         Initializes a new instance of the DAO class.
         """
         self.orders_db = DynamoDBHandler(
-            table_name=settings.ORDERS_TABLE_NAME,
+            table_name=ORDERS_TABLE_NAME,
             partition_key="delivery_date",
         )
 
-    def create_order(self, item: dict) -> dict:
+    def bulk_update(self, items: List[Dict[str, Any]]) -> dict:
         """
         Attempts to insert a new record for an order into the DynamoDB table.
 
@@ -30,7 +35,7 @@ class OrderDAO:
         :return: a dictionary that contains the response object
         :rtype: dict
         """
-        response = self.orders_db.insert_record(item)
+        response = self.orders_db.update_records(items)
         return response
 
     def fetch_orders(self, primary_key: str, query_value: str) -> dict:

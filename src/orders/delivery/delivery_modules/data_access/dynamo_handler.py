@@ -1,11 +1,10 @@
 # Python libraries
-import json
-from decimal import Decimal
 from typing import Dict
 from typing import Any
+from typing import List
 
 # Own modules
-from order_modules.utils.aws import AWSClientManager
+from delivery_modules.utils.aws import AWSClientManager
 
 # Third-party libraries
 from aws_lambda_powertools import Logger
@@ -35,37 +34,29 @@ class DynamoDBHandler:
         self.table = dynamodb_resource.Table(table_name)
         self.logger = Logger()
 
-    def insert_record(self, item: dict) -> Dict[str, Any]:
-        """This function is used to save a record to a database.
-        It takes in a dictionary, which is build from a Order Model, as an argument and attempts to put the item into the database.
-        If the response from the database is successful, it returns a status of "success".
-        If not, it returns a status of "error" along with the HTTP status code and details about the error message.
-        If there is an AWS ClientError, it logs information about the error and also returns a status of "error" along
-        with the HTTP status code and details about the error message.
+    def update_records(self, records: List[Dict[str, Any]]) -> Dict[str, Any]:
+        """This function is used to update records to the DB.
 
         :param item: Order representation built as a dict
         :type item: dict
-        :return: A summary of the put_item action
+        :return: A summary of the update_item action
         :rtype: Dict[str, Any]
         """
         try:
-            db_item = json.loads(json.dumps(item), parse_float=Decimal)
-            response = self.table.put_item(Item=db_item)
-            if response["ResponseMetadata"]["HTTPStatusCode"] == self.HTTP_STATUS_OK:
-                self.logger.info("Order was created in DynamoDB")
-                return self.build_response_object(
-                    status="success",
-                    status_code=self.HTTP_STATUS_CREATED,
-                    message="Record saved in DynamoDB",
+            for record in records:
+                update_expression = "SET delivery_sequence = :val"
+                expression_attribute_values = {":val": record["delivery_sequence"]}
+                self.table.update_item(
+                    Key={'delivery_date': record['delivery_date'], 'id': record['id']},
+                    UpdateExpression=update_expression,
+                    ExpressionAttributeValues=expression_attribute_values
                 )
-            else:
-                message = response["Error"]["Message"]
-                self.logger.error(f"Failed saving record: Details: {message}")
-                return self.build_response_object(
-                    status="error",
-                    status_code=response["ResponseMetadata"]["HTTPStatusCode"],
-                    message=message,
-                )
+
+            return self.build_response_object(
+                status="success",
+                status_code=self.HTTP_STATUS_OK,
+                message="Records updated in DynamoDB",
+            )
         except ClientError as error:
             message = f"{error.response['Error']['Message']}. {error.response['Error']['Code']}"
             self.logger.error(f"ClientError when saving record: Details: {message}")
