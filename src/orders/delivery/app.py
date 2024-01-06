@@ -1,7 +1,7 @@
 # Python's libraries
 from typing import Dict
 from typing import Any
-import re
+from datetime import datetime
 
 # import json
 
@@ -24,7 +24,7 @@ def set_delivery_schedule_order(
 ) -> Dict[str, Any]:
     """This function will retrieve todays orders to generate an optimized path.
 
-    :param event: Custom object that can come from an APIGateway, nothing relevant in the body.
+    :param event: Custom object that can come from an APIGateway, containing date field for delivery orders.
     :type event: Dict
     :param context: Regular lambda function context
     :type context: LambdaContext
@@ -43,10 +43,11 @@ def set_delivery_schedule_order(
             raise AuthError("User is not allow to retrieve orders")
         body = doorman.get_body_from_request()
         schedule_for_date = body["date"]
-        pattern = re.compile(r"^\d{4}-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])$")
-        logger.info(f"Date to process: {schedule_for_date}")
-        if bool(pattern.match(schedule_for_date)) is False:
+        try:
+            datetime.strptime(schedule_for_date, '%Y-%m-%d')
+        except ValueError:
             raise ValueError("Date format is not valid")
+        logger.info(f"Date to process: {schedule_for_date}")
 
         dao = OrderDAO()
         orders_for_today = dao.fetch_orders(
@@ -60,10 +61,10 @@ def set_delivery_schedule_order(
             planner = TravelPlanner()
 
             morning_records = processor.select_orders_by_delivery_range_time(
-                order_records=orders_for_today, delivery_time_to_match="9-1"
+                order_records=orders_for_today, delivery_time_to_match="8 AM - 1 PM"
             )
             if len(morning_records) > 0:
-                logger.info(f"Records to schedule for 9-1 delivery: {len(morning_records)}")
+                logger.info(f"Records to schedule for 8 AM - 1 PM delivery: {len(morning_records)}")
                 morning_starting_point = {
                     "latitude": 20.7257943,
                     "longitude": -103.3792193,
@@ -84,10 +85,10 @@ def set_delivery_schedule_order(
                 }  # HiBerry offices geolocation
 
             afternoon_records = processor.select_orders_by_delivery_range_time(
-                order_records=orders_for_today, delivery_time_to_match="1-5"
+                order_records=orders_for_today, delivery_time_to_match="1 PM - 5 PM"
             )
             if len(afternoon_records) > 0:
-                logger.info(f"Records to schedule for 1-5 delivery: {len(afternoon_records)}")
+                logger.info(f"Records to schedule for 1 PM - 5 PM delivery: {len(afternoon_records)}")
                 afternoon_ordered_locations = planner.find_shortest_path(
                     afternoon_records, afternoon_starting_point
                 )
