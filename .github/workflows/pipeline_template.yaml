@@ -1,0 +1,112 @@
+on:
+  workflow_call:
+    inputs:
+      stack_name:
+        required: true
+        type: string
+      sam_deploy_overrides: 
+        required: false
+        type: string
+      sam_template:
+        required: true
+        type: string
+      aws_region:
+        required: true
+        type: string
+      pipeline_execution_role:
+        required: true
+        type: string
+      cloudformation_execution_role: 
+        required: true
+        type: string
+      artifacts_bucket: 
+        required: true
+        type: string
+      stage_name: 
+        required: true
+        type: string
+    secrets:
+      aws_access_key_id:
+        required: true
+      aws_secret_access_key:
+        required: true
+
+jobs:
+  build-and-package:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: aws-actions/setup-sam@v2
+        with:
+          use-installer: true
+      - name: Build resources
+        run: sam build --template ${{ inputs.sam_template }} --use-container
+
+      - name: Assume the pipeline user role
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.aws_access_key_id }}
+          aws-secret-access-key: ${{ secrets.aws_secret_access_key }}
+          aws-region: ${{ inputs.aws_region }}
+          role-to-assume: ${{ inputs.pipeline_execution_role }}
+          role-session-name: ${{ inputs.stage_name }}-packaging
+          role-duration-seconds: 3600
+          role-skip-session-tagging: true
+
+      - name: Upload artifacts to ${{ inputs.stage_name }} artifact buckets
+        run: |
+          sam package \
+            --s3-bucket  ${{ inputs.artifacts_bucket }} \
+            --region ${{ inputs.aws_region }} \
+            --output-template-file packaged-${{ inputs.stage_name }}.yaml
+
+      - uses: actions/upload-artifact@v3
+        with:
+          name: packaged-${{ inputs.stage_name }}.yaml
+          path: packaged-${{ inputs.stage_name }}.yaml
+
+
+  deploy:
+    needs: [build-and-package]
+    runs-on: ubuntu-latest
+    environment: 
+      name: ${{ inputs.stage_name }}
+    steps:
+      - uses: actions/checkout@v3
+      - uses: aws-actions/setup-sam@v2
+        with:
+          use-installer: true
+      - uses: actions/download-artifact@v3
+        with:
+          name: packaged-${{ inputs.stage_name }}.yaml
+
+      - name: Assume the pipeline user role
+        uses: aws-actions/configure-aws-credentials@v1-node16
+        with:
+          aws-access-key-id: ${{ secrets.aws_access_key_id }}
+          aws-secret-access-key: ${{ secrets.aws_secret_access_key }}
+          aws-region:  ${{ inputs.aws_region }}
+          role-to-assume:  ${{ inputs.pipeline_execution_role }}
+          role-session-name: ${{ inputs.stage_name }}-deployment
+          role-duration-seconds: 3600
+          role-skip-session-tagging: true
+
+      - name: Deploy to account
+        run: |
+          # Default sam deploy command
+          DEPLOY_CMD="sam deploy --stack-name ${{ inputs.stack_name }} \
+            --template packaged-${{ inputs.stage_name }}.yaml \
+            --capabilities CAPABILITY_NAMED_IAM \
+            --region ${{ inputs.aws_region }} \
+            --s3-bucket  ${{ inputs.artifacts_bucket }} \
+            --no-fail-on-empty-changeset \
+            --role-arn ${{ inputs.cloudformation_execution_role }}"
+          
+          # Check if sam_deploy_overrides is provided and not empty
+          if [ -n "${{ inputs.sam_deploy_overrides }}" ]; then
+              DEPLOY_CMD+=" --parameter-overrides \"${{ inputs.sam_deploy_overrides }}\""
+          fi
+          
+          # Execute the deployment command
+          echo "Running command: $DEPLOY_CMD"
+          eval $DEPLOY_CMD
