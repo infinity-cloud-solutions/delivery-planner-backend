@@ -1,5 +1,6 @@
 # Python's libraries
 import json
+from datetime import datetime
 
 # Own's modules
 from order_modules.errors.util_error import UtilError
@@ -82,7 +83,7 @@ class DoormanUtil(object):
             else:
                 query_param_value = self.request['queryStringParameters'][_query_param_name]
 
-            return query_param_value
+            return self._transform_date(query_param_value)
 
         except Exception as e:
             raise UtilError(
@@ -126,3 +127,15 @@ class DoormanUtil(object):
 
     def auth_user(self):
         return True
+
+    def _transform_date(self, input_date):
+        try:
+            parsed_date = datetime.strptime(input_date, "%Y%m%d")
+
+            formatted_date = parsed_date.strftime("%Y-%m-%d")
+
+            return formatted_date
+
+        except ValueError:
+            print("Invalid date format")
+            return None

@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timedelta, timezone
 from typing import List
 
 from pydantic import BaseModel
@@ -11,11 +11,11 @@ from pydantic import validator
 
 class Geolocation(BaseModel):
     latitude: StrictFloat
-    longitud: StrictFloat
+    longitude: StrictFloat
 
 
 class HIBerryProduct(BaseModel):
-    name: StrictStr
+    product: StrictStr
     quantity: conint(ge=0)
     price: confloat(ge=0.0)
 
@@ -48,3 +48,16 @@ class HIBerryOrder(BaseModel):
             return value
         except ValueError:
             raise ValueError(f"delivery_date must be in yyyy-mm-dd format, got {value}")
+
+    @validator('delivery_date')
+    def validate_delivery_date_future(cls, value):
+        delivery_date = datetime.strptime(value, "%Y-%m-%d")
+
+        # Get the current time in MX Central Time
+        current_time = datetime.now(timezone(timedelta(hours=-6)))
+        current_datetime = datetime.combine(current_time.date(), datetime.min.time())
+
+        if delivery_date < current_datetime:
+            raise ValueError(f"delivery_date must be today or in the future in MX Central Time, got {value}")
+
+        return value
