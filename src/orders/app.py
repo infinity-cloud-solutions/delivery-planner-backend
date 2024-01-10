@@ -168,3 +168,59 @@ def retrieve_orders(event: Dict[str, Any], context: LambdaContext) -> Dict[str, 
         return doorman.build_response(
             payload=output_data, status_code=500
         )
+
+def delete_order(event: Dict[str, Any], context: LambdaContext) -> Dict[str, Any]:
+    """
+    This function is the entry point of the process that will receive an order ID and delivery date
+    as input and will attempt to delete the corresponding entry in the DynamoDB table.
+
+    :param event: Custom object that can come from an API Gateway.
+    :type event: Dict
+    :param context: Regular lambda function context
+    :type context: LambdaContext
+    :return: Custom object with the response from the lambda, it could be a 200 if the deletion was successful
+    or >= 400 if there was an error
+    :rtype: Dict
+    """
+
+    logger = Logger()
+    logger.info("Initializing Delete Order function")
+    try:
+        doorman = DoormanUtil(event, logger)
+        username = doorman.get_username_from_token()
+        is_auth = doorman.auth_user()
+        if not is_auth:
+            raise AuthError("User is not allowed to delete order")
+
+        order_id = doorman.get_query_param_from_request(_param_name="id", _is_required=True)
+        delivery_date = doorman.get_query_param_from_request(_param_name="delivery_date", _is_required=True)
+
+        dao = OrderDAO()
+        delete_response = dao.delete_order(delivery_date=delivery_date, order_id=order_id)
+
+        if delete_response["status"] == "success":
+            logger.info(f"Order with ID {order_id} on {delivery_date} deleted")
+            return doorman.build_response(
+                payload={"message": delete_response["message"]}, 
+                status_code=200
+            )
+        else:
+            logger.error(f"Error deleting order: {delete_response['message']}")
+            return doorman.build_response(
+                payload={"message": delete_response["message"]}, 
+                status_code=delete_response.get("status_code", 500)
+            )
+            
+    except AuthError:
+        error_details = f"user {username} was not authorized to delete orders"
+        logger.error(error_details)
+        return doorman.build_response(
+            payload={"message": error_details}, status_code=403
+        )
+
+    except Exception as e:
+        error_details = f"Error processing the request to delete order: {e}"
+        logger.error(error_details)
+        return doorman.build_response(
+            payload={"message": error_details}, status_code=500
+        )

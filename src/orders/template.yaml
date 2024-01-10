@@ -108,6 +108,27 @@ Resources:
             Method: get
       Role: !GetAtt RetrieveOrdersRole.Arn
 
+  DeleteOrderFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub "DeleteOrderFunction-${StageName}"
+      CodeUri: .
+      Handler: app.delete_order
+      Runtime: python3.11
+      Environment:
+        Variables:
+          POWERTOOLS_SERVICE_NAME: delete-order
+          POWERTOOLS_LOG_LEVEL: INFO
+          APP_ENVIRONMENT: !Ref StageName
+      Events:
+        HttpDelete:
+          Type: Api
+          Properties:
+            RestApiId: !Ref ApiGateway
+            Path: /orders
+            Method: delete
+      Role: !GetAtt DeleteOrdersRole.Arn
+
   ScheduleOrdersFunction:
     Type: AWS::Serverless::Function
     Properties:
@@ -249,6 +270,39 @@ Resources:
                   - logs:PutLogEvents
                 Resource: "*"
 
+  DeleteOrdersRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub "DeleteOrdersRole-${StageName}"
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+            Action: sts:AssumeRole
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+      Policies:
+        - PolicyName: DynamoDBDeleteItemPolicy
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - dynamodb:DeleteItem
+                Resource: !GetAtt OrdersTable.Arn
+        - PolicyName: CloudWatchLogsPolicy
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - logs:CreateLogGroup
+                  - logs:CreateLogStream
+                  - logs:PutLogEvents
+                Resource: "*"
+                
   ScheduleOrdersRole:
     Type: AWS::IAM::Role
     Properties:
