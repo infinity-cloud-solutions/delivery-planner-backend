@@ -10,6 +10,7 @@ from order_modules.data_mapper.order_mapper import OrderHelper
 from order_modules.models.order import HIBerryOrder
 from order_modules.utils.doorman import DoormanUtil
 from order_modules.errors.auth_error import AuthError
+from order_modules.errors.business_error import BusinessError
 
 from settings import ORDERS_PRIMARY_KEY
 
@@ -49,10 +50,15 @@ def create_order(event: Dict[str, Any], context: LambdaContext) -> Dict[str, Any
         logger.info(
             f"Processing order for: {new_order_data.client_name} at {new_order_data.delivery_address}"
         )
-        location_service = Geolocation()
-        lat_and_long = location_service.get_lat_and_long_from_street_address(
-            str_address=new_order_data.delivery_address
-        )
+        lat_and_long = None
+        if new_order_data.geolocation is None:
+            location_service = Geolocation()
+            lat_and_long = location_service.get_lat_and_long_from_street_address(
+                str_address=new_order_data.delivery_address
+            )
+        else:
+            lat_and_long = new_order_data.geolocation.__dict__
+            # lat_and_long = None
 
         if lat_and_long is None:
             order_errors.append(
@@ -61,6 +67,7 @@ def create_order(event: Dict[str, Any], context: LambdaContext) -> Dict[str, Any
                     "value": "Order requires geolocation coordinates to be updated manually",
                 }
             )
+            lat_and_long = {}
 
         # ToDo validate Shopify order price vs owns price
         builder = OrderHelper()
@@ -80,8 +87,16 @@ def create_order(event: Dict[str, Any], context: LambdaContext) -> Dict[str, Any
 
     except ValidationError as validation_error:
         error_details = f"Some fields failed validation: {validation_error.errors()}"
+        logger.error(error_details)
         return doorman.build_response(
             payload={"message": error_details}, status_code=400
+        )
+
+    except BusinessError as business_error:
+        error_details = f"Order could not be processed due: {business_error}"
+        logger.error(error_details)
+        return doorman.build_response(
+            payload={"message": error_details}, status_code=404
         )
 
     except AuthError:
