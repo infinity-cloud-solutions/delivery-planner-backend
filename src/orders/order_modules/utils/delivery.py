@@ -89,7 +89,7 @@ class DeliveryScheduler:
             return 0
 
         # Step 3: Assign Delivery Man and Sector
-        # Check the nort sector first, if this one is at capacity, then we will assign the order to the second delivery man,
+        # Check the north sector first, if this one is at capacity, then we will assign the order to the second delivery man,
         # Ee dont need to check the south sector, because we already know that specified range hours contains less than 64 records (32 * 2)
         # So at least one sector has capacity so if its not the first, then its the second
         north_sector_orders = [order for order in time_range_orders if order['driver'] == sectors_matrix[1]]

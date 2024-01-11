@@ -52,15 +52,18 @@ def create_order(event: Dict[str, Any], context: LambdaContext) -> Dict[str, Any
         )
         lat_and_long = None
         if new_order_data.geolocation is None:
+            logger.info("Input did not include geolocation data, invoking Geolocaction Service")
             location_service = Geolocation()
             lat_and_long = location_service.get_lat_and_long_from_street_address(
                 str_address=new_order_data.delivery_address
             )
         else:
+            logger.info("Reading geolocation data from input")
             lat_and_long = new_order_data.geolocation.__dict__
             # lat_and_long = None
 
         if lat_and_long is None:
+            logger.info("Geolocation Data is missing, adding to the list of errors")
             order_errors.append(
                 {
                     "code": "ADDRESS_NEEDS_GEO",
@@ -78,9 +81,10 @@ def create_order(event: Dict[str, Any], context: LambdaContext) -> Dict[str, Any
             errors=order_errors,
         )
         dao = OrderDAO()
-        dao.create_order(order_db_data)
-        logger.info("Order received and created")
-        output_data = {"status": order_db_data["status"]}
+        order_created = dao.create_order(order_db_data)
+        assigned_driver = order_created['payload']['driver']
+        logger.info(f"Order received and created with status {order_db_data['status']} and for driver {assigned_driver}")
+        output_data = {"status": order_db_data["status"], "assigned_driver": assigned_driver}
         return doorman.build_response(
             payload=output_data, status_code=201
         )
@@ -96,7 +100,7 @@ def create_order(event: Dict[str, Any], context: LambdaContext) -> Dict[str, Any
         error_details = f"Order could not be processed due: {business_error}"
         logger.error(error_details)
         return doorman.build_response(
-            payload={"message": error_details}, status_code=404
+            payload={"message": error_details}, status_code=400
         )
 
     except AuthError:

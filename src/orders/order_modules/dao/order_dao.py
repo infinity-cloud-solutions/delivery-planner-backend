@@ -55,6 +55,7 @@ class OrderDAO:
         if driver:
             item["driver"] = driver
             response = self.orders_db.insert_record(item)
+            response["payload"] = {"driver": driver}
         else:
             raise BusinessError("No drivers available")
         return response

@@ -195,6 +195,7 @@ Resources:
               - Effect: Allow
                 Action:
                   - dynamodb:PutItem
+                  - dynamodb:Query
                 Resource: !GetAtt OrdersTable.Arn
         - PolicyName: LocationServiceAccess
           PolicyDocument:
