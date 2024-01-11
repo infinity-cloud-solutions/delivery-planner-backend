@@ -62,7 +62,9 @@ class DeliveryScheduler:
         else:
             return self.INVALID_SECTOR  # Invalid sector
 
-    def _check_capacity_and_assign_driver(self, orders: List[Dict[str, Any]], delivery_time_range: str, sector: int) -> int:
+    def _check_capacity_and_assign_driver(
+        self, orders: List[Dict[str, Any]], delivery_time_range: str, sector: int
+    ) -> int:
         """This function will check if the order can be assign to a delivery man in the delivery_time range
 
         Arguments:
@@ -77,12 +79,14 @@ class DeliveryScheduler:
             - 1 or 2:  Number of the driver assigned.
         """
         # helper
-        driver_sector_map = [self.INVALID_SECTOR,
-                             self.DRIVER_1 ,# Northwest
-                             self.DRIVER_2, # Southwest
-                             self.DRIVER_1, # Northeast
-                             self.DRIVER_2, # Southeast
-                             self.DRIVER_1] # Northwest
+        driver_sector_map = [
+            self.INVALID_SECTOR,
+            self.DRIVER_1,  # Northwest
+            self.DRIVER_2,  # Southwest
+            self.DRIVER_1,  # Northeast
+            self.DRIVER_2,  # Southeast
+            self.DRIVER_1,
+        ]  # Northwest
 
         # Step 1: Check for max capacity
         total_orders_count = len(orders)
@@ -97,7 +101,9 @@ class DeliveryScheduler:
             return self.AT_CAPACITY
 
         # Step 2: Check Capacity Within Time Range
-        time_range_orders = [order for order in orders if order['delivery_time'] == delivery_time_range]
+        time_range_orders = [
+            order for order in orders if order["delivery_time"] == delivery_time_range
+        ]
         time_range_orders_count = len(time_range_orders)
         # Case 3: Drivers dont have capacity for the range hours
         if time_range_orders_count >= 64:
@@ -109,7 +115,11 @@ class DeliveryScheduler:
         # So at least one sector has capacity so if its not the first, then its the second
 
         # driver_sector_map[1] -> DRIVER_1 . By definition, DRIVER_1 is assigned to North sectors.
-        north_sector_orders = [order for order in time_range_orders if order['driver'] == driver_sector_map[1]]
+        north_sector_orders = [
+            order
+            for order in time_range_orders
+            if order["driver"] == driver_sector_map[1]
+        ]
 
         if len(north_sector_orders) < 32:
             # Case 4 Driver has capacity for its own sector
@@ -125,7 +135,7 @@ class DeliveryScheduler:
         customer_location: Tuple[float, float],
         delivery_time: str,
         order_date: str,
-        orders: List[Dict[str, Any]]
+        orders: List[Dict[str, Any]],
     ) -> int:
         """This function will check if the order can be created for the date and time specified
 
@@ -152,9 +162,7 @@ class DeliveryScheduler:
         day_of_week = self._get_day_of_week(order_date)
         customer_sector = self._get_customer_sector(customer_location)
         driver_assigned = self._check_capacity_and_assign_driver(
-            orders=orders,
-            delivery_time_range=delivery_time,
-            sector=customer_sector
+            orders=orders, delivery_time_range=delivery_time, sector=customer_sector
         )
         if driver_assigned == 0:
             return 0
