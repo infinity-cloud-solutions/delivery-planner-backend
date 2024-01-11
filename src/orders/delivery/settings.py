@@ -2,11 +2,9 @@
 import os
 
 # Third-party Libraries
-from dotenv import load_dotenv
 from aws_lambda_powertools import Logger
 
 
-load_dotenv()
 logger = Logger()
 environment = os.environ.get('APP_ENVIRONMENT')
 if environment is None:

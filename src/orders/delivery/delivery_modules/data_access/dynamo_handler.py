@@ -44,12 +44,18 @@ class DynamoDBHandler:
         """
         try:
             for record in records:
-                update_expression = "SET delivery_sequence = :val"
-                expression_attribute_values = {":val": record["delivery_sequence"]}
+                update_expression = "SET delivery_sequence = :val, #status = :statusVal"
+                expression_attribute_values = {
+                    ":val": record["delivery_sequence"],
+                    ":statusVal": "Programada",
+                }
+                expression_attribute_names = {"#status": "status"}
+
                 self.table.update_item(
                     Key={'delivery_date': record['delivery_date'], 'id': record['id']},
                     UpdateExpression=update_expression,
-                    ExpressionAttributeValues=expression_attribute_values
+                    ExpressionAttributeValues=expression_attribute_values,
+                    ExpressionAttributeNames=expression_attribute_names
                 )
 
             return self.build_response_object(

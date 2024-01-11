@@ -6,9 +6,8 @@ from datetime import datetime
 # import json
 
 # Own's modules
-from location_router import TravelPlanner
 from delivery_modules.dao.order_dao import OrderDAO
-from delivery_modules.processors.order_helpers import OrderProcessor
+from delivery_modules.processors.delivery_helpers import DeliveryProcessor
 from delivery_modules.utils.doorman import DoormanUtil
 from delivery_modules.errors.auth_error import AuthError
 
@@ -57,46 +56,12 @@ def set_delivery_schedule_order(
 
         if len(orders_for_today) > 0:
             logger.info(f"Orders for today {schedule_for_date}: {len(orders_for_today)}")
-            processor = OrderProcessor()
-            planner = TravelPlanner()
-
-            morning_records = processor.select_orders_by_delivery_range_time(
-                order_records=orders_for_today, delivery_time_to_match="8 AM - 1 PM"
-            )
-            if len(morning_records) > 0:
-                logger.info(f"Records to schedule for 8 AM - 1 PM delivery: {len(morning_records)}")
-                morning_starting_point = {
-                    "latitude": 20.7257943,
-                    "longitude": -103.3792193,
-                }  # HiBerry offices geolocation
-                morning_ordered_locations = planner.find_shortest_path(
-                    morning_records, morning_starting_point
-                )
-                afternoon_starting_point = {
-                    "latitude": morning_ordered_locations[-1]["latitude"],
-                    "longitude": morning_ordered_locations[-1]["longitude"],
-                }
-                dao.bulk_update(morning_ordered_locations)
-
-            else:
-                afternoon_starting_point = {
-                    "latitude": 20.7257943,
-                    "longitude": -103.3792193,
-                }  # HiBerry offices geolocation
-
-            afternoon_records = processor.select_orders_by_delivery_range_time(
-                order_records=orders_for_today, delivery_time_to_match="1 PM - 5 PM"
-            )
-            if len(afternoon_records) > 0:
-                logger.info(f"Records to schedule for 1 PM - 5 PM delivery: {len(afternoon_records)}")
-                afternoon_ordered_locations = planner.find_shortest_path(
-                    afternoon_records, afternoon_starting_point
-                )
-                dao.bulk_update(afternoon_ordered_locations)
-            output_data = {"message": "Records updated"}
+            scheduler = DeliveryProcessor()
+            for driver_number in [1, 2]:
+                scheduler.process_records_for_driver(driver_number, orders_for_today, dao)
         else:
             logger.warning("No orders to process today, check DB if this is ok")
-        return doorman.build_response(payload=output_data, status_code=200)
+        return doorman.build_response(payload={"message": "scheduling completed"}, status_code=200)
 
     except AuthError:
         error_details = f"user {username} was not auth to fetch orders"
