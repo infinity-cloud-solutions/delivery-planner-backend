@@ -6,11 +6,20 @@ from typing import Any
 
 
 class DeliveryScheduler:
+    MORNING_DELIVERIES = "8 AM - 1 PM"
+    AFTERNOON_DELIVERIES = "1 PM - 5 PM"
+    AT_CAPACITY = 0
+    INVALID_SECTOR = 0
+    NORTH_WEST_SECTOR = 1
+    SOUTH_WEST_SECTOR = 2
+    NORTH_EAST_SECTOR = 3
+    SOUTH_EAST_SECTOR = 4
+    DRIVER_1 = 1
+    DRIVER_2 = 2
+    
     def __init__(self, origin=(20.6783825, -103.348088)):
         # Origin is at Hidalgo and Alcalde intersection in Guadalajara
         self.origin = origin
-        self.MORNING_DELIVERIES = "8 AM - 1 PM"
-        self.AFTERNOON_DELIVERIES = "1 PM - 5 PM"
 
     def _get_day_of_week(self, order_date: str) -> int:
         """Return day of the week based on the order date.
@@ -34,26 +43,26 @@ class DeliveryScheduler:
             customer_location[0] >= self.origin[0]
             and customer_location[1] <= self.origin[1]
         ):
-            return 1  # Northwest
+            return self.NORTH_WEST_SECTOR  # Northwest
         elif (
             customer_location[0] < self.origin[0]
             and customer_location[1] <= self.origin[1]
         ):
-            return 2  # Southwest
+            return self.SOUTH_WEST_SECTOR  # Southwest
         elif (
             customer_location[0] >= self.origin[0]
             and customer_location[1] > self.origin[1]
         ):
-            return 3  # Northeast
+            return self.NORTH_EAST_SECTOR  # Northeast
         elif (
             customer_location[0] < self.origin[0]
             and customer_location[1] > self.origin[1]
         ):
-            return 4  # Southeast
+            return self.SOUTH_EAST_SECTOR  # Southeast
         else:
-            return 0  # Invalid sector
+            return self.INVALID_SECTOR  # Invalid sector
 
-    def _check_capacity_and_assign_sector(self, orders: List[Dict[str, Any]], delivery_time_range: str, sector: int) -> int:
+    def _check_capacity_and_assign_driver(self, orders: List[Dict[str, Any]], delivery_time_range: str, sector: int) -> int:
         """This function will check if the order can be assign to a delivery man in the delivery_time range
 
         Arguments:
@@ -62,54 +71,62 @@ class DeliveryScheduler:
             sector -- Integer that will be used to assign the delivery man to the order, 1 or 2 for west and 3 or 4 for east
                         if we are at capacity for specific hours, we will use the other delivery man
 
-
         Returns:
-            Will return 1, 2, 3 or 4 if its possible to assign to any delivery man, 0 in case delivery are at capacity
+        int: 
+            - 0: If the delivery schedule is at full capacity and the order cannot be accommodated.
+            - 1 or 2:  Number of the driver assigned.
         """
         # helper
-        sectors_matrix = [0, 1, 2, 1, 2, 1]
+        driver_sector_map = [self.INVALID_SECTOR,       
+                             self.DRIVER_1 ,# Northwest
+                             self.DRIVER_2, # Southwest
+                             self.DRIVER_1, # Northeast
+                             self.DRIVER_2, # Southeast
+                             self.DRIVER_1] # Northwest
 
         # Step 1: Check for max capacity
         total_orders_count = len(orders)
 
         # Case 1: Delivery Man for this sector has capacity, so we assign it directly to him
         if total_orders_count < 32:
-            return sectors_matrix[sector]
+            return driver_sector_map[sector]
 
         # Case 2: We have full capacity for the date (32 deliveries for shift,
         # we have 2 drivers and 2 shifts each, so 32 * 4 = 128)
         if total_orders_count >= 128:
-            return 0
+            return self.AT_CAPACITY
 
         # Step 2: Check Capacity Within Time Range
         time_range_orders = [order for order in orders if order['delivery_time'] == delivery_time_range]
         time_range_orders_count = len(time_range_orders)
         # Case 3: Drivers dont have capacity for the range hours
         if time_range_orders_count >= 64:
-            return 0
+            return self.AT_CAPACITY
 
         # Step 3: Assign Delivery Man and Sector
         # Check the nort sector first, if this one is at capacity, then we will assign the order to the second delivery man,
-        # Ee dont need to check the south sector, because we already know that specified range hours contains less than 64 records (32 * 2)
+        # Dont need to check the south sector, because we already know that specified range hours contains less than 64 records (32 * 2)
         # So at least one sector has capacity so if its not the first, then its the second
-        north_sector_orders = [order for order in time_range_orders if order['driver'] == sectors_matrix[1]]
+        
+        # driver_sector_map[1] -> DRIVER_1 . By definition, DRIVER_1 is assigned to North sectors.
+        north_sector_orders = [order for order in time_range_orders if order['driver'] == driver_sector_map[1]]
 
         if len(north_sector_orders) < 32:
             # Case 4 Driver has capacity for its own sector
-            assigned_driver = sectors_matrix[sector]
+            assigned_driver = driver_sector_map[sector]
         else:
             # Case 5 Driver does not has capacity for its own sector, assign to peer driver
-            assigned_driver = sectors_matrix[sector + 1]
+            assigned_driver = driver_sector_map[sector + 1]
 
         return assigned_driver
 
-    def is_delivery_possible(
+    def assign_driver_for_delivery(
         self,
         customer_location: Tuple[float, float],
         delivery_time: str,
         order_date: str,
         orders: List[Dict[str, Any]]
-    ) -> bool:
+    ) -> int:
         """This function will check if the order can be created for the date and time specified
 
         Arguments:
@@ -119,11 +136,22 @@ class DeliveryScheduler:
             orders -- list of orders for specific date, this will help us to check capacity
 
         Returns:
-            A boolean that will serve to let the client know if we can proceed with the order creation or not
+            int: Indicates the scheduling status or driver assigned of the delivery order:
+                - 0: Order cannot be scheduled
+                - 1 or 2:  Number of the driver assigned, indicating successful scheduling.
+            
+        Notes: 
+            Sector-Based Delivery Preferences:
+            - West Sectors (1 and 2): 
+                - Deliveries are preferred on Mondays, Wednesdays, and Fridays (days 0, 2, 4) during the afternoon (1 PM - 5 PM).
+                - No morning deliveries (8 AM - 1 PM) on these days in West Sectors.
+            - East Sectors (3 and 4): 
+                - Deliveries are preferred on Tuesdays, Thursdays, and Saturdays (days 1, 3, 5) during the morning (8 AM - 1 PM).
+                - No afternoon deliveries (1 PM - 5 PM) on these days in East Sectors.
         """
         day_of_week = self._get_day_of_week(order_date)
         customer_sector = self._get_customer_sector(customer_location)
-        driver_assigned = self._check_capacity_and_assign_sector(
+        driver_assigned = self._check_capacity_and_assign_driver(
             orders=orders,
             delivery_time_range=delivery_time,
             sector=customer_sector

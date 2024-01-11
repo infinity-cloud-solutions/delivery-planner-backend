@@ -46,7 +46,7 @@ class OrderDAO:
         )
         orders = orders["payload"]
         planner = DeliveryScheduler()
-        driver = planner.is_delivery_possible(
+        driver = planner.assign_driver_for_delivery(
             customer_location=customer_location,
             delivery_time=delivery_time,
             order_date=date,
