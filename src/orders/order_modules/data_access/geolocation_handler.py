@@ -6,6 +6,7 @@ from order_modules.utils.aws import AWSClientManager
 import settings
 
 from aws_lambda_powertools import Logger
+from order_modules.errors.util_error import GeolocationError
 
 
 class Geolocation():
@@ -33,10 +34,15 @@ class Geolocation():
                         location = {"latitude": lat, "longitude": long}
                     else:
                         logger.warning("AWS Response was not successfull")
+                        
                 except Exception as e:
                     logger.warning(f"Something failed while fetching data from AWS. Details {e}")
             else:
                 logger.warning("Input provided was not a string")
-            return location
+                
+            if location:
+                return location
+            else:
+                raise GeolocationError()
         else:
             return {"latitude": 20.721722843875, "longitude": -103.370054309085}
