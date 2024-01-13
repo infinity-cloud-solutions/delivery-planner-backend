@@ -19,7 +19,7 @@ class TestCreateOrderLambdaHandler(TestCase):
             "phone_number": "3312121212",
             "cart_items": [
                 {"product": "Berry", "quantity": 2, "price": 10, "sku": "222222"},
-                {"product": "Mango", "quantity": 5, "price": 20, "sku": "222222"},
+                {"product": "Mango", "quantity": 5, "price": 20, "sku": "111111"},
             ],
             "total_amount": 120.00,
             "payment_method": "cash",
