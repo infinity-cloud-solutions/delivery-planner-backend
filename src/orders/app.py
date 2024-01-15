@@ -7,7 +7,7 @@ from typing import Any
 from order_modules.dao.order_dao import OrderDAO
 from order_modules.data_access.geolocation_handler import Geolocation
 from order_modules.data_mapper.order_mapper import OrderHelper
-from order_modules.models.order import HIBerryOrder
+from order_modules.models.order import HIBerryOrder, OrderPrimaryKey
 from order_modules.utils.doorman import DoormanUtil
 from order_modules.errors.auth_error import AuthError
 from order_modules.errors.business_error import BusinessError
@@ -139,10 +139,7 @@ def retrieve_orders(event: Dict[str, Any], context: LambdaContext) -> Dict[str, 
         if is_auth is False:
             raise AuthError("User is not allow to retrieve orders")
 
-        filter_date = doorman.get_query_param_from_request(
-            _query_param_name="date",
-            _is_required=True
-        )
+        filter_date = doorman.get_date_param_from_request()
         dao = OrderDAO()
         orders = dao.fetch_orders(
             primary_key=ORDERS_PRIMARY_KEY,
@@ -192,11 +189,16 @@ def delete_order(event: Dict[str, Any], context: LambdaContext) -> Dict[str, Any
         if not is_auth:
             raise AuthError("User is not allowed to delete order")
 
-        order_id = doorman.get_query_param_from_request(_param_name="id", _is_required=True)
-        delivery_date = doorman.get_query_param_from_request(_param_name="delivery_date", _is_required=True)
+        order_id = doorman.get_query_param_from_request(_query_param_name="id",
+                                                        _is_required=True)
+        delivery_date = doorman.get_query_param_from_request(_query_param_name="delivery_date",
+                                                             _is_required=True)
+        order_to_delete = OrderPrimaryKey(id=order_id,
+                                          delivery_date=delivery_date)
 
         dao = OrderDAO()
-        delete_response = dao.delete_order(delivery_date=delivery_date, order_id=order_id)
+        delete_response = dao.delete_order(
+            delivery_date=order_to_delete.delivery_date, order_id=order_to_delete.id)
 
         if delete_response["status"] == "success":
             logger.info(f"Order with ID {order_id} on {delivery_date} deleted")
@@ -207,10 +209,16 @@ def delete_order(event: Dict[str, Any], context: LambdaContext) -> Dict[str, Any
         else:
             logger.error(f"Error deleting order: {delete_response['message']}")
             return doorman.build_response(
-                payload={"message": delete_response["message"]}, 
+                payload={"message": delete_response["message"]},
                 status_code=delete_response.get("status_code", 500)
             )
-            
+
+    except ValidationError as validation_error:
+        error_details = f"Some fields failed validation: {validation_error.errors()}"
+        logger.error(error_details)
+        return doorman.build_response(
+            payload={"message": error_details}, status_code=400
+        )
     except AuthError:
         error_details = f"user {username} was not authorized to delete orders"
         logger.error(error_details)

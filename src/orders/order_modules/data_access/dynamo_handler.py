@@ -97,7 +97,7 @@ class DynamoDBHandler:
                 )
             else:
                 message = response["Error"]["Message"]
-                self.logger.error(f"Failed saving record: Details: {message}")
+                self.logger.error(f"Failed retrieving record: Details: {message}")
                 return self.build_response_object(
                     status="error",
                     status_code=response["ResponseMetadata"]["HTTPStatusCode"],
@@ -105,19 +105,20 @@ class DynamoDBHandler:
                 )
         except ClientError as error:
             message = f"{error.response['Error']['Message']}. {error.response['Error']['Code']}"
-            self.logger.error(f"ClientError when saving record: Details: {message}")
+            self.logger.error(f"ClientError when retrieving record: Details: {message}")
             return self.build_response_object(
                 status="error",
                 status_code=error.response["ResponseMetadata"]["HTTPStatusCode"],
                 message=message,
             )
         except Exception as error:
-            self.logger.error(f"Exception when saving record: Details: {error}")
+            self.logger.error(f"Exception when retrieving record: Details: {error}")
             return self.build_response_object(
                 status="error",
                 status_code=self.HTTP_STATUS_INTERNAL_SERVER_ERROR,
                 message=str(error),
             )
+
     def delete_record(self, delivery_date: str, order_id: str) -> Dict[str, Any]:
         """
         This function is used to delete a record from the database.
@@ -145,7 +146,7 @@ class DynamoDBHandler:
                 return self.build_response_object(
                     status="success",
                     status_code=self.HTTP_STATUS_OK,
-                    message=f"Record with id {order_id} on {delivery_date} wasdeleted from DynamoDB",
+                    message=f"Record with id {order_id} on {delivery_date} was deleted from DynamoDB",
                 )
             else:
                 message = response.get("Error", {}).get("Message", "Unknown error")
@@ -170,7 +171,6 @@ class DynamoDBHandler:
                 status_code=self.HTTP_STATUS_INTERNAL_SERVER_ERROR,
                 message=str(error),
             )
-
 
     def build_response_object(
         self,

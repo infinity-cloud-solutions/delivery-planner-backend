@@ -44,6 +44,13 @@ class DoormanUtil(object):
 
         return body
 
+    def get_date_param_from_request(self):
+        date = self.get_query_param_from_request(
+            _query_param_name="date",
+            _is_required=True
+        )
+        return self._transform_date(date)
+    
     def get_query_param_from_request(self, _query_param_name, _is_required=False):
         if 'queryStringParameters' not in self.request:
             if _is_required:
@@ -83,7 +90,7 @@ class DoormanUtil(object):
             else:
                 query_param_value = self.request['queryStringParameters'][_query_param_name]
 
-            return self._transform_date(query_param_value)
+            return query_param_value
 
         except Exception as e:
             raise UtilError(
