@@ -39,10 +39,8 @@ class Geolocation():
                     logger.warning(f"Something failed while fetching data from AWS. Details {e}")
             else:
                 logger.warning("Input provided was not a string")
-                
-            if location:
-                return location
-            else:
-                raise GeolocationError()
+            
+            return location
+            
         else:
             return {"latitude": 20.721722843875, "longitude": -103.370054309085}
