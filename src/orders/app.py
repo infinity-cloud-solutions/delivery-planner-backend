@@ -204,7 +204,7 @@ def delete_order(event: Dict[str, Any], context: LambdaContext) -> Dict[str, Any
             logger.info(f"Order with ID {order_id} on {delivery_date} deleted")
             return doorman.build_response(
                 payload={"message": delete_response["message"]}, 
-                status_code=200
+                status_code=204
             )
         else:
             logger.error(f"Error deleting order: {delete_response['message']}")
