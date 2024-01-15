@@ -59,9 +59,10 @@ def create_order(event: Dict[str, Any], context: LambdaContext) -> Dict[str, Any
         if create_response["status_code"] ==  201:
             order_status = order_db_data["status"]
             assigned_driver = order_db_data['driver']
+            errors = order_db_data['errors']
             
             logger.info(f"Order received and created with status {order_status} and for driver {assigned_driver}")
-            output_data = {"status": order_db_data["status"], "assigned_driver": assigned_driver}
+            output_data = {"status": order_db_data["status"], "assigned_driver": assigned_driver, "errors": errors}
             
             return doorman.build_response(
                 payload=output_data,
