@@ -27,19 +27,22 @@ jobs:
           make test
         working-directory: ./tests
 
-  development:
+  development: 
+    env:
+      STAGE_NAME: development
+    environment: {{ env.STAGE_NAME }}
     if: startsWith(github.event.ref, 'refs/heads/main')
     uses: ./.github/workflows/pipeline_template.yaml
     needs: [run_unit_tests]
     with: 
-      stack_name: sam-hiberry-app-orders-development
-      sam_deploy_overrides: "ShopifyEventBusName=aws.partner/shopify.com/71471267841/InfinityCloudSource StageName=development"
+      stack_name: ${{ vars.ORDERS_STACK_NAME }}
+      sam_deploy_overrides: "ShopifyEventBusName=${{ vars.SHOPIFY_EVENT_BUS_NAME }} StageName={{ env.STAGE_NAME }}"
       sam_template: src/orders/template.yaml
       aws_region: us-east-1
-      pipeline_execution_role: arn:aws:iam::937030943129:role/aws-sam-cli-managed-dev-pipel-PipelineExecutionRole-43mYyIsd3U1C
-      cloudformation_execution_role: arn:aws:iam::937030943129:role/aws-sam-cli-managed-dev-p-CloudFormationExecutionRo-wY5JSoGQoqyi
-      artifacts_bucket: aws-sam-cli-managed-dev-pipeline-r-artifactsbucket-w19nxone5but
-      stage_name: development
+      pipeline_execution_role: {{ vars.PIPELINE_EXECUTION_ROLE }}
+      cloudformation_execution_role: {{ vars.CLOUDFORMATION_EXECUTION_ROLE }}
+      artifacts_bucket: {{ vars.ARTIFACTS_BUCKET }}
+      stage_name: {{ env.STAGE_NAME }}
     secrets: 
       aws_access_key_id: ${{ secrets.AWS_ACCESS_KEY_ID_MBU }}
       aws_secret_access_key: ${{ secrets.AWS_SECRET_ACCESS_KEY_MBU }}
