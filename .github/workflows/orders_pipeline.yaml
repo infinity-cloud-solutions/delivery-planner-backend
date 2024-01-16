@@ -4,6 +4,7 @@ on:
   push:
     paths:
       - 'src/orders/**'
+      - '.github/workflows/orders_pipeline.yaml'
     branches:
       - 'main'
       - 'feature**'
