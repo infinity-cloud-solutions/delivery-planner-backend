@@ -31,7 +31,7 @@ jobs:
     env:
       STAGE_NAME: development
     environment: 
-      name: {{ env.STAGE_NAME }}
+      name: development
     if: startsWith(github.event.ref, 'refs/heads/main')
     uses: ./.github/workflows/pipeline_template.yaml
     needs: [run_unit_tests]
