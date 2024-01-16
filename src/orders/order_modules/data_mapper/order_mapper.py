@@ -11,9 +11,8 @@ from order_modules.dao.order_dao import OrderDAO
 from order_modules.data_access.geolocation_handler import Geolocation
 from order_modules.utils.delivery import DeliveryScheduler
 from order_modules.errors.business_error import BusinessError
-from order_modules.errors.util_error import GeolocationError
 
-from settings import ORDERS_PRIMARY_KEY, environment
+from settings import ORDERS_PRIMARY_KEY
 
 # Third-party libraries
 from aws_lambda_powertools import Logger
@@ -94,22 +93,27 @@ class OrderHelper():
             Object needed by DynamoDB to create a record
         """
         order_errors = []
-
+        driver = None
+        
         if uid is None:
             uid = str(uuid.uuid4())
 
         geolocation = self.fetch_geolocation()
         if geolocation is None:
-            # TODO Discuss: No order should be created without geolocation.
-            # Otherwise DeliveryScheduler would fail on a subsequent order.
-            raise GeolocationError("Customer location is missing.")
+            self.logger.info("Geolocation Data is missing, adding to the list of errors")
+            order_errors.append(
+                {
+                    "code": "ADDRESS_NEEDS_GEO",
+                    "value": "Order requires geolocation coordinates to be updated manually",
+                }
+            )
+        else:
+            delivery_date = self.order_data.get("delivery_date")
+            delivery_time = self.order_data.get("delivery_time")
 
-        delivery_date = self.order_data.get("delivery_date")
-        delivery_time = self.order_data.get("delivery_time")
-
-        driver = self.get_available_driver(geolocation,
-                                           delivery_time,
-                                           delivery_date)
+            driver = self.get_available_driver(geolocation,
+                                            delivery_time,
+                                            delivery_date)
 
         items = [item.__dict__ for item in self.order_data.get(
             "cart_items", [])]

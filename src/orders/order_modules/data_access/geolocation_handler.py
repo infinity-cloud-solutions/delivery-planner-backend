@@ -6,8 +6,6 @@ from order_modules.utils.aws import AWSClientManager
 import settings
 
 from aws_lambda_powertools import Logger
-from order_modules.errors.util_error import GeolocationError
-
 
 class Geolocation():
 

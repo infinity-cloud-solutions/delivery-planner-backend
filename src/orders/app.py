@@ -9,7 +9,6 @@ from order_modules.models.order import HIBerryOrder
 from order_modules.utils.doorman import DoormanUtil
 from order_modules.errors.auth_error import AuthError
 from order_modules.errors.business_error import BusinessError
-from order_modules.errors.util_error import GeolocationError
 
 from settings import ORDERS_PRIMARY_KEY
 
@@ -83,13 +82,6 @@ def create_order(event: Dict[str, Any], context: LambdaContext) -> Dict[str, Any
 
     except BusinessError as business_error:
         error_details = f"Order could not be processed due: {business_error}"
-        logger.error(error_details)
-        return doorman.build_response(
-            payload={"message": error_details}, status_code=400
-        )
-        
-    except GeolocationError as geo_error:
-        error_details = f"Order could not be processed due: {geo_error}"
         logger.error(error_details)
         return doorman.build_response(
             payload={"message": error_details}, status_code=400

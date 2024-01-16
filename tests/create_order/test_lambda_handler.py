@@ -64,7 +64,7 @@ class TestCreateOrderLambdaHandler(TestCase):
                 'Access-Control-Allow-Headers': 'Content-Type,Authorization,x-apigateway-header,X-Amz-Date,X-Api-Key,X-Amz-Security-Token',
                 'Access-Control-Allow-Methods': 'GET, POST, PATCH, OPTIONS, DELETE'
             },
-            'body': '{"status": "Creada", "assigned_driver": 2}'
+            'body': '{"status": "Creada", "assigned_driver": 2, "errors": []}'
         }
 
         dao_response = {
