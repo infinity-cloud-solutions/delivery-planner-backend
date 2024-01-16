@@ -33,12 +33,12 @@ jobs:
     uses: ./.github/workflows/pipeline_template.yaml
     needs: [run_unit_tests]
     with: 
-      stack_name: sam-hiberry-app-products-development
+      stack_name: ${{ PRODUCTS_STACK_NAME }}-development
       sam_template: src/products/template.yaml
       aws_region: us-east-1
-      pipeline_execution_role: arn:aws:iam::937030943129:role/aws-sam-cli-managed-dev-pipel-PipelineExecutionRole-43mYyIsd3U1C
-      cloudformation_execution_role: arn:aws:iam::937030943129:role/aws-sam-cli-managed-dev-p-CloudFormationExecutionRo-wY5JSoGQoqyi
-      artifacts_bucket: aws-sam-cli-managed-dev-pipeline-r-artifactsbucket-w19nxone5but
+      pipeline_execution_role: ${{ vars.PIPELINE_EXECUTION_ROLE_DEV }}
+      cloudformation_execution_role: ${{ vars.CLOUDFORMATION_EXECUTION_ROLE_DEV }}
+      artifacts_bucket: ${{ vars.ARTIFACTS_BUCKET_DEV }}
       stage_name: development
     secrets: 
       aws_access_key_id: ${{ secrets.AWS_ACCESS_KEY_ID_MBU }}
