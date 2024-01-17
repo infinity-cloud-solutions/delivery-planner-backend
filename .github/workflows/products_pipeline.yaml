@@ -1,0 +1,47 @@
+name: products_pipeline
+
+on:
+  push:
+    paths:
+      - 'src/products/**'
+    branches:
+      - 'main'
+      - 'feature**'
+  workflow_dispatch:
+
+jobs:
+  run_unit_tests:
+    if: github.event_name == 'push'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11' 
+      - name: Install dependencies
+        run: |
+          make install
+        working-directory: ./tests
+      - name: Run tests
+        run: |
+          make test
+        working-directory: ./tests
+
+  development:
+    if: startsWith(github.event.ref, 'refs/heads/main')
+    uses: ./.github/workflows/pipeline_template.yaml
+    needs: [run_unit_tests]
+    with: 
+      stack_name: ${{ PRODUCTS_STACK_NAME }}-development
+      sam_template: src/products/template.yaml
+      aws_region: us-east-1
+      pipeline_execution_role: ${{ vars.PIPELINE_EXECUTION_ROLE_DEV }}
+      cloudformation_execution_role: ${{ vars.CLOUDFORMATION_EXECUTION_ROLE_DEV }}
+      artifacts_bucket: ${{ vars.ARTIFACTS_BUCKET_DEV }}
+      stage_name: development
+    secrets: 
+      aws_access_key_id: ${{ secrets.AWS_ACCESS_KEY_ID_MBU }}
+      aws_secret_access_key: ${{ secrets.AWS_SECRET_ACCESS_KEY_MBU }}
+
+#TODO- Discuss UAT and PROD
