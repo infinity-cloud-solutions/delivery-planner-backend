@@ -1,11 +1,9 @@
 # Python's libraries
 from typing import Dict
 from typing import Any
-# import json
 
 # Own's modules
 from order_modules.dao.order_dao import OrderDAO
-from order_modules.data_access.geolocation_handler import Geolocation
 from order_modules.data_mapper.order_mapper import OrderHelper
 from order_modules.models.order import HIBerryOrder
 from order_modules.utils.doorman import DoormanUtil
@@ -42,7 +40,6 @@ def create_order(event: Dict[str, Any], context: LambdaContext) -> Dict[str, Any
         is_auth = doorman.auth_user()
         if is_auth is False:
             raise AuthError("User is not allow to create a new order")
-        order_errors = []
 
         body = doorman.get_body_from_request()
         new_order_data = HIBerryOrder(**body)
@@ -50,44 +47,31 @@ def create_order(event: Dict[str, Any], context: LambdaContext) -> Dict[str, Any
         logger.info(
             f"Processing order for: {new_order_data.client_name} at {new_order_data.delivery_address}"
         )
-        lat_and_long = None
-        if new_order_data.geolocation is None:
-            logger.info("Input did not include geolocation data, invoking Geolocaction Service")
-            location_service = Geolocation()
-            lat_and_long = location_service.get_lat_and_long_from_street_address(
-                str_address=new_order_data.delivery_address
-            )
-        else:
-            logger.info("Reading geolocation data from input")
-            lat_and_long = new_order_data.geolocation.__dict__
-            # lat_and_long = None
 
-        if lat_and_long is None:
-            logger.info("Geolocation Data is missing, adding to the list of errors")
-            order_errors.append(
-                {
-                    "code": "ADDRESS_NEEDS_GEO",
-                    "value": "Order requires geolocation coordinates to be updated manually",
-                }
-            )
-            lat_and_long = {}
-
-        # ToDo validate Shopify order price vs owns price
-        builder = OrderHelper()
+        builder = OrderHelper(new_order_data.__dict__)
         order_db_data = builder.build_order(
-            order_data=new_order_data.__dict__,
             username=username,
-            geolocation=lat_and_long,
-            errors=order_errors,
         )
         dao = OrderDAO()
-        order_created = dao.create_order(order_db_data)
-        assigned_driver = order_created['payload']['driver']
-        logger.info(f"Order received and created with status {order_db_data['status']} and for driver {assigned_driver}")
-        output_data = {"status": order_db_data["status"], "assigned_driver": assigned_driver}
-        return doorman.build_response(
-            payload=output_data, status_code=201
-        )
+        create_response = dao.create_order(order_db_data)
+        
+        if create_response["status_code"] ==  201:
+            order_status = order_db_data["status"]
+            assigned_driver = order_db_data['driver']
+            errors = order_db_data['errors']
+            
+            logger.info(f"Order received and created with status {order_status} and for driver {assigned_driver}")
+            output_data = {"status": order_db_data["status"], "assigned_driver": assigned_driver, "errors": errors}
+            
+            return doorman.build_response(
+                payload=output_data,
+                status_code=create_response['status_code']
+            )
+        else:
+            return doorman.build_response(
+                payload={"message": create_response["message"]}, 
+                status_code=create_response.get("status_code", 500)
+            )
 
     except ValidationError as validation_error:
         error_details = f"Some fields failed validation: {validation_error.errors()}"
@@ -102,7 +86,7 @@ def create_order(event: Dict[str, Any], context: LambdaContext) -> Dict[str, Any
         return doorman.build_response(
             payload={"message": error_details}, status_code=400
         )
-
+        
     except AuthError:
         error_details = f"user {username} was not auth to create a new order"
         logger.error(error_details)
@@ -111,8 +95,8 @@ def create_order(event: Dict[str, Any], context: LambdaContext) -> Dict[str, Any
         )
 
     except Exception as e:
-        error_details = f"Error processing the order: {e}"
-        logger.error(error_details)
+        error_details = f"Error processing the order: {e}."
+        logger.error(error_details, exc_info=True)        
         return doorman.build_response(
             payload={"message": error_details}, status_code=500
         )
@@ -163,7 +147,7 @@ def retrieve_orders(event: Dict[str, Any], context: LambdaContext) -> Dict[str, 
 
     except Exception as e:
         error_details = f"Error processing the request to fetch orders: {e}"
-        logger.error(error_details)
+        logger.error(error_details, exc_info=True)        
         output_data = {"message": error_details}
         return doorman.build_response(
             payload=output_data, status_code=500

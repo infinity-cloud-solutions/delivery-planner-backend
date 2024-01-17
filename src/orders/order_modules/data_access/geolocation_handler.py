@@ -7,7 +7,6 @@ import settings
 
 from aws_lambda_powertools import Logger
 
-
 class Geolocation():
 
     def get_lat_and_long_from_street_address(self, str_address: str) -> Dict[str, float]:
@@ -33,10 +32,13 @@ class Geolocation():
                         location = {"latitude": lat, "longitude": long}
                     else:
                         logger.warning("AWS Response was not successfull")
+                        
                 except Exception as e:
                     logger.warning(f"Something failed while fetching data from AWS. Details {e}")
             else:
                 logger.warning("Input provided was not a string")
+            
             return location
+            
         else:
             return {"latitude": 20.721722843875, "longitude": -103.370054309085}
