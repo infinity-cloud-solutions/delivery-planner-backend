@@ -5,7 +5,7 @@ from typing import Any
 # Own's modules
 from order_modules.dao.order_dao import OrderDAO
 from order_modules.data_mapper.order_mapper import OrderHelper
-from order_modules.models.order import HIBerryOrder
+from order_modules.models.order import HIBerryOrder, HIBerryOrderWithId
 from order_modules.utils.doorman import DoormanUtil
 from order_modules.errors.auth_error import AuthError
 from order_modules.errors.business_error import BusinessError
@@ -128,6 +128,7 @@ def retrieve_orders(event: Dict[str, Any], context: LambdaContext) -> Dict[str, 
             _is_required=True
         )
         dao = OrderDAO()
+        print(filter_date)
         orders = dao.fetch_orders(
             primary_key=ORDERS_PRIMARY_KEY,
             query_value=filter_date
@@ -152,3 +153,90 @@ def retrieve_orders(event: Dict[str, Any], context: LambdaContext) -> Dict[str, 
         return doorman.build_response(
             payload=output_data, status_code=500
         )
+
+
+def update_order(event: Dict[str, Any], context: LambdaContext) -> Dict[str, Any]:
+    """
+    This function is the entry point of the process that will receive an order update request
+    and will attempt to update an entry in DynamoDB.
+
+    :param event: Custom object that can come from an API Gateway.
+    :type event: Dict
+    :param context: Regular lambda function context
+    :type context: LambdaContext
+    :return: Custom object with the response from the lambda, it could be a 200 if the update was successful
+    or >= 400 if there was an error
+    :rtype: Dict
+    """
+
+    logger = Logger()
+    logger.info("Initializing Update Order function")
+    try:
+        doorman = DoormanUtil(event, logger)
+        username = doorman.get_username_from_token()
+        is_auth = doorman.auth_user()
+        if is_auth is False:
+            raise AuthError("User is not allowed to update a order")
+
+        body = doorman.get_body_from_request()
+        order_data = HIBerryOrderWithId(**body)
+        order_id = order_data.id
+        
+        logger.info(
+            f"Updating order for: {order_data.client_name} at {order_data.delivery_address} and id {order_id}"
+        )
+
+        builder = OrderHelper(order_data.__dict__)
+        order_db_data = builder.build_order(
+            username=username,
+            uid=order_id,
+        )
+        dao = OrderDAO()
+        update_response = dao.update_order(order_db_data)
+        
+        if update_response["status_code"] ==  200:
+            order_status = order_db_data["status"]
+            assigned_driver = order_db_data['driver']
+            errors = order_db_data['errors']
+            
+            logger.info(f"Order updated with status {order_status} and for driver {assigned_driver}")
+            output_data = {"status": order_db_data["status"], "assigned_driver": assigned_driver, "errors": errors}
+            
+            return doorman.build_response(
+                payload=output_data,
+                status_code=update_response['status_code']
+            )
+        else:
+            return doorman.build_response(
+                payload={"message": update_response["message"]}, 
+                status_code=update_response.get("status_code", 500)
+            )
+
+    except ValidationError as validation_error:
+        error_details = f"Some fields failed validation: {validation_error.errors()}"
+        logger.error(error_details)
+        return doorman.build_response(
+            payload={"message": error_details}, status_code=400
+        )
+
+    except BusinessError as business_error:
+        error_details = f"Order could not be processed due: {business_error}"
+        logger.error(error_details)
+        return doorman.build_response(
+            payload={"message": error_details}, status_code=400
+        )
+        
+    except AuthError:
+        error_details = f"user {username} was not auth to create a new order"
+        logger.error(error_details)
+        return doorman.build_response(
+            payload={"message": error_details}, status_code=403
+        )
+
+    except Exception as e:
+        error_details = f"Error updating the order: {e}."
+        logger.error(error_details, exc_info=True)        
+        return doorman.build_response(
+            payload={"message": error_details}, status_code=500
+        )
+

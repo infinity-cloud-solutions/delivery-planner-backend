@@ -62,3 +62,6 @@ class HIBerryOrder(BaseModel):
             raise ValueError(f"delivery_date must be today or in the future in MX Central Time, got {value}")
 
         return value
+
+class HIBerryOrderWithId(HIBerryOrder): 
+    id: StrictStr
