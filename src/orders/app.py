@@ -128,7 +128,6 @@ def retrieve_orders(event: Dict[str, Any], context: LambdaContext) -> Dict[str, 
             _is_required=True
         )
         dao = OrderDAO()
-        print(filter_date)
         orders = dao.fetch_orders(
             primary_key=ORDERS_PRIMARY_KEY,
             query_value=filter_date
