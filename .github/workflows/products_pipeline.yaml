@@ -31,7 +31,7 @@ jobs:
     uses: ./.github/workflows/pipeline_template.yaml
     needs: [run_unit_tests]
     with: 
-      stack_name: ${{ PRODUCTS_STACK_NAME }}-development
+      stack_name: ${{ vars.PRODUCTS_STACK_NAME }}-development
       sam_template: src/products/template.yaml
       aws_region: us-east-1
       pipeline_execution_role: ${{ vars.PIPELINE_EXECUTION_ROLE_DEV }}
