@@ -52,3 +52,16 @@ class OrderDAO:
         key_condition_expression = Key(primary_key).eq(query_value)
         response = self.orders_db.retrieve_records(key_condition_expression)
         return response
+
+    def update_order(self, item: dict) -> dict:
+        """
+        Attempts to update a record for an order into the DynamoDB table.
+        
+        :param item: Order representation
+        :type item: dict
+        :return: a dictionary that contains the response object
+        :rtype: dict
+        """
+
+        response = self.orders_db.update_record(item)
+        return response 

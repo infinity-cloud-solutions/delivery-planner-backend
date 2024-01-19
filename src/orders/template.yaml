@@ -108,6 +108,27 @@ Resources:
             Method: get
       Role: !GetAtt RetrieveOrdersRole.Arn
 
+  UpdateOrderFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub "UpdateOrderFunction-${StageName}"
+      CodeUri: .
+      Handler: app.update_order
+      Runtime: python3.11
+      Environment:
+        Variables:
+          POWERTOOLS_SERVICE_NAME: update-order
+          POWERTOOLS_LOG_LEVEL: INFO
+          APP_ENVIRONMENT: !Ref StageName
+      Events:
+        HttpPut:
+          Type: Api
+          Properties:
+            RestApiId: !Ref ApiGateway
+            Path: /orders
+            Method: put
+      Role: !GetAtt UpdateOrdersRole.Arn
+
   ScheduleOrdersFunction:
     Type: AWS::Serverless::Function
     Properties:
@@ -237,6 +258,39 @@ Resources:
               - Effect: Allow
                 Action:
                   - dynamodb:Query
+                Resource: !GetAtt OrdersTable.Arn
+        - PolicyName: CloudWatchLogsPolicy
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - logs:CreateLogGroup
+                  - logs:CreateLogStream
+                  - logs:PutLogEvents
+                Resource: "*"
+                
+  UpdateOrdersRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub "UpdateOrdersRole-${StageName}"
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+            Action: sts:AssumeRole
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+      Policies:
+        - PolicyName: DynamoDBUpdateItemPolicy
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - dynamodb:UpdateItem
                 Resource: !GetAtt OrdersTable.Arn
         - PolicyName: CloudWatchLogsPolicy
           PolicyDocument:
