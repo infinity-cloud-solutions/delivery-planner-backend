@@ -165,7 +165,7 @@ Resources:
   ShopifyOrderIntegrationDLQ:
     Type: AWS::SQS::Queue
     Properties:
-      QueueName: ShopifyOrderIntegrationDLQ
+      QueueName: !Sub "ShopifyOrderIntegrationDLQ-${StageName}"
 
   LambdaInvokePermission:
     Type: AWS::Lambda::Permission
@@ -293,7 +293,7 @@ Resources:
   LambdaInvokeRole:
       Type: AWS::IAM::Role
       Properties:
-        RoleName: CreateOrderInvokeRole
+        RoleName: !Sub "CreateOrderInvokeRole-${StageName}"
         AssumeRolePolicyDocument:
           Version: '2012-10-17'
           Statement:
