@@ -69,6 +69,8 @@ jobs:
 
 
   deploy:
+    env:
+      PACKAGED_TEMPLATE: packaged-${{ inputs.stack_name }}.yaml
     needs: [build-and-package]
     runs-on: ubuntu-latest
     environment: 
