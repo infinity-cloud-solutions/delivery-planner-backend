@@ -63,7 +63,7 @@ Resources:
     Properties:
       DataSource: Esri
       Description: Place index for locating delivery address Using Esri
-      IndexName: HiBerrySearchIndex
+      IndexName: !Sub "HiBerrySearchIndex-${StageName}"
       PricingPlan: RequestBasedUsage
 
   CreateOrderFunction:
