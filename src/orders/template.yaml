@@ -43,7 +43,7 @@ Resources:
   OrdersTable:
     Type: AWS::DynamoDB::Table
     Properties:
-      TableName: Orders
+      TableName: !Sub "Orders-${StageName}"
       AttributeDefinitions:
         - AttributeName: delivery_date
           AttributeType: S
