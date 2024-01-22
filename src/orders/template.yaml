@@ -85,6 +85,8 @@ Resources:
             RestApiId: !Ref ApiGateway
             Path: /orders
             Method: post
+            Auth:
+              Authorizer: HiBerryCognitoAuthorizer
       Role: !GetAtt CreateOrderRole.Arn
 
   RetrieveOrdersFunction:
@@ -107,7 +109,7 @@ Resources:
             Path: /orders
             Method: get
             Auth:
-              Authorizer: !Ref HiBerryCognitoAuthorizer
+              Authorizer: HiBerryCognitoAuthorizer
       Role: !GetAtt RetrieveOrdersRole.Arn
 
   ScheduleOrdersFunction:
@@ -129,6 +131,8 @@ Resources:
             RestApiId: !Ref ApiGateway
             Path: /schedule-orders
             Method: post
+            Auth:
+              Authorizer: HiBerryCognitoAuthorizer
       Role: !GetAtt ScheduleOrdersRole.Arn
 
   ShopifyOrderIntegrationFunction:
@@ -328,24 +332,12 @@ Resources:
     Properties:
       StageName: !Ref StageName
       Auth:
-        DefaultAuthorizer: !Ref HiBerryCognitoAuthorizer
         Authorizers:
           HiBerryCognitoAuthorizer:
-            UserPoolArn: !Sub 
-              - 'arn:aws:cognito-idp:${AWS::Region}:${AWS::AccountId}:userpool/${UserPoolId}'
-              - UserPoolId: !ImportValue HiBerryUserPoolIdExport
-
-  HiBerryCognitoAuthorizer:
-    Type: AWS::ApiGateway::Authorizer
-    Properties:
-      Name: HiBerryCognitoAuthorizer
-      Type: COGNITO_USER_POOLS
-      IdentitySource: method.request.header.Authorization
-      RestApiId: !Ref ApiGateway
-      ProviderARNs:
-        - !Sub 
-            - 'arn:aws:cognito-idp:${AWS::Region}:${AWS::AccountId}:userpool/${UserPoolId}'
-            - UserPoolId: !ImportValue HiBerryUserPoolIdExport
+            UserPoolArn:
+              - !Sub 
+                - 'arn:aws:cognito-idp:${AWS::Region}:${AWS::AccountId}:userpool/${UserPoolId}'
+                - UserPoolId: !ImportValue HiBerryUserPoolIdExport
 
 Outputs:
   CreateOrderFunction:
