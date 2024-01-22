@@ -97,7 +97,10 @@ class OrderHelper():
         
         if uid is None:
             uid = str(uuid.uuid4())
-
+        
+        delivery_date = self.order_data.get("delivery_date")
+        delivery_time = self.order_data.get("delivery_time")
+        
         geolocation = self.fetch_geolocation()
         if geolocation is None:
             self.logger.info("Geolocation Data is missing, adding to the list of errors")
@@ -108,9 +111,6 @@ class OrderHelper():
                 }
             )
         else:
-            delivery_date = self.order_data.get("delivery_date")
-            delivery_time = self.order_data.get("delivery_time")
-
             driver = self.get_available_driver(geolocation,
                                             delivery_time,
                                             delivery_date)
