@@ -1,0 +1,25 @@
+name: users_pipeline
+
+on:
+  push:
+    paths:
+      - 'src/users/**'
+      - '.github/workflows/users_pipeline.yaml'
+    branches:
+      - 'main'
+      - 'feature**'
+  workflow_dispatch:
+jobs:
+  development: 
+    uses: ./.github/workflows/pipeline_template.yaml
+    with: 
+      stack_name: ${{ vars.USERS_STACK_NAME }}-development
+      sam_template: src/users/template.yaml
+      aws_region: us-east-1
+      pipeline_execution_role: ${{ vars.PIPELINE_EXECUTION_ROLE_DEV }}
+      cloudformation_execution_role: ${{ vars.CLOUDFORMATION_EXECUTION_ROLE_DEV }}
+      artifacts_bucket: ${{ vars.ARTIFACTS_BUCKET_DEV }}
+      stage_name: development
+    secrets: 
+      aws_access_key_id: ${{ secrets.AWS_ACCESS_KEY_ID_MBU }}
+      aws_secret_access_key: ${{ secrets.AWS_SECRET_ACCESS_KEY_MBU }}

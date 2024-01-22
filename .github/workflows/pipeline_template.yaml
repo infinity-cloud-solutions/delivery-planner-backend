@@ -33,6 +33,8 @@ on:
 
 jobs:
   build-and-package:
+    env:
+      PACKAGED_TEMPLATE: packaged-${{ inputs.stack_name }}.yaml
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
@@ -58,15 +60,17 @@ jobs:
           sam package \
             --s3-bucket  ${{ inputs.artifacts_bucket }} \
             --region ${{ inputs.aws_region }} \
-            --output-template-file packaged-${{ inputs.stack_name }}.yaml
+            --output-template-file ${{ env.PACKAGED_TEMPLATE }}
 
       - uses: actions/upload-artifact@v3
         with:
-          name: packaged-${{ inputs.stack_name }}.yaml
-          path: packaged-${{ inputs.stack_name }}.yaml
+          name: ${{ env.PACKAGED_TEMPLATE }}
+          path: ${{ env.PACKAGED_TEMPLATE }}
 
 
   deploy:
+    env:
+      PACKAGED_TEMPLATE: packaged-${{ inputs.stack_name }}.yaml
     needs: [build-and-package]
     runs-on: ubuntu-latest
     environment: 
@@ -78,7 +82,7 @@ jobs:
           use-installer: true
       - uses: actions/download-artifact@v3
         with:
-          name: packaged-${{ inputs.stack_name }}.yaml
+          name: ${{ env.PACKAGED_TEMPLATE }}
 
       - name: Assume the pipeline user role
         uses: aws-actions/configure-aws-credentials@v1-node16
@@ -95,7 +99,7 @@ jobs:
         run: |
           # Default sam deploy command
           DEPLOY_CMD="sam deploy --stack-name ${{ inputs.stack_name }} \
-            --template packaged-${{ inputs.stage_name }}.yaml \
+            --template ${{ env.PACKAGED_TEMPLATE }} \
             --capabilities CAPABILITY_NAMED_IAM \
             --region ${{ inputs.aws_region }} \
             --s3-bucket  ${{ inputs.artifacts_bucket }} \

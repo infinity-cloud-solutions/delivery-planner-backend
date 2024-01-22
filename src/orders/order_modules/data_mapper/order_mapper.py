@@ -35,7 +35,11 @@ class OrderHelper():
         :return: A dictionary with latitude and longitude
         :rtype: Dict[str, float]
         """
-        geolocation = self.order_data.get("geolocation", None)
+        geolocation_data = self.order_data.get("geolocation", None)
+        if geolocation_data is not None and hasattr(geolocation_data, '_dict_'):
+             geolocation = geolocation_data._dict_
+        else:
+            geolocation = {}        
         if geolocation is None:
             self.logger.info(
                 "Input did not include geolocation data, invoking Geolocation Service")
@@ -97,7 +101,10 @@ class OrderHelper():
         
         if uid is None:
             uid = str(uuid.uuid4())
-
+        
+        delivery_date = self.order_data.get("delivery_date")
+        delivery_time = self.order_data.get("delivery_time")
+        
         geolocation = self.fetch_geolocation()
         if geolocation is None:
             self.logger.info("Geolocation Data is missing, adding to the list of errors")
@@ -108,9 +115,6 @@ class OrderHelper():
                 }
             )
         else:
-            delivery_date = self.order_data.get("delivery_date")
-            delivery_time = self.order_data.get("delivery_time")
-
             driver = self.get_available_driver(geolocation,
                                             delivery_time,
                                             delivery_date)

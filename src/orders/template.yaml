@@ -43,7 +43,7 @@ Resources:
   OrdersTable:
     Type: AWS::DynamoDB::Table
     Properties:
-      TableName: Orders
+      TableName: !Sub "Orders-${StageName}"
       AttributeDefinitions:
         - AttributeName: delivery_date
           AttributeType: S
@@ -63,7 +63,7 @@ Resources:
     Properties:
       DataSource: Esri
       Description: Place index for locating delivery address Using Esri
-      IndexName: HiBerrySearchIndex
+      IndexName: !Sub "HiBerrySearchIndex-${StageName}"
       PricingPlan: RequestBasedUsage
 
   CreateOrderFunction:
@@ -85,6 +85,8 @@ Resources:
             RestApiId: !Ref ApiGateway
             Path: /orders
             Method: post
+            Auth:
+              Authorizer: HiBerryCognitoAuthorizer
       Role: !GetAtt CreateOrderRole.Arn
 
   RetrieveOrdersFunction:
@@ -106,6 +108,8 @@ Resources:
             RestApiId: !Ref ApiGateway
             Path: /orders
             Method: get
+            Auth:
+              Authorizer: HiBerryCognitoAuthorizer
       Role: !GetAtt RetrieveOrdersRole.Arn
 
   UpdateOrderFunction:
@@ -148,6 +152,8 @@ Resources:
             RestApiId: !Ref ApiGateway
             Path: /schedule-orders
             Method: post
+            Auth:
+              Authorizer: HiBerryCognitoAuthorizer
       Role: !GetAtt ScheduleOrdersRole.Arn
 
   ShopifyOrderIntegrationFunction:
@@ -186,7 +192,7 @@ Resources:
   ShopifyOrderIntegrationDLQ:
     Type: AWS::SQS::Queue
     Properties:
-      QueueName: ShopifyOrderIntegrationDLQ
+      QueueName: !Sub "ShopifyOrderIntegrationDLQ-${StageName}"
 
   LambdaInvokePermission:
     Type: AWS::Lambda::Permission
@@ -347,7 +353,7 @@ Resources:
   LambdaInvokeRole:
       Type: AWS::IAM::Role
       Properties:
-        RoleName: CreateOrderInvokeRole
+        RoleName: !Sub "CreateOrderInvokeRole-${StageName}"
         AssumeRolePolicyDocument:
           Version: '2012-10-17'
           Statement:
@@ -379,25 +385,13 @@ Resources:
     Type: AWS::Serverless::Api
     Properties:
       StageName: !Ref StageName
-      # Auth:
-      #   DefaultAuthorizer: MyCognitoAuthorizer
-      #   Authorizers:
-      #       MyCognitoAuthorizer:
-      #         UserPoolArn:
-      #           Fn::GetAtt:
-      #             - HiBerryUserPool
-      #             - Arn
-
-  # HiBerryCognitoAuthorizer:
-  #   Type: AWS::ApiGateway::Authorizer
-  #   Properties:
-  #     Name: HiBerryCognitoAuthorizer
-  #     Type: COGNITO_USER_POOLS
-  #     IdentitySource: method.request.header.Authorization
-  #     RestApiId: !Ref ApiGateway
-  #     ProviderARNs:
-  #       - !GetAtt HiBerryUserPool.Arn
-
+      Auth:
+        Authorizers:
+          HiBerryCognitoAuthorizer:
+            UserPoolArn:
+              - !Sub 
+                - 'arn:aws:cognito-idp:${AWS::Region}:${AWS::AccountId}:userpool/${UserPoolId}'
+                - UserPoolId: !ImportValue HiBerryUserPoolIdExport
 
 Outputs:
   CreateOrderFunction:

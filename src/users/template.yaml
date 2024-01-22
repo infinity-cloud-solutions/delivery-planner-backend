@@ -18,7 +18,6 @@ Parameters:
       - uat
       - prod
 Resources:
-
   HiBerryUserPool:
     Type: "AWS::Cognito::UserPool"
     Properties:
@@ -48,18 +47,23 @@ Resources:
       AccessTokenValidity: 1
       IdTokenValidity: 1
 
-  MyUserPoolGroupAdmin:
+  UserPoolGroupAdmin:
     Type: "AWS::Cognito::UserPoolGroup"
     Properties:
       GroupName: Admin
       UserPoolId: !Ref HiBerryUserPool
-  MyUserPoolGroupManager:
+  UserPoolGroupMesaDeControl:
     Type: "AWS::Cognito::UserPoolGroup"
     Properties:
-      GroupName: Manager
+      GroupName: MesaDeControl
       UserPoolId: !Ref HiBerryUserPool
-  MyUserPoolGroupUser:
+  UserPoolGroupRepartidor:
     Type: "AWS::Cognito::UserPoolGroup"
     Properties:
-      GroupName: User
+      GroupName: Repartidor
       UserPoolId: !Ref HiBerryUserPool
+Outputs:
+  HiBerryUserPoolId:
+    Value: !Ref HiBerryUserPool
+    Export:
+      Name: HiBerryUserPoolIdExport
