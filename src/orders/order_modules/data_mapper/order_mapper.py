@@ -35,11 +35,10 @@ class OrderHelper():
         :return: A dictionary with latitude and longitude
         :rtype: Dict[str, float]
         """
-        geolocation_data = self.order_data.get("geolocation", None)
-        if geolocation_data is not None and hasattr(geolocation_data, '_dict_'):
-             geolocation = geolocation_data._dict_
-        else:
-            geolocation = {}        
+        geolocation = self.order_data.get("geolocation", None)
+        if geolocation is not None and hasattr(geolocation, '_dict_'):
+            geolocation = geolocation._dict_
+  
         if geolocation is None:
             self.logger.info(
                 "Input did not include geolocation data, invoking Geolocation Service")
