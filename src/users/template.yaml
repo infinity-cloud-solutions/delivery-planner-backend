@@ -46,7 +46,16 @@ Resources:
       RefreshTokenValidity: 1
       AccessTokenValidity: 1
       IdTokenValidity: 1
-
+      AllowedOAuthFlows:
+        - code
+        - implicit
+      AllowedOAuthScopes:
+        - openid
+        - profile
+        - aws.cognito.signin.user.admin
+      SupportedIdentityProviders:
+        - COGNITO
+        
   UserPoolGroupAdmin:
     Type: "AWS::Cognito::UserPoolGroup"
     Properties:
