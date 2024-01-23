@@ -46,16 +46,19 @@ Resources:
       RefreshTokenValidity: 1
       AccessTokenValidity: 1
       IdTokenValidity: 1
+      AllowedOAuthFlowsUserPoolClient: true
       AllowedOAuthFlows:
         - code
         - implicit
+      CallbackURLs:
+        - "www.google.com"
       AllowedOAuthScopes:
         - openid
         - profile
         - aws.cognito.signin.user.admin
       SupportedIdentityProviders:
         - COGNITO
-        
+
   UserPoolGroupAdmin:
     Type: "AWS::Cognito::UserPoolGroup"
     Properties:
