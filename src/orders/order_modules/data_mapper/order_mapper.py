@@ -97,6 +97,8 @@ class OrderHelper():
         """
         order_errors = []
         driver = None
+        latitude = None
+        longitude = None
         
         if uid is None:
             uid = str(uuid.uuid4())
@@ -114,10 +116,15 @@ class OrderHelper():
                 }
             )
         else:
-            driver = self.get_available_driver(geolocation,
-                                            delivery_time,
-                                            delivery_date)
-
+            latitude = float(geolocation.get("latitude", 0))
+            longitude = float(geolocation.get("longitude", 0))
+            
+            driver = self.get_available_driver(
+                geolocation,
+                delivery_time,
+                delivery_date)
+            
+            
         items = [item.__dict__ for item in self.order_data.get(
             "cart_items", [])]
 
@@ -128,8 +135,8 @@ class OrderHelper():
             "delivery_date": delivery_date,
             "delivery_time": delivery_time,
             "address": self.order_data.get("delivery_address"),
-            "latitude": float(geolocation.get("latitude", 0)),
-            "longitude": float(geolocation.get("longitude", 0)),
+            "latitude": latitude,
+            "longitude": longitude,
             "phone_number": self.order_data.get("phone_number"),
             "cart_items": items,
             "total_amount": float(self.order_data.get("total_amount", 0)),
