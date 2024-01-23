@@ -131,6 +131,8 @@ Resources:
             RestApiId: !Ref ApiGateway
             Path: /orders
             Method: put
+            Auth:
+              Authorizer: HiBerryCognitoAuthorizer
       Role: !GetAtt UpdateOrdersRole.Arn
 
   ScheduleOrdersFunction:

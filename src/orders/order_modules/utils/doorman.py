@@ -1,13 +1,22 @@
 # Python's libraries
 import json
+import os
 from datetime import datetime
 
 # Own's modules
 from order_modules.errors.util_error import UtilError
 from order_modules.utils.encoders import DecimalEncoder
+from order_modules.errors.auth_error import AuthError
+from settings import environment
 
 # Third-party libraries
 from aws_lambda_powertools import Logger
+
+ACCESS_RULES = {
+    'Admin': ['RetrieveOrdersFunction', 'CreateOrderFunction', 'DeleteOrderFunction', 'UpdateOrderFunction'],
+    'MesaDeControl': ['RetrieveOrdersFunction', 'CreateOrderFunction', 'UpdateOrderFunction'],
+    'Repartidor': ['RetrieveOrdersFunction']
+}
 
 
 class DoormanUtil(object):
@@ -121,12 +130,61 @@ class DoormanUtil(object):
 
         return response
 
-    def get_username_from_token(self):
-        # ToDO
-        return "Admin"
+    def get_username_from_context(self):
+        if environment == 'local':
+            return 'Admin'
+        
+        try:
+            email = self.request['requestContext']['authorizer']['claims']['email']
+        except KeyError:
+            raise AuthError(f"Missing context from Api gateway authorizer.")
+        
+        return email
+
+    def _is_any_group_authorized(self, group_names: list) -> bool:
+        """
+        Checks if any of the user's groups are authorized to access the current Lambda function.
+        
+        Parameters:
+        - group_names (list): A list of group names to which the user belongs.
+        - function_name (str): The name of the currently executing Lambda function.
+
+        Returns:
+        - bool: True if the group is authorized, False otherwise.
+        """
+        current_function_name = os.environ['AWS_LAMBDA_FUNCTION_NAME']
+        for group_name in group_names:
+            if group_name in ACCESS_RULES:
+                for allowed_function in ACCESS_RULES[group_name]:
+                    if current_function_name.startswith(allowed_function):
+                        return True
+                    
+        self.logger.error(f"Group/s: {group_names} are not authorized to access {current_function_name}.")
+        return False
 
     def auth_user(self):
-        return True
+        """
+        Authorizes a user based on their Cognito group memberships. This function is intended for a Lambda 
+        function triggered by AWS API Gateway with a Cognito Authorizer.
+
+        The Cognito Authorizer adds user group information to the 'requestContext' in the Lambda event object.
+        This function extracts these group memberships and checks them against predefined access rules to 
+        determine if the user is authorized to access the current Lambda function.
+
+        Returns:
+        - bool: True if the user is authorized; False otherwise.
+        """
+        if environment == 'local':
+            return True
+
+        user_groups = []
+        try:
+            groups_string = self.request['requestContext']['authorizer']['claims']['cognito:groups']
+            user_groups = groups_string.split(',')
+        except KeyError:
+            return False
+
+        return self._is_any_group_authorized(user_groups)
 
     def _transform_date(self, input_date):
         try:
