@@ -51,7 +51,7 @@ Resources:
         - code
         - implicit
       CallbackURLs:
-        - "www.google.com"
+        - "https://www.google.com"
       AllowedOAuthScopes:
         - openid
         - profile
