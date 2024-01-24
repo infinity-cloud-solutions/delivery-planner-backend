@@ -34,10 +34,10 @@ def create_product(event: Dict[str, Any], context: LambdaContext) -> Dict[str, A
     logger.info("Initializing Create Product function")
     try:
         doorman = DoormanUtil(event, logger)
-        username = doorman.get_username_from_token()
+        username = doorman.get_username_from_context()
         is_auth = doorman.auth_user()
         if is_auth is False:
-            raise AuthError("User is not allow to create a new product")
+            raise AuthError(f"User {username} is not authorized to create a product")
 
         body = doorman.get_body_from_request()
         new_product_data = HIBerryProduct(**body)
@@ -66,8 +66,8 @@ def create_product(event: Dict[str, Any], context: LambdaContext) -> Dict[str, A
             payload={"message": error_details}, status_code=400
         )
 
-    except AuthError:
-        error_details = f"user {username} was not auth to create a new product"
+    except AuthError as auth_error:
+        error_details = f"Not authorized. {auth_error}"
         logger.error(error_details)
         return doorman.build_response(
             payload={"message": error_details}, status_code=403
@@ -97,10 +97,10 @@ def get_all_products(event: Dict[str, Any], context: LambdaContext) -> Dict[str,
     logger.info("Initializing Get All Products function")
     try:
         doorman = DoormanUtil(event, logger)
-        username = doorman.get_username_from_token()
+        username = doorman.get_username_from_context()
         is_auth = doorman.auth_user()
         if is_auth is False:
-            raise AuthError("User is not allow to retrieve products")
+            raise AuthError(f"User {username} is not authorized to retrieve a product")
 
         dao = ProductDAO()
         products = dao.fetch_products()
@@ -109,8 +109,8 @@ def get_all_products(event: Dict[str, Any], context: LambdaContext) -> Dict[str,
             payload=output_data, status_code=200
         )
 
-    except AuthError:
-        error_details = f"user {username} was not auth to create a fetch products"
+    except AuthError as auth_error:
+        error_details = f"Not authorized. {auth_error}"
         logger.error(error_details)
         output_data = {"message": error_details}
         return doorman.build_response(
