@@ -43,7 +43,7 @@ Resources:
   OrdersTable:
     Type: AWS::DynamoDB::Table
     Properties:
-      TableName: !Sub "Orders-${StageName}"
+      TableName: !Sub "Orders"
       AttributeDefinitions:
         - AttributeName: delivery_date
           AttributeType: S
@@ -131,6 +131,8 @@ Resources:
             RestApiId: !Ref ApiGateway
             Path: /orders
             Method: put
+            Auth:
+              Authorizer: HiBerryCognitoAuthorizer
       Role: !GetAtt UpdateOrdersRole.Arn
 
   ScheduleOrdersFunction:

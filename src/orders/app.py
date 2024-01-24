@@ -36,10 +36,10 @@ def create_order(event: Dict[str, Any], context: LambdaContext) -> Dict[str, Any
     logger.info("Initializing Create Order function")
     try:
         doorman = DoormanUtil(event, logger)
-        username = doorman.get_username_from_token()
+        username = doorman.get_username_from_context()
         is_auth = doorman.auth_user()
         if is_auth is False:
-            raise AuthError("User is not allow to create a new order")
+            raise AuthError(f"User {username} is not authorized to create a new order")
 
         body = doorman.get_body_from_request()
         new_order_data = HIBerryOrder(**body)
@@ -87,8 +87,8 @@ def create_order(event: Dict[str, Any], context: LambdaContext) -> Dict[str, Any
             payload={"message": error_details}, status_code=400
         )
         
-    except AuthError:
-        error_details = f"user {username} was not auth to create a new order"
+    except AuthError as auth_error:
+        error_details = f"Not authorized. {auth_error}"
         logger.error(error_details)
         return doorman.build_response(
             payload={"message": error_details}, status_code=403
@@ -118,10 +118,10 @@ def retrieve_orders(event: Dict[str, Any], context: LambdaContext) -> Dict[str, 
     logger.info("Initializing Get All Orders function")
     try:
         doorman = DoormanUtil(event, logger)
-        username = doorman.get_username_from_token()
+        username = doorman.get_username_from_context()
         is_auth = doorman.auth_user()
         if is_auth is False:
-            raise AuthError("User is not allow to retrieve orders")
+            raise AuthError(f"User {username} is not authorized to retrieve orders")
 
         filter_date = doorman.get_query_param_from_request(
             _query_param_name="date",
@@ -137,8 +137,8 @@ def retrieve_orders(event: Dict[str, Any], context: LambdaContext) -> Dict[str, 
             payload=output_data, status_code=200
         )
 
-    except AuthError:
-        error_details = f"user {username} was not auth to fetch orders"
+    except AuthError as auth_error:
+        error_details = f"Not authorized. {auth_error}"
         logger.error(error_details)
         output_data = {"message": error_details}
         return doorman.build_response(
@@ -172,10 +172,10 @@ def update_order(event: Dict[str, Any], context: LambdaContext) -> Dict[str, Any
     logger.info("Initializing Update Order function")
     try:
         doorman = DoormanUtil(event, logger)
-        username = doorman.get_username_from_token()
+        username = doorman.get_username_from_context()
         is_auth = doorman.auth_user()
         if is_auth is False:
-            raise AuthError("User is not allowed to update a order")
+            raise AuthError(f"User {username} is not authorized to update a order")
 
         body = doorman.get_body_from_request()
         order_data = HIBerryOrderWithId(**body)
@@ -225,8 +225,8 @@ def update_order(event: Dict[str, Any], context: LambdaContext) -> Dict[str, Any
             payload={"message": error_details}, status_code=400
         )
         
-    except AuthError:
-        error_details = f"user {username} was not auth to create a new order"
+    except AuthError as auth_error:
+        error_details = f"Not authorized. {auth_error}"
         logger.error(error_details)
         return doorman.build_response(
             payload={"message": error_details}, status_code=403

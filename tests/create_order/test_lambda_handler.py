@@ -44,7 +44,7 @@ class TestCreateOrderLambdaHandler(TestCase):
     @patch("order_modules.data_mapper.order_mapper.Geolocation.get_lat_and_long_from_street_address")
     @patch("src.orders.app.DoormanUtil.get_body_from_request")
     @patch("src.orders.app.DoormanUtil.auth_user")
-    @patch("src.orders.app.DoormanUtil.get_username_from_token")
+    @patch("src.orders.app.DoormanUtil.get_username_from_context")
     def test_give_a_valid_input_when_a_request_is_made_then_a_record_will_be_saved(
         self,
         get_username_mocked,
@@ -103,7 +103,7 @@ class TestCreateOrderLambdaHandler(TestCase):
             "body": {"message": "[{'loc': ('delivery_date',), 'msg': 'str type expected', 'type': 'type_error.str'}]"},
         }
 
-        doorman_mocked.return_value.get_username_from_token.return_value = "Mock User"
+        doorman_mocked.return_value.get_username_from_context.return_value = "Mock User"
         doorman_mocked.return_value.auth_user.return_value = True
         doorman_mocked.return_value.get_body_from_request.return_value = self.invalid_input
         geolocation_mocked.return_value = {
@@ -135,7 +135,7 @@ class TestCreateOrderLambdaHandler(TestCase):
             "body": {"message": "user Mock User was not auth to create a new order"},
         }
 
-        doorman_mocked.return_value.get_username_from_token.return_value = "Mock User"
+        doorman_mocked.return_value.get_username_from_context.return_value = "Mock User"
         doorman_mocked.return_value.auth_user.return_value = False
         doorman_mocked.return_value.get_body_from_request.return_value = self.valid_input
         doorman_mocked.return_value.build_response.return_value = response
@@ -168,7 +168,7 @@ class TestCreateOrderLambdaHandler(TestCase):
             "body": {"message": "Error processing the order: Mocked"},
         }
 
-        doorman_mocked.return_value.get_username_from_token.return_value = "Mock User"
+        doorman_mocked.return_value.get_username_from_context.return_value = "Mock User"
         doorman_mocked.return_value.auth_user.return_value = False
         doorman_mocked.return_value.get_body_from_request.return_value = self.valid_input
         doorman_mocked.return_value.build_response.return_value = response
