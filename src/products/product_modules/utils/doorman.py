@@ -47,6 +47,55 @@ class DoormanUtil(object):
             )
 
         return body
+    
+    
+    def get_query_param_from_request(self, _query_param_name, _is_required=False):
+        if 'queryStringParameters' not in self.request:
+            if _is_required:
+                raise UtilError(
+                    _message="There is no queryStringParameters in request data",
+                    _error=None,
+                    _logger=self.logger,
+                )
+            else:
+                return None
+
+        if _query_param_name not in self.request['queryStringParameters']:
+            if _is_required:
+                raise UtilError(
+                    _message=f"There is no {_query_param_name} in queryStringParameters",
+                    _error=None,
+                    _logger=self.logger,
+                )
+            else:
+                return None
+
+        try:
+            query_parameters = self.request['queryStringParameters'][_query_param_name]
+            query_param_value = None
+
+            if query_parameters is None or \
+                    query_parameters == "":
+                if _is_required:
+                    raise UtilError(
+                        _message=f"Value of {_query_param_name} is missing",
+                        _error=None,
+                        _logger=self.logger,
+                    )
+
+                query_param_value = None
+
+            else:
+                query_param_value = self.request['queryStringParameters'][_query_param_name]
+
+            return query_param_value
+
+        except Exception as e:
+            raise UtilError(
+                _message=str(e),
+                _error=str(e),
+                _logger=self.logger
+            )
 
     def build_response(self, payload: dict, status_code: int) -> dict:
         """This code defines the response_success function, which is used to return a response to the client.

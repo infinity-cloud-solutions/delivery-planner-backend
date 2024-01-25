@@ -40,3 +40,16 @@ class ProductDAO:
         response = self.products_db.scan_table()
         items = response["payload"]
         return items
+
+    def delete_product(self, name: str) -> dict:
+        """
+        Attempts to delete a record for a product from the DynamoDB table.
+
+        :param name: Name of the product to be deleted
+        :type name: str
+        :return: a dictionary that contains the response object
+        :rtype: dict
+        """
+        key = {"name": name}
+        response = self.products_db.delete_record(key)
+        return response

@@ -46,13 +46,9 @@ Resources:
       AttributeDefinitions:
         - AttributeName: name
           AttributeType: S
-        - AttributeName: sku   
-          AttributeType: S
       KeySchema:
-        - AttributeName: sku
-          KeyType: HASH
         - AttributeName: name
-          KeyType: RANGE
+          KeyType: HASH
       ProvisionedThroughput:
         ReadCapacityUnits: 5
         WriteCapacityUnits: 5
@@ -102,6 +98,29 @@ Resources:
             Auth:
               Authorizer: HiBerryCognitoAuthorizer
       Role: !GetAtt GetAllProductsRole.Arn
+
+  DeleteProductFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub "DeleteProductFunction-${StageName}"
+      CodeUri: .
+      Handler: lambda_function.delete_product
+      Runtime: python3.11
+      Environment:
+        Variables:
+          POWERTOOLS_SERVICE_NAME: delete-product
+          POWERTOOLS_LOG_LEVEL: INFO
+          APP_ENVIRONMENT: !Ref StageName
+      Events:
+        HttpDelete:
+          Type: Api
+          Properties:
+            RestApiId: !Ref ApiGateway
+            Path: /products
+            Method: delete
+            Auth:
+              Authorizer: HiBerryCognitoAuthorizer
+      Role: !GetAtt DeleteProductRole.Arn
 
   ApiGateway:
     Type: AWS::Serverless::Api
@@ -183,7 +202,36 @@ Resources:
                   - logs:CreateLogStream
                   - logs:PutLogEvents
                 Resource: "*"
-
+  DeleteProductRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub "DeleteProductRole-${StageName}"
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+            Action: sts:AssumeRole
+      Policies:
+        - PolicyName: DynamoDBDeleteItemPolicy
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - dynamodb:DeleteItem
+                Resource: !GetAtt ProductsTable.Arn
+        - PolicyName: CloudWatchLogsPolicy
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - logs:CreateLogGroup
+                  - logs:CreateLogStream
+                  - logs:PutLogEvents
+                Resource: "*"
 Outputs:
   CreateProductFunction:
     Description: "Lambda Function ARN"
