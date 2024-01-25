@@ -32,6 +32,12 @@ Resources:
         - AttributeDataType: String
           Name: email
           Required: true
+        - AttributeDataType: String
+          Name: name
+          Required: true
+        - AttributeDataType: String
+          Name: last_name
+          Required: true
       UsernameAttributes:
         - email
       VerificationMessageTemplate:
