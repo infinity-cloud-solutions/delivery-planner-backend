@@ -32,11 +32,16 @@ Resources:
         - AttributeDataType: String
           Name: email
           Required: true
+        - AttributeDataType: String
+          Name: given_name
+          Required: true
+        - AttributeDataType: String
+          Name: family_name
+          Required: true
       UsernameAttributes:
         - email
       VerificationMessageTemplate:
         DefaultEmailOption: CONFIRM_WITH_CODE
-
   HiBerryUserPoolClient:
     Type: "AWS::Cognito::UserPoolClient"
     Properties:
