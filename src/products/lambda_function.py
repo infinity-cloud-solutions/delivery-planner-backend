@@ -49,8 +49,7 @@ def create_product(event: Dict[str, Any], context: LambdaContext) -> Dict[str, A
 
         builder = ProductHelper()
         product_db_data = builder.build_product(
-            product_data=new_product_data.__dict__,
-            username=username
+            product_data=new_product_data.__dict__, username=username
         )
         dao = ProductDAO()
         dao.create_product(product_db_data)
@@ -76,7 +75,7 @@ def create_product(event: Dict[str, Any], context: LambdaContext) -> Dict[str, A
 
     except Exception as e:
         error_details = f"Error processing the product: {e}"
-        logger.error(error_details, exc_info=True)    
+        logger.error(error_details, exc_info=True)
         return doorman.build_response(
             payload={"message": error_details}, status_code=500
         )
@@ -107,25 +106,19 @@ def get_all_products(event: Dict[str, Any], context: LambdaContext) -> Dict[str,
         dao = ProductDAO()
         products = dao.fetch_products()
         output_data = products
-        return doorman.build_response(
-            payload=output_data, status_code=200
-        )
+        return doorman.build_response(payload=output_data, status_code=200)
 
     except AuthError as auth_error:
         error_details = f"Not authorized. {auth_error}"
         logger.error(error_details)
         output_data = {"message": error_details}
-        return doorman.build_response(
-            payload=output_data, status_code=403
-        )
+        return doorman.build_response(payload=output_data, status_code=403)
 
     except Exception as e:
         error_details = f"Error processing the request to fetch products: {e}"
-        logger.error(error_details, exc_info=True)    
+        logger.error(error_details, exc_info=True)
         output_data = {"message": error_details}
-        return doorman.build_response(
-            payload=output_data, status_code=500
-        )
+        return doorman.build_response(payload=output_data, status_code=500)
 
 
 def delete_product(event: Dict[str, Any], context: LambdaContext) -> Dict[str, Any]:
@@ -151,37 +144,35 @@ def delete_product(event: Dict[str, Any], context: LambdaContext) -> Dict[str, A
         if is_auth is False:
             raise AuthError(f"User {username} is not authorized to delete a product")
 
-        product_name = doorman.get_query_param_from_request(_query_param_name="name", 
-                                                            _is_required=True)
+        product_name = doorman.get_query_param_from_request(
+            _query_param_name="name", _is_required=True
+        )
 
         dao = ProductDAO()
         delete_response = dao.delete_product(product_name)
 
         if delete_response["status"] == "success":
             return doorman.build_response(
-                payload={"message": delete_response["message"]}, 
-                status_code=204
+                payload={"message": delete_response["message"]}, status_code=204
             )
         else:
             return doorman.build_response(
-                payload={"message": delete_response["message"]}, 
-                status_code=delete_response["status_code"]
+                payload={"message": delete_response["message"]},
+                status_code=delete_response["status_code"],
             )
 
     except AuthError as auth_error:
         error_details = f"Not authorized. {auth_error}"
         logger.error(error_details)
         return doorman.build_response(
-            payload={"message": error_details},
-            status_code=403
+            payload={"message": error_details}, status_code=403
         )
 
     except Exception as e:
         error_details = f"Error processing the request to delete product: {e}"
         logger.error(error_details)
         return doorman.build_response(
-            payload={"message": error_details}, 
-            status_code=500
+            payload={"message": error_details}, status_code=500
         )
 
 
@@ -202,7 +193,7 @@ def update_product(event: Dict[str, Any], context: LambdaContext) -> Dict[str, A
     logger = Logger()
     logger.info("Initializing Update Product function")
     doorman = DoormanUtil(event, logger)
-    
+
     try:
         username = doorman.get_username_from_context()
         is_auth = doorman.auth_user()
@@ -217,16 +208,15 @@ def update_product(event: Dict[str, Any], context: LambdaContext) -> Dict[str, A
         dao = ProductDAO()
         update_response = dao.update_product(updated_product_data.__dict__)
 
-        # Handling the response from DAO
-        if update_response.get('status') == 'success':
+        if update_response.get("status") == "success":
             return doorman.build_response(
                 payload={"message": "Product updated successfully"},
-                status_code=update_response['status_code']
+                status_code=update_response["status_code"],
             )
         else:
             return doorman.build_response(
-                payload={"message": update_response.get('message', 'Update failed')}, 
-                status_code=update_response.get('status_code', 500)
+                payload={"message": update_response.get("message", "Update failed")},
+                status_code=update_response.get("status_code", 500),
             )
 
     except ValidationError as validation_error:
@@ -245,7 +235,7 @@ def update_product(event: Dict[str, Any], context: LambdaContext) -> Dict[str, A
 
     except Exception as e:
         error_details = f"Error updating the product: {e}"
-        logger.error(error_details, exc_info=True)    
+        logger.error(error_details, exc_info=True)
         return doorman.build_response(
             payload={"message": error_details}, status_code=500
         )

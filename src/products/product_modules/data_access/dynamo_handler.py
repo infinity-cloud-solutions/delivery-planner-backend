@@ -16,6 +16,7 @@ class DynamoDBHandler:
     """
     A class for handling interactions with a DynamoDB table
     """
+
     HTTP_STATUS_OK = 200
     HTTP_STATUS_CREATED = 201
     HTTP_STATUS_NO_CONTENT = 204
@@ -33,9 +34,7 @@ class DynamoDBHandler:
         self.table = dynamodb_resource.Table(table_name)
         self.logger = Logger()
 
-    def insert_record(
-        self, item: dict
-    ) -> Dict[str, Any]:
+    def insert_record(self, item: dict) -> Dict[str, Any]:
         """This function is used to save a record to a database.
         It takes in a dictionary, which is build from a Order Model, as an argument and attempts to put the item into the database.
         If the response from the database is successful, it returns a status of "success".
@@ -50,17 +49,13 @@ class DynamoDBHandler:
         """
         try:
             db_item = json.loads(json.dumps(item), parse_float=Decimal)
-            response = self.table.put_item(
-                Item=db_item
-            )
+            response = self.table.put_item(Item=db_item)
             if response["ResponseMetadata"]["HTTPStatusCode"] == self.HTTP_STATUS_OK:
-                self.logger.info(
-                    "Product was created in DynamoDB"
-                )
+                self.logger.info("Product was created in DynamoDB")
                 return self.build_response_object(
                     status="success",
                     status_code=self.HTTP_STATUS_CREATED,
-                    message="Record saved in DynamoDB"
+                    message="Record saved in DynamoDB",
                 )
             else:
                 message = response["Error"]["Message"]
@@ -68,7 +63,7 @@ class DynamoDBHandler:
                 return self.build_response_object(
                     status="error",
                     status_code=response["ResponseMetadata"]["HTTPStatusCode"],
-                    message=message
+                    message=message,
                 )
         except ClientError as error:
             message = f"{error.response['Error']['Message']}. {error.response['Error']['Code']}"
@@ -76,19 +71,17 @@ class DynamoDBHandler:
             return self.build_response_object(
                 status="error",
                 status_code=error.response["ResponseMetadata"]["HTTPStatusCode"],
-                message=message
+                message=message,
             )
         except Exception as error:
             self.logger.error(f"Exception when saving record: Details: {error}")
             return self.build_response_object(
                 status="error",
                 status_code=self.HTTP_STATUS_INTERNAL_SERVER_ERROR,
-                message=str(error)
+                message=str(error),
             )
 
-    def scan_table(
-        self
-    ) -> Dict[str, Any]:
+    def scan_table(self) -> Dict[str, Any]:
         """This function is used to fetch all the records in the table.
         If the response from the database is successful, it returns a status of "success".
         If not, it returns a status of "error" along with the HTTP status code and details about the error message.
@@ -101,14 +94,12 @@ class DynamoDBHandler:
         try:
             response = self.table.scan()
             if response["ResponseMetadata"]["HTTPStatusCode"] == self.HTTP_STATUS_OK:
-                self.logger.info(
-                    "Products were retrieved from DynamoDB"
-                )
+                self.logger.info("Products were retrieved from DynamoDB")
                 return self.build_response_object(
                     status="success",
                     status_code=self.HTTP_STATUS_OK,
                     message=f"{len(response['Items'])} were found in DynamoDB Products table",
-                    payload=response["Items"]
+                    payload=response["Items"],
                 )
             else:
                 message = response["Error"]["Message"]
@@ -116,7 +107,7 @@ class DynamoDBHandler:
                 return self.build_response_object(
                     status="error",
                     status_code=response["ResponseMetadata"]["HTTPStatusCode"],
-                    message=message
+                    message=message,
                 )
         except ClientError as error:
             message = f"{error.response['Error']['Message']}. {error.response['Error']['Code']}"
@@ -124,16 +115,16 @@ class DynamoDBHandler:
             return self.build_response_object(
                 status="error",
                 status_code=error.response["ResponseMetadata"]["HTTPStatusCode"],
-                message=message
+                message=message,
             )
         except Exception as error:
             self.logger.error(f"Exception when saving record: Details: {error}")
             return self.build_response_object(
                 status="error",
                 status_code=self.HTTP_STATUS_INTERNAL_SERVER_ERROR,
-                message=str(error)
+                message=str(error),
             )
-                        
+
     def delete_record(self, key: dict) -> Dict[str, Any]:
         """
         This function is used to delete a record from the DynamoDB table.
@@ -150,13 +141,11 @@ class DynamoDBHandler:
         try:
             response = self.table.delete_item(Key=key)
             if response["ResponseMetadata"]["HTTPStatusCode"] == self.HTTP_STATUS_OK:
-                self.logger.info(
-                    f"Product with key {key} was deleted from DynamoDB"
-                )
+                self.logger.info(f"Product with key {key} was deleted from DynamoDB")
                 return self.build_response_object(
                     status="success",
                     status_code=self.HTTP_STATUS_OK,
-                    message="Record deleted from DynamoDB"
+                    message="Record deleted from DynamoDB",
                 )
             else:
                 message = response["Error"]["Message"]
@@ -164,7 +153,7 @@ class DynamoDBHandler:
                 return self.build_response_object(
                     status="error",
                     status_code=response["ResponseMetadata"]["HTTPStatusCode"],
-                    message=message
+                    message=message,
                 )
         except ClientError as error:
             message = f"{error.response['Error']['Message']}. {error.response['Error']['Code']}"
@@ -172,14 +161,14 @@ class DynamoDBHandler:
             return self.build_response_object(
                 status="error",
                 status_code=error.response["ResponseMetadata"]["HTTPStatusCode"],
-                message=message
+                message=message,
             )
         except Exception as error:
             self.logger.error(f"Exception when deleting record: Details: {error}")
             return self.build_response_object(
                 status="error",
                 status_code=self.HTTP_STATUS_INTERNAL_SERVER_ERROR,
-                message=str(error)
+                message=str(error),
             )
 
     def update_record(self, item: dict) -> Dict[str, Any]:
@@ -187,7 +176,7 @@ class DynamoDBHandler:
         This function is used to update a record in the database using put_item.
         If the item already exists, it will be updated.
 
-        :param item: Item as dict 
+        :param item: Item as dict
         :type item: dict
         :return: A summary of the put_item action
         :rtype: Dict[str, Any]
@@ -200,7 +189,7 @@ class DynamoDBHandler:
                 return self.build_response_object(
                     status="success",
                     status_code=self.HTTP_STATUS_OK,
-                    message="Record updated in DynamoDB"
+                    message="Record updated in DynamoDB",
                 )
             else:
                 message = response["Error"]["Message"]
@@ -208,7 +197,7 @@ class DynamoDBHandler:
                 return self.build_response_object(
                     status="error",
                     status_code=response["ResponseMetadata"]["HTTPStatusCode"],
-                    message=message
+                    message=message,
                 )
         except ClientError as error:
             message = f"{error.response['Error']['Message']}. {error.response['Error']['Code']}"
@@ -216,22 +205,22 @@ class DynamoDBHandler:
             return self.build_response_object(
                 status="error",
                 status_code=error.response["ResponseMetadata"]["HTTPStatusCode"],
-                message=message
+                message=message,
             )
         except Exception as error:
             self.logger.error(f"Exception when updating record: Details: {error}")
             return self.build_response_object(
                 status="error",
                 status_code=self.HTTP_STATUS_INTERNAL_SERVER_ERROR,
-                message=str(error)
+                message=str(error),
             )
-            
+
     def build_response_object(
         self,
         status: str,
         status_code: int,
         message: str,
-        payload: Dict[str, Any] = None
+        payload: Dict[str, Any] = None,
     ) -> Dict[str, Any]:
         """
         This method maps an status code a message into the response dictionary
@@ -252,5 +241,5 @@ class DynamoDBHandler:
             "status": status,
             "status_code": status_code,
             "message": message,
-            "payload": payload
+            "payload": payload,
         }
