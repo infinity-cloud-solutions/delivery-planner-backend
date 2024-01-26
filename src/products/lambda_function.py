@@ -32,8 +32,9 @@ def create_product(event: Dict[str, Any], context: LambdaContext) -> Dict[str, A
 
     logger = Logger()
     logger.info("Initializing Create Product function")
+    doorman = DoormanUtil(event, logger)
+
     try:
-        doorman = DoormanUtil(event, logger)
         username = doorman.get_username_from_context()
         is_auth = doorman.auth_user()
         if is_auth is False:
@@ -75,7 +76,7 @@ def create_product(event: Dict[str, Any], context: LambdaContext) -> Dict[str, A
 
     except Exception as e:
         error_details = f"Error processing the product: {e}"
-        logger.error(error_details)
+        logger.error(error_details, exc_info=True)    
         return doorman.build_response(
             payload={"message": error_details}, status_code=500
         )
@@ -95,8 +96,9 @@ def get_all_products(event: Dict[str, Any], context: LambdaContext) -> Dict[str,
 
     logger = Logger()
     logger.info("Initializing Get All Products function")
+    doorman = DoormanUtil(event, logger)
+
     try:
-        doorman = DoormanUtil(event, logger)
         username = doorman.get_username_from_context()
         is_auth = doorman.auth_user()
         if is_auth is False:
@@ -119,11 +121,12 @@ def get_all_products(event: Dict[str, Any], context: LambdaContext) -> Dict[str,
 
     except Exception as e:
         error_details = f"Error processing the request to fetch products: {e}"
-        logger.error(error_details)
+        logger.error(error_details, exc_info=True)    
         output_data = {"message": error_details}
         return doorman.build_response(
             payload=output_data, status_code=500
         )
+
 
 def delete_product(event: Dict[str, Any], context: LambdaContext) -> Dict[str, Any]:
     """This function is the entry point of this process that will receive a product name as an input
@@ -140,8 +143,9 @@ def delete_product(event: Dict[str, Any], context: LambdaContext) -> Dict[str, A
 
     logger = Logger()
     logger.info("Initializing Delete Product function")
+    doorman = DoormanUtil(event, logger)
+
     try:
-        doorman = DoormanUtil(event, logger)
         username = doorman.get_username_from_context()
         is_auth = doorman.auth_user()
         if is_auth is False:
@@ -178,4 +182,70 @@ def delete_product(event: Dict[str, Any], context: LambdaContext) -> Dict[str, A
         return doorman.build_response(
             payload={"message": error_details}, 
             status_code=500
+        )
+
+
+def update_product(event: Dict[str, Any], context: LambdaContext) -> Dict[str, Any]:
+    """
+    This function is the entry point of the process that will receive a payload as an input
+    and will attempt to update an existing product entry in DynamoDB.
+
+    :param event: Custom object that can come from an APIGateway or EventBridge.
+    :type event: Dict
+    :param context: Regular lambda function context.
+    :type context: LambdaContext
+    :return: Custom object with the response from the lambda, it could be a 200 if the update was successful,
+             or >= 400 if there was an error.
+    :rtype: Dict
+    """
+
+    logger = Logger()
+    logger.info("Initializing Update Product function")
+    doorman = DoormanUtil(event, logger)
+    
+    try:
+        username = doorman.get_username_from_context()
+        is_auth = doorman.auth_user()
+        if not is_auth:
+            raise AuthError(f"User {username} is not authorized to update a product")
+
+        body = doorman.get_body_from_request()
+        updated_product_data = HIBerryProduct(**body)
+
+        logger.info(f"Updating product: {updated_product_data.name}")
+
+        dao = ProductDAO()
+        update_response = dao.update_product(updated_product_data.__dict__)
+
+        # Handling the response from DAO
+        if update_response.get('status') == 'success':
+            return doorman.build_response(
+                payload={"message": "Product updated successfully"},
+                status_code=update_response['status_code']
+            )
+        else:
+            return doorman.build_response(
+                payload={"message": update_response.get('message', 'Update failed')}, 
+                status_code=update_response.get('status_code', 500)
+            )
+
+    except ValidationError as validation_error:
+        error_details = "Some fields failed validation: " + str(validation_error)
+        logger.error(error_details)
+        return doorman.build_response(
+            payload={"message": error_details}, status_code=400
+        )
+
+    except AuthError as auth_error:
+        error_details = str(auth_error)
+        logger.error(error_details)
+        return doorman.build_response(
+            payload={"message": error_details}, status_code=403
+        )
+
+    except Exception as e:
+        error_details = f"Error updating the product: {e}"
+        logger.error(error_details, exc_info=True)    
+        return doorman.build_response(
+            payload={"message": error_details}, status_code=500
         )

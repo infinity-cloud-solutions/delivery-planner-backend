@@ -41,6 +41,19 @@ class ProductDAO:
         items = response["payload"]
         return items
 
+    def update_product(self, item: dict) -> dict:
+        """
+        Attempts to update an existing record for a product in the DynamoDB table.
+        If the product does not exist, a new record will be created.
+
+        :param item: Product representation.
+        :type item: dict
+        :return: A dictionary that contains the response object.
+        :rtype: dict
+        """
+        response = self.products_db.update_record(item)
+        return response
+
     def delete_product(self, name: str) -> dict:
         """
         Attempts to delete a record for a product from the DynamoDB table.
