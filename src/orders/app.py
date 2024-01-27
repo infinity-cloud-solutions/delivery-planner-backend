@@ -1,6 +1,7 @@
 # Python's libraries
 from typing import Dict
 from typing import Any
+from datetime import datetime
 # import json
 
 # Own's modules
@@ -139,11 +140,14 @@ def retrieve_orders(event: Dict[str, Any], context: LambdaContext) -> Dict[str, 
         if is_auth is False:
             raise AuthError("User is not allow to retrieve orders")
 
-        filter_date = doorman.get_date_param_from_request()
+        filter_date = doorman.get_query_param_from_request(_query_param_name='date', _is_required=True)
+        parsed_date = datetime.strptime(filter_date, "%Y%m%d")
+        formatted_date = parsed_date.strftime("%Y-%m-%d")
+                    
         dao = OrderDAO()
         orders = dao.fetch_orders(
             primary_key=ORDERS_PRIMARY_KEY,
-            query_value=filter_date
+            query_value=formatted_date
         )
         output_data = orders["payload"]
         return doorman.build_response(

@@ -134,15 +134,3 @@ class DoormanUtil(object):
 
     def auth_user(self):
         return True
-
-    def _transform_date(self, input_date):
-        try:
-            parsed_date = datetime.strptime(input_date, "%Y%m%d")
-
-            formatted_date = parsed_date.strftime("%Y-%m-%d")
-
-            return formatted_date
-
-        except ValueError:
-            print("Invalid date format")
-            return None
