@@ -1,12 +1,16 @@
 # Python's libraries
 from typing import Dict
 from typing import Any
-from datetime import datetime
 
 # Own's modules
 from order_modules.dao.order_dao import OrderDAO
 from order_modules.data_mapper.order_mapper import OrderHelper
-from order_modules.models.order import HIBerryOrder, HIBerryOrderWithId, OrderPrimaryKey, DeliveryDateMixin
+from order_modules.models.order import (
+    HIBerryOrder,
+    HIBerryOrderWithId,
+    OrderPrimaryKey,
+    DeliveryDateMixin,
+)
 from order_modules.utils.doorman import DoormanUtil
 from order_modules.errors.auth_error import AuthError
 from order_modules.errors.business_error import BusinessError
@@ -55,23 +59,28 @@ def create_order(event: Dict[str, Any], context: LambdaContext) -> Dict[str, Any
         )
         dao = OrderDAO()
         create_response = dao.create_order(order_db_data)
-        
-        if create_response["status_code"] ==  201:
+
+        if create_response["status_code"] == 201:
             order_status = order_db_data["status"]
-            assigned_driver = order_db_data['driver']
-            errors = order_db_data['errors']
-            
-            logger.info(f"Order received and created with status {order_status} and for driver {assigned_driver}")
-            output_data = {"status": order_db_data["status"], "assigned_driver": assigned_driver, "errors": errors}
-            
+            assigned_driver = order_db_data["driver"]
+            errors = order_db_data["errors"]
+
+            logger.info(
+                f"Order received and created with status {order_status} and for driver {assigned_driver}"
+            )
+            output_data = {
+                "status": order_db_data["status"],
+                "assigned_driver": assigned_driver,
+                "errors": errors,
+            }
+
             return doorman.build_response(
-                payload=output_data,
-                status_code=create_response['status_code']
+                payload=output_data, status_code=create_response["status_code"]
             )
         else:
             return doorman.build_response(
-                payload={"message": create_response["message"]}, 
-                status_code=create_response.get("status_code", 500)
+                payload={"message": create_response["message"]},
+                status_code=create_response.get("status_code", 500),
             )
 
     except ValidationError as validation_error:
@@ -87,7 +96,7 @@ def create_order(event: Dict[str, Any], context: LambdaContext) -> Dict[str, Any
         return doorman.build_response(
             payload={"message": error_details}, status_code=400
         )
-        
+
     except AuthError as auth_error:
         error_details = f"Not authorized. {auth_error}"
         logger.error(error_details)
@@ -97,7 +106,7 @@ def create_order(event: Dict[str, Any], context: LambdaContext) -> Dict[str, Any
 
     except Exception as e:
         error_details = f"Error processing the order: {e}."
-        logger.error(error_details, exc_info=True)        
+        logger.error(error_details, exc_info=True)
         return doorman.build_response(
             payload={"message": error_details}, status_code=500
         )
@@ -125,35 +134,30 @@ def retrieve_orders(event: Dict[str, Any], context: LambdaContext) -> Dict[str, 
         if is_auth is False:
             raise AuthError(f"User {username} is not authorized to retrieve orders")
 
-        date = doorman.get_query_param_from_request(_query_param_name='date', _is_required=True)
+        date = doorman.get_query_param_from_request(
+            _query_param_name="date", _is_required=True
+        )
 
         orders_date = DeliveryDateMixin(delivery_date=date)
 
         dao = OrderDAO()
         orders = dao.fetch_orders(
-            primary_key=ORDERS_PRIMARY_KEY,
-            query_value=orders_date.delivery_date
+            primary_key=ORDERS_PRIMARY_KEY, query_value=orders_date.delivery_date
         )
         output_data = orders["payload"]
-        return doorman.build_response(
-            payload=output_data, status_code=200
-        )
+        return doorman.build_response(payload=output_data, status_code=200)
 
     except AuthError as auth_error:
         error_details = f"Not authorized. {auth_error}"
         logger.error(error_details)
         output_data = {"message": error_details}
-        return doorman.build_response(
-            payload=output_data, status_code=403
-        )
+        return doorman.build_response(payload=output_data, status_code=403)
 
     except Exception as e:
         error_details = f"Error processing the request to fetch orders: {e}"
-        logger.error(error_details, exc_info=True)        
+        logger.error(error_details, exc_info=True)
         output_data = {"message": error_details}
-        return doorman.build_response(
-            payload=output_data, status_code=500
-        )
+        return doorman.build_response(payload=output_data, status_code=500)
 
 
 def update_order(event: Dict[str, Any], context: LambdaContext) -> Dict[str, Any]:
@@ -182,7 +186,7 @@ def update_order(event: Dict[str, Any], context: LambdaContext) -> Dict[str, Any
         body = doorman.get_body_from_request()
         order_data = HIBerryOrderWithId(**body)
         order_id = order_data.id
-        
+
         logger.info(
             f"Updating order for: {order_data.client_name} at {order_data.delivery_address} and id {order_id}"
         )
@@ -194,23 +198,28 @@ def update_order(event: Dict[str, Any], context: LambdaContext) -> Dict[str, Any
         )
         dao = OrderDAO()
         update_response = dao.update_order(order_db_data)
-        
-        if update_response["status_code"] ==  200:
+
+        if update_response["status_code"] == 200:
             order_status = order_db_data["status"]
-            assigned_driver = order_db_data['driver']
-            errors = order_db_data['errors']
-            
-            logger.info(f"Order updated with status {order_status} and for driver {assigned_driver}")
-            output_data = {"status": order_db_data["status"], "assigned_driver": assigned_driver, "errors": errors}
-            
+            assigned_driver = order_db_data["driver"]
+            errors = order_db_data["errors"]
+
+            logger.info(
+                f"Order updated with status {order_status} and for driver {assigned_driver}"
+            )
+            output_data = {
+                "status": order_db_data["status"],
+                "assigned_driver": assigned_driver,
+                "errors": errors,
+            }
+
             return doorman.build_response(
-                payload=output_data,
-                status_code=update_response['status_code']
+                payload=output_data, status_code=update_response["status_code"]
             )
         else:
             return doorman.build_response(
-                payload={"message": update_response["message"]}, 
-                status_code=update_response.get("status_code", 500)
+                payload={"message": update_response["message"]},
+                status_code=update_response.get("status_code", 500),
             )
 
     except ValidationError as validation_error:
@@ -226,7 +235,7 @@ def update_order(event: Dict[str, Any], context: LambdaContext) -> Dict[str, Any
         return doorman.build_response(
             payload={"message": error_details}, status_code=400
         )
-        
+
     except AuthError as auth_error:
         error_details = f"Not authorized. {auth_error}"
         logger.error(error_details)
@@ -236,7 +245,7 @@ def update_order(event: Dict[str, Any], context: LambdaContext) -> Dict[str, Any
 
     except Exception as e:
         error_details = f"Error updating the order: {e}."
-        logger.error(error_details, exc_info=True)        
+        logger.error(error_details, exc_info=True)
         return doorman.build_response(
             payload={"message": error_details}, status_code=500
         )
@@ -264,28 +273,29 @@ def delete_order(event: Dict[str, Any], context: LambdaContext) -> Dict[str, Any
         if not is_auth:
             raise AuthError("User is not allowed to delete order")
 
-        order_id = doorman.get_query_param_from_request(_query_param_name="id",
-                                                        _is_required=True)
-        delivery_date = doorman.get_query_param_from_request(_query_param_name="delivery_date",
-                                                             _is_required=True)
-        order_to_delete = OrderPrimaryKey(id=order_id,
-                                          delivery_date=delivery_date)
+        order_id = doorman.get_query_param_from_request(
+            _query_param_name="id", _is_required=True
+        )
+        delivery_date = doorman.get_query_param_from_request(
+            _query_param_name="delivery_date", _is_required=True
+        )
+        order_to_delete = OrderPrimaryKey(id=order_id, delivery_date=delivery_date)
 
         dao = OrderDAO()
         delete_response = dao.delete_order(
-            delivery_date=order_to_delete.delivery_date, order_id=order_to_delete.id)
+            delivery_date=order_to_delete.delivery_date, order_id=order_to_delete.id
+        )
 
         if delete_response["status"] == "success":
             logger.info(f"Order with ID {order_id} on {delivery_date} deleted")
             return doorman.build_response(
-                payload={"message": delete_response["message"]}, 
-                status_code=204
+                payload={"message": delete_response["message"]}, status_code=204
             )
         else:
             logger.error(f"Error deleting order: {delete_response['message']}")
             return doorman.build_response(
                 payload={"message": delete_response["message"]},
-                status_code=delete_response.get("status_code", 500)
+                status_code=delete_response.get("status_code", 500),
             )
 
     except ValidationError as validation_error:
