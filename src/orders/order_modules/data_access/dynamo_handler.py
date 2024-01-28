@@ -97,7 +97,7 @@ class DynamoDBHandler:
                 )
             else:
                 message = response["Error"]["Message"]
-                self.logger.error(f"Failed saving record: Details: {message}")
+                self.logger.error(f"Failed retrieving records: Details: {message}")
                 return self.build_response_object(
                     status="error",
                     status_code=response["ResponseMetadata"]["HTTPStatusCode"],
@@ -105,14 +105,14 @@ class DynamoDBHandler:
                 )
         except ClientError as error:
             message = f"{error.response['Error']['Message']}. {error.response['Error']['Code']}"
-            self.logger.error(f"ClientError when saving record: Details: {message}")
+            self.logger.error(f"ClientError when retrieving records: Details: {message}")
             return self.build_response_object(
                 status="error",
                 status_code=error.response["ResponseMetadata"]["HTTPStatusCode"],
                 message=message,
             )
         except Exception as error:
-            self.logger.error(f"Exception when saving record: Details: {error}")
+            self.logger.error(f"Exception when retrieving records: Details: {error}")
             return self.build_response_object(
                 status="error",
                 status_code=self.HTTP_STATUS_INTERNAL_SERVER_ERROR,
