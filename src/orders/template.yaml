@@ -321,7 +321,7 @@ Resources:
             Statement:
               - Effect: Allow
                 Action:
-                  - dynamodb:UpdateItem
+                  - dynamodb:PutItem
                 Resource: !GetAtt OrdersTable.Arn
         - PolicyName: CloudWatchLogsPolicy
           PolicyDocument:
