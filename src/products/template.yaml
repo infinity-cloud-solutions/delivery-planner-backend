@@ -122,6 +122,29 @@ Resources:
               Authorizer: HiBerryCognitoAuthorizer
       Role: !GetAtt DeleteProductRole.Arn
 
+  UpdateProductFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub "UpdateProductFunction-${StageName}"
+      CodeUri: .
+      Handler: lambda_function.update_product
+      Runtime: python3.11
+      Environment:
+        Variables:
+          POWERTOOLS_SERVICE_NAME: update-product
+          POWERTOOLS_LOG_LEVEL: INFO
+          APP_ENVIRONMENT: !Ref StageName
+      Events:
+        HttpPut:
+          Type: Api
+          Properties:
+            RestApiId: !Ref ApiGateway
+            Path: /products
+            Method: put
+            Auth:
+              Authorizer: HiBerryCognitoAuthorizer
+      Role: !GetAtt UpdateProductRole.Arn
+
   ApiGateway:
     Type: AWS::Serverless::Api
     Properties:
@@ -191,6 +214,37 @@ Resources:
               - Effect: Allow
                 Action:
                   - dynamodb:Scan
+                Resource: !GetAtt ProductsTable.Arn
+        - PolicyName: CloudWatchLogsPolicy
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - logs:CreateLogGroup
+                  - logs:CreateLogStream
+                  - logs:PutLogEvents
+                Resource: "*"
+                                
+  UpdateProductRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub "UpdateProductRole-${StageName}"
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+            Action: sts:AssumeRole
+      Policies:
+        - PolicyName: UpdateDynamoDBPolicy
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - dynamodb:PutItem
                 Resource: !GetAtt ProductsTable.Arn
         - PolicyName: CloudWatchLogsPolicy
           PolicyDocument:
