@@ -21,7 +21,19 @@ class HIBerryProduct(BaseModel):
     price: confloat(ge=0.0)
 
 
-class HIBerryOrder(BaseModel):
+class DeliveryDateMixin(BaseModel):
+    delivery_date: StrictStr
+
+    @validator('delivery_date')
+    def validate_delivery_date_format(cls, value):
+        try:
+            datetime.strptime(value, "%Y-%m-%d")
+            return value
+        except ValueError:
+            raise ValueError(f"delivery_date must be in yyyy-mm-dd format, got {value}")
+
+
+class HIBerryOrder(DeliveryDateMixin):
     client_name: StrictStr
     delivery_date: StrictStr
     delivery_time: StrictStr
@@ -43,14 +55,6 @@ class HIBerryOrder(BaseModel):
         return calculated_total
 
     @validator('delivery_date')
-    def validate_delivery_date_format(cls, value):
-        try:
-            datetime.strptime(value, "%Y-%m-%d")
-            return value
-        except ValueError:
-            raise ValueError(f"delivery_date must be in yyyy-mm-dd format, got {value}")
-
-    @validator('delivery_date')
     def validate_delivery_date_future(cls, value):
         delivery_date = datetime.strptime(value, "%Y-%m-%d")
 
@@ -63,5 +67,10 @@ class HIBerryOrder(BaseModel):
 
         return value
 
-class HIBerryOrderWithId(HIBerryOrder): 
+
+class HIBerryOrderWithId(HIBerryOrder):
+    id: StrictStr
+
+
+class OrderPrimaryKey(DeliveryDateMixin):
     id: StrictStr

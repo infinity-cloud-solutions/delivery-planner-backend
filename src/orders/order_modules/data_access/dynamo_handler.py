@@ -162,6 +162,58 @@ class DynamoDBHandler:
                 status_code=self.HTTP_STATUS_INTERNAL_SERVER_ERROR,
                 message=str(error),
             )
+
+    def delete_record(self, delivery_date: str, order_id: str) -> Dict[str, Any]:
+        """
+        This function is used to delete a record from the database.
+        It takes in the delivery date and order id as arguments and attempts to delete the item from the database.
+        If the response from the database is successful, it returns a status of "success".
+        If there is an AWS ClientError, it logs information about the error and also returns a status of "error" along
+        with the HTTP status code and details about the error message.
+        :param delivery_date: Delivery date of the order
+        :type delivery_date: str
+        :param order_id: ID of the order to be deleted
+        :type order_id: str
+        :return: A summary of the delete_item action
+        :rtype: Dict[str, Any]
+        """
+        try:
+            response = self.table.delete_item(
+                Key={
+                    'delivery_date': delivery_date,
+                    'id': order_id
+                }
+            )
+            if response["ResponseMetadata"]["HTTPStatusCode"] == self.HTTP_STATUS_OK:
+                self.logger.info(f"Order with id {order_id} on {delivery_date} was deleted from DynamoDB")
+                return self.build_response_object(
+                    status="success",
+                    status_code=self.HTTP_STATUS_OK,
+                    message=f"Record with id {order_id} on {delivery_date} was deleted from DynamoDB",
+                )
+            else:
+                message = response.get("Error", {}).get("Message", "Unknown error")
+                self.logger.error(f"Failed deleting record: Details: {message}")
+                return self.build_response_object(
+                    status="error",
+                    status_code=response["ResponseMetadata"]["HTTPStatusCode"],
+                    message=message,
+                )
+        except ClientError as error:
+            message = f"{error.response['Error']['Message']}. {error.response['Error']['Code']}"
+            self.logger.error(f"ClientError when deleting record: Details: {message}")
+            return self.build_response_object(
+                status="error",
+                status_code=error.response["ResponseMetadata"]["HTTPStatusCode"],
+                message=message,
+            )
+        except Exception as error:
+            self.logger.error(f"Exception when deleting record: Details: {error}")
+            return self.build_response_object(
+                status="error",
+                status_code=self.HTTP_STATUS_INTERNAL_SERVER_ERROR,
+                message=str(error),
+            )
             
     def build_response_object(
         self,

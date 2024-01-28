@@ -63,7 +63,7 @@ Resources:
     Properties:
       DataSource: Esri
       Description: Place index for locating delivery address Using Esri
-      IndexName: !Sub "HiBerrySearchIndex-${StageName}"
+      IndexName: !Sub "HiBerrySearchIndex"
       PricingPlan: RequestBasedUsage
 
   CreateOrderFunction:
@@ -134,6 +134,29 @@ Resources:
             Auth:
               Authorizer: HiBerryCognitoAuthorizer
       Role: !GetAtt UpdateOrdersRole.Arn
+
+  DeleteOrderFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub "DeleteOrderFunction-${StageName}"
+      CodeUri: .
+      Handler: app.delete_order
+      Runtime: python3.11
+      Environment:
+        Variables:
+          POWERTOOLS_SERVICE_NAME: delete-order
+          POWERTOOLS_LOG_LEVEL: INFO
+          APP_ENVIRONMENT: !Ref StageName
+      Events:
+        HttpDelete:
+          Type: Api
+          Properties:
+            RestApiId: !Ref ApiGateway
+            Path: /orders
+            Method: delete
+            Auth:
+              Authorizer: HiBerryCognitoAuthorizer
+      Role: !GetAtt DeleteOrdersRole.Arn
 
   ScheduleOrdersFunction:
     Type: AWS::Serverless::Function
@@ -298,8 +321,17 @@ Resources:
             Statement:
               - Effect: Allow
                 Action:
-                  - dynamodb:UpdateItem
+                  - dynamodb:PutItem
+                  - dynamodb:Query
                 Resource: !GetAtt OrdersTable.Arn
+        - PolicyName: LocationServiceAccess
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - geo:SearchPlaceIndexForText
+                Resource: !GetAtt HiBerryLocationIndex.Arn
         - PolicyName: CloudWatchLogsPolicy
           PolicyDocument:
             Version: '2012-10-17'
@@ -311,6 +343,39 @@ Resources:
                   - logs:PutLogEvents
                 Resource: "*"
 
+  DeleteOrdersRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub "DeleteOrdersRole-${StageName}"
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+            Action: sts:AssumeRole
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+      Policies:
+        - PolicyName: DynamoDBDeleteItemPolicy
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - dynamodb:DeleteItem
+                Resource: !GetAtt OrdersTable.Arn
+        - PolicyName: CloudWatchLogsPolicy
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - logs:CreateLogGroup
+                  - logs:CreateLogStream
+                  - logs:PutLogEvents
+                Resource: "*"
+                
   ScheduleOrdersRole:
     Type: AWS::IAM::Role
     Properties:
