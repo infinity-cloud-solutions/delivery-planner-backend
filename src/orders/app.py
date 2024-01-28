@@ -6,7 +6,7 @@ from datetime import datetime
 # Own's modules
 from order_modules.dao.order_dao import OrderDAO
 from order_modules.data_mapper.order_mapper import OrderHelper
-from order_modules.models.order import HIBerryOrder, HIBerryOrderWithId, OrderPrimaryKey
+from order_modules.models.order import HIBerryOrder, HIBerryOrderWithId, OrderPrimaryKey, DeliveryDateMixin
 from order_modules.utils.doorman import DoormanUtil
 from order_modules.errors.auth_error import AuthError
 from order_modules.errors.business_error import BusinessError
@@ -117,21 +117,22 @@ def retrieve_orders(event: Dict[str, Any], context: LambdaContext) -> Dict[str, 
 
     logger = Logger()
     logger.info("Initializing Get All Orders function")
+    doorman = DoormanUtil(event, logger)
+
     try:
-        doorman = DoormanUtil(event, logger)
         username = doorman.get_username_from_context()
         is_auth = doorman.auth_user()
         if is_auth is False:
             raise AuthError(f"User {username} is not authorized to retrieve orders")
 
-        filter_date = doorman.get_query_param_from_request(_query_param_name='date', _is_required=True)
-        parsed_date = datetime.strptime(filter_date, "%Y%m%d")
-        formatted_date = parsed_date.strftime("%Y-%m-%d")
+        date = doorman.get_query_param_from_request(_query_param_name='date', _is_required=True)
+
+        orders_date = DeliveryDateMixin(delivery_date=date)
 
         dao = OrderDAO()
         orders = dao.fetch_orders(
             primary_key=ORDERS_PRIMARY_KEY,
-            query_value=formatted_date
+            query_value=orders_date.delivery_date
         )
         output_data = orders["payload"]
         return doorman.build_response(

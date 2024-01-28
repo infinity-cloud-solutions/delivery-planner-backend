@@ -185,15 +185,3 @@ class DoormanUtil(object):
             return False
 
         return self._is_any_group_authorized(user_groups)
-
-    def _transform_date(self, input_date):
-        try:
-            parsed_date = datetime.strptime(input_date, "%Y%m%d")
-
-            formatted_date = parsed_date.strftime("%Y-%m-%d")
-
-            return formatted_date
-
-        except ValueError:
-            print("Invalid date format")
-            return None
