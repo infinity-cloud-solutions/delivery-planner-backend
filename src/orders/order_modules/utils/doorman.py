@@ -92,7 +92,7 @@ class DoormanUtil(object):
             else:
                 query_param_value = self.request['queryStringParameters'][_query_param_name]
 
-            return self._transform_date(query_param_value)
+            return query_param_value
 
         except Exception as e:
             raise UtilError(

@@ -65,3 +65,15 @@ class OrderDAO:
 
         response = self.orders_db.update_record(item)
         return response 
+
+    def delete_order(self, delivery_date: str, order_id: str) -> dict:
+        """
+        Attempts to delete an order from the DynamoDB table.
+        :param delivery_date: The delivery date of the order
+        :type delivery_date: str
+        :param order_id: The unique identifier of the order
+        :type order_id: str
+        :return: a dictionary that contains the response object
+        :rtype: dict
+        """
+        return self.orders_db.delete_record(delivery_date, order_id)
