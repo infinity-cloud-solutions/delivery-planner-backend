@@ -63,7 +63,7 @@ Resources:
     Properties:
       DataSource: Esri
       Description: Place index for locating delivery address Using Esri
-      IndexName: !Sub "HiBerrySearchIndex-${StageName}"
+      IndexName: !Sub "HiBerrySearchIndex"
       PricingPlan: RequestBasedUsage
 
   CreateOrderFunction:
@@ -322,7 +322,16 @@ Resources:
               - Effect: Allow
                 Action:
                   - dynamodb:PutItem
+                  - dynamodb:Query
                 Resource: !GetAtt OrdersTable.Arn
+        - PolicyName: LocationServiceAccess
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - geo:SearchPlaceIndexForText
+                Resource: !GetAtt HiBerryLocationIndex.Arn
         - PolicyName: CloudWatchLogsPolicy
           PolicyDocument:
             Version: '2012-10-17'
