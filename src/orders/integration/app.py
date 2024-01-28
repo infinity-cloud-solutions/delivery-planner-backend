@@ -16,6 +16,7 @@ from botocore.exceptions import ClientError
 # Initialize logging
 logger = Logger()
 
+
 def lambda_handler(event: dict, context: LambdaContext):
     """
     Handler function for AWS Lambda to process Shopify order/create events.
@@ -51,11 +52,21 @@ def lambda_handler(event: dict, context: LambdaContext):
 
         # Invoke the CreateOrderFunction directly
         lambda_client = boto3.client('lambda')
+        
+        requestContext = {
+            'requestContext': {'authorizer': {
+                'claims': {
+                    'email': 'shopify_integration@mail.com',
+                    'cognito:groups': 'MesaDeControl'
+                }
+            }}
+        }
+        payload = {**requestContext, **order_data}
 
         response = lambda_client.invoke(
             FunctionName=CREATE_ORDER_FUNCTION_NAME,
             InvocationType='RequestResponse',  # Use 'Event' for async
-            Payload=json.dumps(order_data),
+            Payload=json.dumps(payload),
         )
 
         response_payload = json.loads(
@@ -81,7 +92,7 @@ def lambda_handler(event: dict, context: LambdaContext):
     except ClientError as boto_error:
         logger.error(f"Boto3 Client Error: {str(boto_error)}")
         raise
-        
+
     except Exception as e:
         logger.error(f"Error processing the event: {str(e)}")
         raise
