@@ -129,13 +129,15 @@ class ShopifyDataMapper:
         self._check_order_is_allowed()
 
         delivery_time = self._get_note_value('Order Due Time')
-
+        geolocation = {
+            "latitude": self._get_coordinate("latitude"),
+            "longitude": self._get_coordinate("longitude"),
+        }
         order_data = {
             "client_name": f"{self.order.customer.first_name} {self.order.customer.last_name}",
             "phone_number": self.order.shipping_address.phone,
             "delivery_address": self.order.shipping_address.address1,
-            "latitude": self._get_coordinate("latitude"),
-            "longitude": self._get_coordinate("longitude"),
+            "geolocation": geolocation,
             "delivery_date": self._get_delivery_date(),
             "delivery_time": delivery_time,
             "cart_items": self.order.line_items_to_dict(),

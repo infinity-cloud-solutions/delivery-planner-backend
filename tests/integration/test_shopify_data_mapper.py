@@ -95,11 +95,10 @@ class TestShopifyDataMapper(TestCase):
             "client_name": "John Doe",
             "phone_number": "1234567890",
             "delivery_address": "123 Happy St",
-            "latitude": 20.0,
-            "longitude": -105.0,
+            "geolocation": {"latitude": 20.0,"longitude": -105.0},
             "delivery_date": "2023-12-20",
             "delivery_time": "8 AM - 1 PM",
-            "cart_items": [{"name": "Product 1", "price": 100.0 ,"quantity": 2, "sku": "HK2020"}],
+            "cart_items": [{"product": "Product 1", "price": 100.0 ,"quantity": 2}],
             "total_amount": 200.0,
             "payment_method": 'PAID',
             "source": 0,
@@ -111,8 +110,7 @@ class TestShopifyDataMapper(TestCase):
         self.assertIn("body", result)
         body = result["body"]
         self.assertIn("client_name", body)
-        self.assertIn("latitude", body)
-        self.assertIn("longitude", body)
+        self.assertIn("geolocation", body)
         self.assertIn("delivery_date", body)
         self.assertEqual(body["delivery_date"], "2023-12-20")
         self.assertEqual(expected, body)
