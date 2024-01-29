@@ -13,7 +13,7 @@ class ShopifyDataMapper:
 
     def _format_delivery_date(self, date_str: str) -> str:
         """
-        Converts a date string from "ddd, dd MMM yyyy " format to "yyyy-mm-dd" format. 
+        Converts a date string from "ddd, dd MMM yyyy " format to "yyyy-mm-dd" format.
         Example: Wed, 20 Dec 2023  format to 2023-12-20
 
         Parameters:
@@ -27,7 +27,8 @@ class ShopifyDataMapper:
             return date_obj.strftime("%Y-%m-%d")
         except ValueError as e:
             raise ValueError(
-                f"Invalid date format: {date_str}. Expected 'ddd, dd MMM yyyy'. Error: {e}")
+                f"Invalid date format: {date_str}. Expected 'ddd, dd MMM yyyy'. Error: {e}"
+            )
 
     def _get_note_value(self, attribute_name: str) -> Optional[str]:
         """
@@ -43,7 +44,7 @@ class ShopifyDataMapper:
             if attribute.name == attribute_name:
                 return attribute.value
         return None
-    
+
     def _determine_payment_status(self) -> Optional[str]:
         """
         Determines the payment status based on the list of payment method identifiers
@@ -58,8 +59,8 @@ class ShopifyDataMapper:
         if not payment_methods:
             return None
         elif len(payment_methods) >= 1:
-            return "PAID" 
-            
+            return "PAID"
+
     def _get_coordinate(self, attribute_name: str) -> Optional[float]:
         """
         Retrieves the latitude or longitude from the shipping address, or falls back to the billing address if necessary.
@@ -73,14 +74,16 @@ class ShopifyDataMapper:
         shipping_address = self.order.shipping_address
         billing_address = self.order.billing_address
 
-        shipping_coordinate_value = getattr(
-            shipping_address, attribute_name, None)
-        billing_coordinate_value = getattr(
-            billing_address, attribute_name, None)
+        shipping_coordinate_value = getattr(shipping_address, attribute_name, None)
+        billing_coordinate_value = getattr(billing_address, attribute_name, None)
 
         if shipping_coordinate_value is not None:
             return shipping_coordinate_value
-        elif shipping_address and billing_address and shipping_address.address1 == billing_address.address1:
+        elif (
+            shipping_address
+            and billing_address
+            and shipping_address.address1 == billing_address.address1
+        ):
             return billing_coordinate_value
         return None
 
@@ -94,29 +97,29 @@ class ShopifyDataMapper:
         Raises:
             ValueError: If the 'Order Due Date' is not in the expected format or is missing.
         """
-        delivery_date = self._get_note_value('Order Due Date')
+        delivery_date = self._get_note_value("Order Due Date")
         if delivery_date is not None:
             return self._format_delivery_date(delivery_date)
         return None
 
     def _check_order_is_allowed(self):
         """
-        Verifies that the order is not for store pickup and that the shipping address is provided. If any conditions are not met, it 
+        Verifies that the order is not for store pickup and that the shipping address is provided. If any conditions are not met, it
         raises a StorePickupNotAllowed exception.
 
         Raises:
             StorePickupNotAllowed: If the order does not meet the required criteria.
         """
         # Check if the fulfillment type is for store pickup.
-        fulfillment_type = self._get_note_value('Order Fulfillment Type')
-        if fulfillment_type == 'Store Pickup':
+        fulfillment_type = self._get_note_value("Order Fulfillment Type")
+        if fulfillment_type == "Store Pickup":
             raise StorePickupNotAllowed(
-                f"Fulfillment type: {fulfillment_type} is not allowed.")
+                f"Fulfillment type: {fulfillment_type} is not allowed."
+            )
 
         # Check if the shipping address is provided.
         if not self.order.shipping_address:
-            raise StorePickupNotAllowed(
-                "Shipping address information is missing.")
+            raise StorePickupNotAllowed("Shipping address information is missing.")
 
     def map_order_data(self) -> dict:
         """
@@ -128,7 +131,7 @@ class ShopifyDataMapper:
 
         self._check_order_is_allowed()
 
-        delivery_time = self._get_note_value('Order Due Time')
+        delivery_time = self._get_note_value("Order Due Time")
         geolocation = {
             "latitude": self._get_coordinate("latitude"),
             "longitude": self._get_coordinate("longitude"),
@@ -144,7 +147,7 @@ class ShopifyDataMapper:
             "total_amount": self.order.current_subtotal_price,
             "payment_method": self._determine_payment_status(),
             "source": self.SHOPIFY_ID,
-            "notes": self.order.note
+            "notes": self.order.note,
         }
 
         return {"body": order_data}
