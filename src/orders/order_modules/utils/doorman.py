@@ -15,7 +15,7 @@ from aws_lambda_powertools import Logger
 ACCESS_RULES = {
     'Admin': ['RetrieveOrdersFunction', 'CreateOrderFunction', 'DeleteOrderFunction', 'UpdateOrderFunction'],
     'MesaDeControl': ['RetrieveOrdersFunction', 'CreateOrderFunction', 'UpdateOrderFunction'],
-    'Repartidor': ['RetrieveOrdersFunction']
+    'Repartidor': ['RetrieveOrdersFunction', 'UpdateOrderFunction']
 }
 
 
