@@ -53,7 +53,7 @@ def create_order(event: Dict[str, Any], context: LambdaContext) -> Dict[str, Any
             f"Processing order for: {new_order_data.client_name} at {new_order_data.delivery_address}"
         )
 
-        builder = OrderHelper(new_order_data.__dict__)
+        builder = OrderHelper(new_order_data.model_dump())
         order_db_data = builder.build_order(
             username=username,
         )
@@ -191,7 +191,7 @@ def update_order(event: Dict[str, Any], context: LambdaContext) -> Dict[str, Any
             f"Updating order for: {order_data.client_name} at {order_data.delivery_address} and id {order_id}"
         )
 
-        builder = OrderHelper(order_data.__dict__)
+        builder = OrderHelper(order_data.model_dump())
         order_db_data = builder.build_order(
             username=username,
             uid=order_id,

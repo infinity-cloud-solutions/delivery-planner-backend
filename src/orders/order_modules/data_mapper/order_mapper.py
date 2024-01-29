@@ -36,9 +36,6 @@ class OrderHelper():
         :rtype: Dict[str, float]
         """
         geolocation = self.order_data.get("geolocation", None)
-        if geolocation is not None and hasattr(geolocation, '_dict_'):
-            geolocation = geolocation._dict_
-  
         if geolocation is None:
             self.logger.info(
                 "Input did not include geolocation data, invoking Geolocation Service")
@@ -124,8 +121,7 @@ class OrderHelper():
                 delivery_time,
                 delivery_date)
             
-            
-        items = [item.__dict__ for item in self.order_data.get(
+        items = [item for item in self.order_data.get(
             "cart_items", [])]
 
         status = OrderStatus.ERROR.value if order_errors else OrderStatus.CREATED.value

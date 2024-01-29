@@ -1,4 +1,3 @@
-
 from typing import Union
 from pydantic import BaseModel, StrictStr
 
@@ -21,7 +20,6 @@ class ShopifyCustomer(BaseModel):
 
 
 class ShopifyLineItem(BaseModel):
-    sku: StrictStr | None = None
     name: StrictStr
     price: float
     quantity: int
@@ -39,12 +37,17 @@ class ShopifyOrder(BaseModel):
 
     def line_items_to_dict(self) -> list[dict]:
         """
-        Converts the line_items field to a list of dictionaries.
+        Converts the line_items field to a list of dictionaries, where each dictionary represents a line item.
+        In each dictionary, the 'name' field of the ShopifyLineItem is renamed to 'product'.
+
 
         Returns:
         list[dict]: A list of dictionaries representing each line item.
         """
-        return [item.model_dump() for item in self.line_items]
+        return [
+            {"product": item.name, "price": item.price, "quantity": item.quantity}
+            for item in self.line_items
+        ]
 
 
 class ShopifyPayload(BaseModel):

@@ -16,6 +16,7 @@ from botocore.exceptions import ClientError
 # Initialize logging
 logger = Logger()
 
+
 def lambda_handler(event: dict, context: LambdaContext):
     """
     Handler function for AWS Lambda to process Shopify order/create events.
@@ -24,42 +25,55 @@ def lambda_handler(event: dict, context: LambdaContext):
     events from Shopify (e.g., order creation). It processes these events and sends
     the relevant order information to the 'CreateOrderFunction' for further handling.
 
-    Returns: 
+    Returns:
     No specific return. Because of async invoke, the value is discarded.
 
     """
-    CREATE_ORDER_FUNCTION_NAME = os.getenv('CREATE_ORDER_FUNCTION_NAME')
+    CREATE_ORDER_FUNCTION_NAME = os.getenv("CREATE_ORDER_FUNCTION_NAME")
     if CREATE_ORDER_FUNCTION_NAME is None:
-        error_message = "Environment variable not configured: CREATE_ORDER_FUNCTION_NAME"
+        error_message = (
+            "Environment variable not configured: CREATE_ORDER_FUNCTION_NAME"
+        )
         logger.error(error_message)
         raise ConfigurationError(error_message)
-        
+
     try:
         logger.info("Initializing Shopify Order Integration function")
 
         # Extract Shopify event data
         shopify_payload: ShopifyPayload = parse(
-            event=event, model=ShopifyPayload, envelope=EventBridgeEnvelope)
+            event=event, model=ShopifyPayload, envelope=EventBridgeEnvelope
+        )
 
         # Map order fields
         shopify_mapper = ShopifyDataMapper(shopify_payload.payload)
         order_data = shopify_mapper.map_order_data()
 
         # Send data to the CreateOrderFunction API
-        logger.info(
-            f"Calling {CREATE_ORDER_FUNCTION_NAME} with payload: {order_data}")
+        logger.info(f"Calling {CREATE_ORDER_FUNCTION_NAME} with payload: {order_data}")
 
         # Invoke the CreateOrderFunction directly
-        lambda_client = boto3.client('lambda')
+        lambda_client = boto3.client("lambda")
+
+        requestContext = {
+            "requestContext": {
+                "authorizer": {
+                    "claims": {
+                        "email": "shopify_integration@mail.com",
+                        "cognito:groups": "MesaDeControl",
+                    }
+                }
+            }
+        }
+        payload = {**requestContext, **order_data}
 
         response = lambda_client.invoke(
             FunctionName=CREATE_ORDER_FUNCTION_NAME,
-            InvocationType='RequestResponse',  # Use 'Event' for async
-            Payload=json.dumps(order_data),
+            InvocationType="RequestResponse",  # Use 'Event' for async
+            Payload=json.dumps(payload),
         )
 
-        response_payload = json.loads(
-            response['Payload'].read().decode("utf-8"))
+        response_payload = json.loads(response["Payload"].read().decode("utf-8"))
 
         status_code = response_payload.get("statusCode")
         body_str = response_payload.get("body")
@@ -68,7 +82,8 @@ def lambda_handler(event: dict, context: LambdaContext):
 
         if status_code >= 400:
             logger.error(
-                f"Create order function returned error {status_code=}, {message=} ")
+                f"Create order function returned error {status_code=}, {message=} "
+            )
         else:
             logger.info(f"Order created.")
 
@@ -81,7 +96,7 @@ def lambda_handler(event: dict, context: LambdaContext):
     except ClientError as boto_error:
         logger.error(f"Boto3 Client Error: {str(boto_error)}")
         raise
-        
+
     except Exception as e:
         logger.error(f"Error processing the event: {str(e)}")
         raise
