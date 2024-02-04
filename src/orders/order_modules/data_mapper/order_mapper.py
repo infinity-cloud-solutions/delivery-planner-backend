@@ -139,8 +139,6 @@ class OrderHelper():
             "payment_method": self.order_data.get("payment_method"),
             "created_by": username,
             "created_at": datetime.now().isoformat(),
-            "updated_by": None,
-            "updated_at": None,
             "errors": order_errors,
             "notes": None,
             "status": status,
