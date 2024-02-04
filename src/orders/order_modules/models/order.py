@@ -8,6 +8,8 @@ from pydantic import confloat
 from pydantic import conint
 from pydantic import validator
 
+from order_modules.utils.status import OrderStatus
+
 
 class Geolocation(BaseModel):
     latitude: StrictFloat
@@ -69,6 +71,7 @@ class HIBerryOrder(DeliveryDateMixin):
 
 class HIBerryOrderWithId(HIBerryOrder):
     id: StrictStr
+    status: OrderStatus = OrderStatus.CREATED
 
 
 class OrderPrimaryKey(DeliveryDateMixin):
