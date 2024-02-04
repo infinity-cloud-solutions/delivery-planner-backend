@@ -81,16 +81,15 @@ class OrderHelper():
     def build_order(
         self,
         username: str,
-        uid: str = None
+        uid: str = None,
+        status_on_success: OrderStatus = OrderStatus.CREATED,
     ) -> Dict[str, Any]:
         """This function will create a dictionary to send to DynamoDB to create a new record
 
-        Arguments:
-            username -- who is sending the request
-            uid -- order unique identifier
-
-        Returns:
-            Object needed by DynamoDB to create a record
+        :param username: Who is sending the request.
+        :param uid: Order unique identifier.
+        :param status_on_success: Order status to use on successful creation.
+        :return: Object needed by DynamoDB to create a record.
         """
         order_errors = []
         driver = None
@@ -124,7 +123,8 @@ class OrderHelper():
         items = [item for item in self.order_data.get(
             "cart_items", [])]
 
-        status = OrderStatus.ERROR.value if order_errors else OrderStatus.CREATED.value
+        status = OrderStatus.ERROR.value if order_errors else status_on_success.value
+
         data = {
             "id": uid,
             "client_name": self.order_data.get("client_name"),
@@ -139,13 +139,12 @@ class OrderHelper():
             "payment_method": self.order_data.get("payment_method"),
             "created_by": username,
             "created_at": datetime.now().isoformat(),
-            "updated_by": None,
-            "updated_at": None,
             "errors": order_errors,
-            "notes": None,
+            "notes": self.order_data.get("notes"),
             "status": status,
             "delivery_sequence": None,
-            "driver": driver
+            "driver": driver,
+            "source": self.order_data.get("source").value,
         }
 
         return data

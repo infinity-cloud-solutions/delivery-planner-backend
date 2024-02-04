@@ -186,15 +186,17 @@ def update_order(event: Dict[str, Any], context: LambdaContext) -> Dict[str, Any
         body = doorman.get_body_from_request()
         order_data = HIBerryOrderWithId(**body)
         order_id = order_data.id
-
+        order_status = order_data.status
+        
         logger.info(
-            f"Updating order for: {order_data.client_name} at {order_data.delivery_address} and id {order_id}"
+            f"Updating order for: {order_data.client_name} at {order_data.delivery_address} and id {order_id} with status {order_status}"
         )
 
         builder = OrderHelper(order_data.model_dump())
         order_db_data = builder.build_order(
             username=username,
             uid=order_id,
+            status_on_success=order_status,
         )
         dao = OrderDAO()
         update_response = dao.update_order(order_db_data)

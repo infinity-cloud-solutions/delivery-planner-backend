@@ -8,6 +8,9 @@ from pydantic import confloat
 from pydantic import conint
 from pydantic import validator
 
+from order_modules.utils.status import OrderStatus
+from order_modules.utils.source import OrderSource
+
 
 class Geolocation(BaseModel):
     latitude: StrictFloat
@@ -42,7 +45,9 @@ class HIBerryOrder(DeliveryDateMixin):
     total_amount: confloat(ge=0.0)
     payment_method: StrictStr
     geolocation: Geolocation | None = None
-    source: int | None = None
+    status: OrderStatus = OrderStatus.CREATED
+    source: OrderSource = OrderSource.HIBERRYAPP
+    notes: StrictStr | None = None
 
     @validator("total_amount", pre=True, always=True)
     def calculate_total_amount(cls, value, values):

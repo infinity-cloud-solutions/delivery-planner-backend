@@ -26,7 +26,5 @@ class ProductHelper():
             "price": product_data["price"],
             "created_by": username,
             "created_at": datetime.now().isoformat(),
-            "updated_by": None,
-            "updated_at": None,
         }
         return data
