@@ -124,7 +124,7 @@ class OrderHelper():
             "cart_items", [])]
 
         status = OrderStatus.ERROR.value if order_errors else status_on_success.value
-        
+
         data = {
             "id": uid,
             "client_name": self.order_data.get("client_name"),
@@ -143,7 +143,8 @@ class OrderHelper():
             "notes": None,
             "status": status,
             "delivery_sequence": None,
-            "driver": driver
+            "driver": driver,
+            "source": self.order_data.get("source").value,
         }
 
         return data
