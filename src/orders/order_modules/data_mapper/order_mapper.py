@@ -140,7 +140,7 @@ class OrderHelper():
             "created_by": username,
             "created_at": datetime.now().isoformat(),
             "errors": order_errors,
-            "notes": None,
+            "notes": self.order_data.get("notes"),
             "status": status,
             "delivery_sequence": None,
             "driver": driver,
