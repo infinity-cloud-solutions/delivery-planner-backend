@@ -7,7 +7,7 @@ from order_modules.dao.order_dao import OrderDAO
 from order_modules.data_mapper.order_mapper import OrderHelper
 from order_modules.models.order import (
     HIBerryOrder,
-    HIBerryOrderWithId,
+    HIBerryOrderUpdate,
     OrderPrimaryKey,
     DeliveryDateMixin,
 )
@@ -184,13 +184,10 @@ def update_order(event: Dict[str, Any], context: LambdaContext) -> Dict[str, Any
             raise AuthError(f"User {username} is not authorized to update a order")
 
         body = doorman.get_body_from_request()
-        order_data = HIBerryOrderWithId(**body)
+
+        order_data = HIBerryOrderUpdate(**body)
         order_id = order_data.id
         order_status = order_data.status
-        
-        logger.info(
-            f"Updating order for: {order_data.client_name} at {order_data.delivery_address} and id {order_id} with status {order_status}"
-        )
 
         builder = OrderHelper(order_data.model_dump())
         order_db_data = builder.build_order(
@@ -199,6 +196,26 @@ def update_order(event: Dict[str, Any], context: LambdaContext) -> Dict[str, Any
             status_on_success=order_status,
         )
         dao = OrderDAO()
+
+        original_date = order_data.original_date
+        if original_date != order_data.delivery_date:
+            order_to_delete = OrderPrimaryKey(id=order_id, delivery_date=original_date)
+            delete_response = dao.delete_order(
+                delivery_date=order_to_delete.delivery_date, order_id=order_to_delete.id
+            )
+
+            if delete_response["status"] != "success":
+                logger.error(f"Error deleting order: {delete_response['message']}")
+                return doorman.build_response(
+                    payload={"message": delete_response["message"]},
+                    status_code=delete_response.get("status_code", 500),
+                )
+
+            logger.info(f"Order with ID {order_id} on {original_date=} deleted")
+
+        logger.info(
+            f"Updating order for: {order_data.client_name} at {order_data.delivery_address} and id {order_id} with status {order_status}"
+        )
         update_response = dao.update_order(order_db_data)
 
         if update_response["status_code"] == 200:
