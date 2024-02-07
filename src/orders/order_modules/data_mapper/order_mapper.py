@@ -130,7 +130,7 @@ class OrderHelper():
             "client_name": self.order_data.get("client_name"),
             "delivery_date": delivery_date,
             "delivery_time": delivery_time,
-            "address": self.order_data.get("delivery_address"),
+            "delivery_address": self.order_data.get("delivery_address"),
             "latitude": latitude,
             "longitude": longitude,
             "phone_number": self.order_data.get("phone_number"),
