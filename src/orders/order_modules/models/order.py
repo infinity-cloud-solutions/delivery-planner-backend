@@ -1,7 +1,7 @@
 from datetime import datetime, timedelta, timezone
 from typing import List
 
-from pydantic import BaseModel
+from pydantic import BaseModel, field_validator
 from pydantic import StrictStr
 from pydantic import StrictFloat
 from pydantic import confloat
@@ -10,6 +10,14 @@ from pydantic import validator
 
 from order_modules.utils.status import OrderStatus
 from order_modules.utils.source import OrderSource
+
+
+def validate_date_format(date: StrictStr) -> StrictStr:
+    try:
+        datetime.strptime(date, "%Y-%m-%d")
+        return date
+    except ValueError:
+        raise ValueError(f"delivery_date must be in yyyy-mm-dd format, got {date}")
 
 
 class Geolocation(BaseModel):
@@ -26,13 +34,7 @@ class HIBerryProduct(BaseModel):
 class DeliveryDateMixin(BaseModel):
     delivery_date: StrictStr
 
-    @validator('delivery_date')
-    def validate_delivery_date_format(cls, value):
-        try:
-            datetime.strptime(value, "%Y-%m-%d")
-            return value
-        except ValueError:
-            raise ValueError(f"delivery_date must be in yyyy-mm-dd format, got {value}")
+    validate_date = field_validator("delivery_date")(validate_date_format)
 
 
 class HIBerryOrder(DeliveryDateMixin):
@@ -51,14 +53,18 @@ class HIBerryOrder(DeliveryDateMixin):
 
     @validator("total_amount", pre=True, always=True)
     def calculate_total_amount(cls, value, values):
-        calculated_total = sum(item.price * item.quantity for item in values.get("cart_items", []))
+        calculated_total = sum(
+            item.price * item.quantity for item in values.get("cart_items", [])
+        )
 
         if value is not None and calculated_total != value:
-            raise ValueError("Provided total_amount does not match the calculated total from cart_items.")
+            raise ValueError(
+                "Provided total_amount does not match the calculated total from cart_items."
+            )
 
         return calculated_total
 
-    @validator('delivery_date')
+    @validator("delivery_date")
     def validate_delivery_date_future(cls, value):
         delivery_date = datetime.strptime(value, "%Y-%m-%d")
 
@@ -67,13 +73,18 @@ class HIBerryOrder(DeliveryDateMixin):
         current_datetime = datetime.combine(current_time.date(), datetime.min.time())
 
         if delivery_date < current_datetime:
-            raise ValueError(f"delivery_date must be today or in the future in MX Central Time, got {value}")
+            raise ValueError(
+                f"delivery_date must be today or in the future in MX Central Time, got {value}"
+            )
 
         return value
 
 
-class HIBerryOrderWithId(HIBerryOrder):
+class HIBerryOrderUpdate(HIBerryOrder):
     id: StrictStr
+    original_date: StrictStr
+
+    validate_date = field_validator("original_date")(validate_date_format)
 
 
 class OrderPrimaryKey(DeliveryDateMixin):

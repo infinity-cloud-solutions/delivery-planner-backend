@@ -323,6 +323,7 @@ Resources:
                 Action:
                   - dynamodb:PutItem
                   - dynamodb:Query
+                  - dynamodb:DeleteItem
                 Resource: !GetAtt OrdersTable.Arn
         - PolicyName: LocationServiceAccess
           PolicyDocument:
