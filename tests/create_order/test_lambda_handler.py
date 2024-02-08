@@ -72,7 +72,13 @@ class TestCreateOrderLambdaHandler(TestCase):
                 "Access-Control-Allow-Methods": "GET, POST, PATCH, OPTIONS, DELETE",
             },
             "body": json.dumps(
-                {"id": mock_id, "status": "Creada", "assigned_driver": 2, "errors": []}
+                {
+                    "id": mock_id,
+                    "delivery_date": datetime.now().strftime("%Y-%m-%d"),
+                    "status": "Creada",
+                    "assigned_driver": 2,
+                    "errors": [],
+                }
             ),
         }
 
