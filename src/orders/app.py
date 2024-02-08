@@ -69,6 +69,7 @@ def create_order(event: Dict[str, Any], context: LambdaContext) -> Dict[str, Any
                 f"Order received and created with status {order_status} and for driver {assigned_driver}"
             )
             output_data = {
+                "id": order_db_data["id"],
                 "status": order_db_data["status"],
                 "assigned_driver": assigned_driver,
                 "errors": errors,
@@ -227,6 +228,7 @@ def update_order(event: Dict[str, Any], context: LambdaContext) -> Dict[str, Any
                 f"Order updated with status {order_status} and for driver {assigned_driver}"
             )
             output_data = {
+                "id": order_db_data["id"],
                 "status": order_db_data["status"],
                 "assigned_driver": assigned_driver,
                 "errors": errors,
