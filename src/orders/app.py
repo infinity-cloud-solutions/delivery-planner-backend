@@ -70,6 +70,7 @@ def create_order(event: Dict[str, Any], context: LambdaContext) -> Dict[str, Any
             )
             output_data = {
                 "id": order_db_data["id"],
+                "delivery_date": order_db_data["delivery_date"],
                 "status": order_db_data["status"],
                 "assigned_driver": assigned_driver,
                 "errors": errors,
