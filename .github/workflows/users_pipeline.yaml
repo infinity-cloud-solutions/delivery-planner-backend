@@ -25,6 +25,7 @@ jobs:
       aws_secret_access_key: ${{ secrets.AWS_SECRET_ACCESS_KEY_MBU }}
   uat: 
     uses: ./.github/workflows/pipeline_template.yaml
+    needs: [development]
     with: 
       stack_name: ${{ vars.USERS_STACK_NAME }}-uat
       sam_template: src/users/template.yaml
