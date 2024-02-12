@@ -32,6 +32,7 @@ jobs:
     uses: ./.github/workflows/pipeline_template.yaml
     needs: [run_unit_tests]
     with: 
+      sam_deploy_overrides: "StageName=development"
       stack_name: ${{ vars.PRODUCTS_STACK_NAME }}-development
       sam_template: src/products/template.yaml
       aws_region: us-east-1
@@ -47,6 +48,7 @@ jobs:
     uses: ./.github/workflows/pipeline_template.yaml
     needs: [development]
     with: 
+      sam_deploy_overrides: "StageName=uat"
       stack_name: ${{ vars.PRODUCTS_STACK_NAME }}-uat
       sam_template: src/products/template.yaml
       aws_region: us-east-1
