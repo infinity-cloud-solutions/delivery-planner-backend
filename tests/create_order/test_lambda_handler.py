@@ -194,3 +194,63 @@ class TestCreateOrderLambdaHandler(TestCase):
         expected = response
 
         self.assertEqual(observed, expected)
+
+    @patch.dict(os.environ, {"APP_ENVIRONMENT": "local"}, clear=True)
+    @patch("src.orders.order_modules.data_mapper.order_mapper.OrderDAO.fetch_orders")
+    @patch("src.orders.app.DoormanUtil.auth_user")
+    @patch("src.orders.app.DoormanUtil.get_username_from_context")
+    def test_order_from_shopify(
+        self,
+        get_username_mocked,
+        auth_user_mocked,
+        fetch_mock,
+    ):
+
+        response = {
+            "isBase64Encoded": False,
+            "statusCode": 201,
+            "headers": {
+                "Content-Type": "application/json",
+                "Access-Control-Allow-Origin": "*",
+                "Access-Control-Allow-Headers": "Content-Type,Authorization,x-apigateway-header,X-Amz-Date,X-Api-Key,X-Amz-Security-Token",
+                "Access-Control-Allow-Methods": "GET, POST, PATCH, OPTIONS, DELETE",
+            },
+            "body": json.dumps(
+                {
+                    "id": "mock_id",
+                    "delivery_date": datetime.now().strftime("%Y-%m-%d"),
+                    "status": "Creada",
+                    "assigned_driver": 2,
+                    "errors": [],
+                }
+            ),
+        }
+        input = {
+            "client_name": "Marco Burgos",
+            "delivery_address": "Aurelio Ortega 2699-A, Colonia Jardines de la Seattle, 45150",
+            "delivery_date": "2024-02-15",
+            "delivery_time": "8 AM - 1 PM",
+            "phone_number": "1122334455",
+            "total_amount": 150,
+            "cart_items": [{"product": "Fresa", "price": 150, "quantity": 1}],
+            "payment_method": "efectivo",
+            "status": "Creada",
+            "order": "Ver detalles",
+            "source": 0,
+            "geolocation": {
+                "latitude": 20.721708,
+                "longitude": -103.370272
+            }
+        }
+        orders = [{"delivery_time":  "8 AM - 1 PM", "driver": 1} for _ in range(32)]
+        orders += [{"delivery_time": "8 AM - 1 PM", "driver": 2} for _ in range(32)]
+        orders += [{"delivery_time": "8 AM - 1 PM", "driver": 1} for _ in range(32)]
+        orders += [{"delivery_time": "1 PM - 5 PM", "driver": 2} for _ in range(32)]
+        mock_orders = {"payload": orders}
+        fetch_mock.return_value = mock_orders
+        get_username_mocked.return_value = "Mock User"
+        auth_user_mocked.return_value = True
+        observed = create_order({"body": input}, None)
+        expected = response
+
+        self.assertEqual(observed, expected)
