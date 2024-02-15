@@ -158,13 +158,13 @@ class DeliveryScheduler:
                 - 1 or 2:  Number of the driver assigned, indicating successful scheduling.
 
         Notes:
-            Sector-Based Delivery Preferences:
+            Sector-Based Delivery Preferences for HiberryApp orders:
             - West Sectors (1 and 2):
-                - Deliveries are preferred on Mondays, Wednesdays, and Fridays (days 0, 2, 4) during the afternoon (1 PM - 5 PM).
-                - No morning deliveries (8 AM - 1 PM) on these days in West Sectors.
+                - Deliveries are preferred on Mondays, Wednesdays, and Fridays (days 0, 2, 4) during the morning (8 AM - 1 PM).
+                - Deliveries are preferred on Tuesdays, Thursdays, and Saturdays (days 1, 3, 5) during the afternoon (1 PM - 5 PM).
             - East Sectors (3 and 4):
+                - Deliveries are preferred on Mondays, Wednesdays, and Fridays (days 0, 2, 4) during the afternoon (1 PM - 5 PM).
                 - Deliveries are preferred on Tuesdays, Thursdays, and Saturdays (days 1, 3, 5) during the morning (8 AM - 1 PM).
-                - No afternoon deliveries (1 PM - 5 PM) on these days in East Sectors.
         """
         day_of_week = self._get_day_of_week(order_date)
         customer_sector = self._get_customer_sector(customer_location)
