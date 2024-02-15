@@ -11,7 +11,7 @@ from order_modules.dao.order_dao import OrderDAO
 from order_modules.data_access.geolocation_handler import Geolocation
 from order_modules.utils.delivery import DeliveryScheduler
 from order_modules.errors.business_error import BusinessError
-
+from order_modules.utils.source import OrderSource
 from settings import ORDERS_PRIMARY_KEY
 
 # Third-party libraries
@@ -50,7 +50,8 @@ class OrderHelper():
     def get_available_driver(self,
                              geolocation: Dict[str, float],
                              delivery_time: str,
-                             delivery_date: str):
+                             delivery_date: str,
+                             source: OrderSource):
 
         customer_location = (geolocation.get("latitude"),
                              geolocation.get("longitude"))
@@ -65,13 +66,18 @@ class OrderHelper():
             query_value=delivery_date
         )
         orders = orders["payload"]
-
+        
+        check_sector_preference = True
+        if source is OrderSource.SHOPIFY:
+            check_sector_preference = False
+            
         planner = DeliveryScheduler()
         driver = planner.assign_driver_for_delivery(
             customer_location=customer_location,
             delivery_time=delivery_time,
             order_date=delivery_date,
-            orders=orders
+            orders=orders,
+            check_sector_preference=check_sector_preference,
         )
         if driver:
             return driver
@@ -102,6 +108,8 @@ class OrderHelper():
         delivery_date = self.order_data.get("delivery_date")
         delivery_time = self.order_data.get("delivery_time")
         
+        source = self.order_data.get("source")
+
         geolocation = self.fetch_geolocation()
         if geolocation is None:
             self.logger.info("Geolocation Data is missing, adding to the list of errors")
@@ -118,7 +126,8 @@ class OrderHelper():
             driver = self.get_available_driver(
                 geolocation,
                 delivery_time,
-                delivery_date)
+                delivery_date,
+                source)
             
         items = [item for item in self.order_data.get(
             "cart_items", [])]
@@ -144,7 +153,7 @@ class OrderHelper():
             "status": status,
             "delivery_sequence": None,
             "driver": driver,
-            "source": self.order_data.get("source").value,
+            "source": source.value,
         }
 
         return data

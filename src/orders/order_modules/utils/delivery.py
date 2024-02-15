@@ -4,6 +4,8 @@ from typing import List
 from typing import Dict
 from typing import Any
 
+from aws_lambda_powertools import Logger
+
 
 class DeliveryScheduler:
     MORNING_DELIVERIES = "8 AM - 1 PM"
@@ -20,6 +22,7 @@ class DeliveryScheduler:
     def __init__(self, origin=(20.6783825, -103.348088)):
         # Origin is at Hidalgo and Alcalde intersection in Guadalajara
         self.origin = origin
+        self.logger = Logger()
 
     def _get_day_of_week(self, order_date: str) -> int:
         """Return day of the week based on the order date.
@@ -130,12 +133,44 @@ class DeliveryScheduler:
 
         return assigned_driver
 
+    def _is_delivery_time_and_sector_compatible(
+        self, delivery_time: str, day_of_week: int, customer_sector: int
+    ) -> bool:
+        west_sectors = [1, 2]
+        east_sectors = [3, 4]
+
+        if day_of_week in [0, 2, 4]:  # Monday, Wednesday, Friday
+            if (
+                delivery_time == self.MORNING_DELIVERIES
+                and customer_sector not in west_sectors
+            ):
+                return False
+            elif (
+                delivery_time == self.AFTERNOON_DELIVERIES
+                and customer_sector not in east_sectors
+            ):
+                return False
+        elif day_of_week in [1, 3, 5]:  # Tuesday, Thursday, Saturday
+            if (
+                delivery_time == self.MORNING_DELIVERIES
+                and customer_sector not in east_sectors
+            ):
+                return False
+            elif (
+                delivery_time == self.AFTERNOON_DELIVERIES
+                and customer_sector not in west_sectors
+            ):
+                return False
+
+        return True
+
     def assign_driver_for_delivery(
         self,
         customer_location: Tuple[float, float],
         delivery_time: str,
         order_date: str,
         orders: List[Dict[str, Any]],
+        check_sector_preference: bool = True,
     ) -> int:
         """This function will check if the order can be created for the date and time specified
 
@@ -144,7 +179,7 @@ class DeliveryScheduler:
             delivery_time -- Options can be '8 AM - 1 PM' or '1 PM - 5 PM'
             order_date -- string date with format YYYY-MM-DD
             orders -- list of orders for specific date, this will help us to check capacity
-
+            check_sector_preference -- boolean , If False , sector delivery preferences are ommited and drivers allocated based on pure capacity
         Returns:
             int: Indicates the scheduling status or driver assigned of the delivery order:
                 - 0: Order cannot be scheduled
@@ -164,35 +199,32 @@ class DeliveryScheduler:
         driver_assigned = self._check_capacity_and_assign_driver(
             orders=orders, delivery_time_range=delivery_time, sector=customer_sector
         )
+
         if driver_assigned == 0:
+            self.logger.warning(
+                f"Unable to assign driver due to full capacity on {order_date=},{customer_sector=} at {delivery_time=}."
+            )
             return 0
 
-        west_sectors = [1, 2]
-        east_sectors = [3, 4]
+        self.logger.info(
+            f"Initial {driver_assigned=} for {customer_sector=} on {order_date=} at {delivery_time=}."
+        )
 
-        if (
-            day_of_week in [0, 2, 4]
-            and delivery_time == self.MORNING_DELIVERIES
-            and customer_sector not in west_sectors
-        ):
-            return 0
-        elif (
-            day_of_week in [1, 3, 5]
-            and delivery_time == self.MORNING_DELIVERIES
-            and customer_sector not in east_sectors
-        ):
-            return 0
-        elif (
-            day_of_week in [0, 2, 4]
-            and delivery_time == self.AFTERNOON_DELIVERIES
-            and customer_sector not in east_sectors
-        ):
-            return 0
-        elif (
-            day_of_week in [1, 3, 5]
-            and delivery_time == self.AFTERNOON_DELIVERIES
-            and customer_sector not in west_sectors
-        ):
-            return 0
+        if check_sector_preference:
+            if self._is_delivery_time_and_sector_compatible(
+                delivery_time, day_of_week, customer_sector
+            ):
+                self.logger.info(
+                    f"Delivery time and sector preferences are compatible. Finalizing driver {driver_assigned} for the delivery."
+                )
+                return driver_assigned
+            else:
+                self.logger.warning(
+                    f"Unable to assign driver due to violation of sector preferences on {order_date=},{customer_sector=} at {delivery_time=}."
+                )
+                return 0
         else:
+            self.logger.info(
+                "Sector delivery preferences are ignored. Proceeding with initial driver assignment."
+            )
             return driver_assigned
