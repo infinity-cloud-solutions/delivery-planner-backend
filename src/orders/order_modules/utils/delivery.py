@@ -169,8 +169,14 @@ class DeliveryScheduler:
         day_of_week = self._get_day_of_week(order_date)
         customer_sector = self._get_customer_sector(customer_location)
         driver_assigned = self._check_capacity_and_assign_driver(
-            orders=orders, delivery_time_range=delivery_time, sector=customer_sector
+            orders=orders,
+            delivery_time_range=delivery_time,
+            sector=customer_sector,
+            source=source,
         )
+        if source is OrderSource.SHOPIFY:
+            return driver_assigned
+
         if driver_assigned == 0:
             return 0
 

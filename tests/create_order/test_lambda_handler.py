@@ -194,7 +194,8 @@ class TestCreateOrderLambdaHandler(TestCase):
         expected = response
 
         self.assertEqual(observed, expected)
-
+    
+    @patch("uuid.uuid4")
     @patch.dict(os.environ, {"APP_ENVIRONMENT": "local"}, clear=True)
     @patch("src.orders.order_modules.data_mapper.order_mapper.OrderDAO.fetch_orders")
     @patch("src.orders.app.DoormanUtil.auth_user")
@@ -204,8 +205,11 @@ class TestCreateOrderLambdaHandler(TestCase):
         get_username_mocked,
         auth_user_mocked,
         fetch_mock,
+        uuid_mock,
     ):
-
+        mock_id = "123e4567-e89b-12d3-a456-426614174000"
+        uuid_mock.return_value = uuid.UUID(mock_id)
+        
         response = {
             "isBase64Encoded": False,
             "statusCode": 201,
@@ -217,10 +221,10 @@ class TestCreateOrderLambdaHandler(TestCase):
             },
             "body": json.dumps(
                 {
-                    "id": "mock_id",
+                    "id": mock_id,
                     "delivery_date": datetime.now().strftime("%Y-%m-%d"),
                     "status": "Creada",
-                    "assigned_driver": 2,
+                    "assigned_driver": 1,
                     "errors": [],
                 }
             ),
