@@ -45,6 +45,8 @@ def lambda_handler(event: dict, context: LambdaContext):
             event=event, model=ShopifyPayload, envelope=EventBridgeEnvelope
         )
 
+        logger.info(f"Incoming data is {shopify_payload=}")
+
         # Map order fields
         shopify_mapper = ShopifyDataMapper(shopify_payload.payload)
         order_data = shopify_mapper.map_order_data()
