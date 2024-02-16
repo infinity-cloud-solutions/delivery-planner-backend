@@ -239,7 +239,7 @@ class TestCreateOrderLambdaHandler(TestCase):
         input = {
             "client_name": "Marco Burgos",
             "delivery_address": "Aurelio Ortega 2699-A, Colonia Jardines de la Seattle, 45150",
-            "delivery_date": "2024-02-15",
+            "delivery_date": datetime.now().strftime("%Y-%m-%d"),
             "delivery_time": "8 AM - 1 PM",
             "phone_number": "1122334455",
             "total_amount": 150,
