@@ -25,7 +25,14 @@ class TestShopifyDataMapper(TestCase):
                                                            ShopifyNoteAttribute(name='Order Fulfillment Type', value='Store Pickup')],
                                           line_items=line_items,
                                           current_subtotal_price=200.0)
-
+        
+        self.valid_order_no_order_due_date = ShopifyOrder(customer=customer,
+                                                          shipping_address=shipping_address,
+                                                          note_attributes=[ShopifyNoteAttribute(name='Order Due Time', value='8 AM - 1 PM')],
+                                                          payment_gateway_names=['Conekta'],
+                                                          line_items=line_items,
+                                                          current_subtotal_price=200.0)
+        
         self.valid_order_with_paypal = self.valid_order.copy(
             update={"payment_gateway_names": ['paypal']})
         
@@ -39,6 +46,16 @@ class TestShopifyDataMapper(TestCase):
         mapper = ShopifyDataMapper(self.valid_order)
         formatted_date = mapper._get_delivery_date()
         self.assertEqual(formatted_date, "2023-12-20")
+
+    def test_next_day_on_missing_order_due_date(self):
+        from datetime import timezone, datetime, timedelta
+
+        mapper = ShopifyDataMapper(self.valid_order_no_order_due_date)
+        mx_tz_delta = timezone(timedelta(hours=-6))
+        tomorrow_in_mx_timezone = datetime.now(mx_tz_delta) + timedelta(days=1)
+        formatted_date = mapper._get_delivery_date()
+
+        self.assertEqual(tomorrow_in_mx_timezone.strftime("%Y-%m-%d"), formatted_date)
 
     def test_format_delivery_date_invalid(self):
         mapper = ShopifyDataMapper(self.invalid_order)
