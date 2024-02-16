@@ -4,6 +4,8 @@ from typing import List
 from typing import Dict
 from typing import Any
 
+from order_modules.utils.source import OrderSource
+
 
 class DeliveryScheduler:
     MORNING_DELIVERIES = "8 AM - 1 PM"
@@ -63,7 +65,11 @@ class DeliveryScheduler:
             return self.INVALID_SECTOR  # Invalid sector
 
     def _check_capacity_and_assign_driver(
-        self, orders: List[Dict[str, Any]], delivery_time_range: str, sector: int
+        self,
+        orders: List[Dict[str, Any]],
+        delivery_time_range: str,
+        sector: int,
+        source: OrderSource = OrderSource.HIBERRYAPP,
     ) -> int:
         """This function will check if the order can be assign to a delivery man in the delivery_time range
 
@@ -72,8 +78,8 @@ class DeliveryScheduler:
             delivery_time_range -- Could be for monday shift or afternoon shift
             sector -- Integer that will be used to assign the delivery man to the order, 1 or 2 for west and 3 or 4 for east
                         if we are at capacity for specific hours, we will use the other delivery man
-
-        Returns:
+            source -- OrderSource Enum . If Shopify , driver is assigned with no capacity check .
+                    Shopify has priority and should be created based on sector only.
         int:
             - 0: If the delivery schedule is at full capacity and the order cannot be accommodated.
             - 1 or 2:  Number of the driver assigned.
@@ -92,7 +98,7 @@ class DeliveryScheduler:
         total_orders_count = len(orders)
 
         # Case 1: Delivery Man for this sector has capacity, so we assign it directly to him
-        if total_orders_count < 32:
+        if total_orders_count < 32 or source is OrderSource.SHOPIFY:
             return driver_sector_map[sector]
 
         # Case 2: We have full capacity for the date (32 deliveries for shift,
@@ -136,6 +142,7 @@ class DeliveryScheduler:
         delivery_time: str,
         order_date: str,
         orders: List[Dict[str, Any]],
+        source: OrderSource = OrderSource.HIBERRYAPP,
     ) -> int:
         """This function will check if the order can be created for the date and time specified
 
@@ -144,26 +151,32 @@ class DeliveryScheduler:
             delivery_time -- Options can be '8 AM - 1 PM' or '1 PM - 5 PM'
             order_date -- string date with format YYYY-MM-DD
             orders -- list of orders for specific date, this will help us to check capacity
-
+            source -- OrderSource Enum. Used to give priority to Shopify orders.
         Returns:
             int: Indicates the scheduling status or driver assigned of the delivery order:
                 - 0: Order cannot be scheduled
                 - 1 or 2:  Number of the driver assigned, indicating successful scheduling.
 
         Notes:
-            Sector-Based Delivery Preferences:
+            Sector-Based Delivery Preferences for HiberryApp orders:
             - West Sectors (1 and 2):
-                - Deliveries are preferred on Mondays, Wednesdays, and Fridays (days 0, 2, 4) during the afternoon (1 PM - 5 PM).
-                - No morning deliveries (8 AM - 1 PM) on these days in West Sectors.
+                - Deliveries are preferred on Mondays, Wednesdays, and Fridays (days 0, 2, 4) during the morning (8 AM - 1 PM).
+                - Deliveries are preferred on Tuesdays, Thursdays, and Saturdays (days 1, 3, 5) during the afternoon (1 PM - 5 PM).
             - East Sectors (3 and 4):
+                - Deliveries are preferred on Mondays, Wednesdays, and Fridays (days 0, 2, 4) during the afternoon (1 PM - 5 PM).
                 - Deliveries are preferred on Tuesdays, Thursdays, and Saturdays (days 1, 3, 5) during the morning (8 AM - 1 PM).
-                - No afternoon deliveries (1 PM - 5 PM) on these days in East Sectors.
         """
         day_of_week = self._get_day_of_week(order_date)
         customer_sector = self._get_customer_sector(customer_location)
         driver_assigned = self._check_capacity_and_assign_driver(
-            orders=orders, delivery_time_range=delivery_time, sector=customer_sector
+            orders=orders,
+            delivery_time_range=delivery_time,
+            sector=customer_sector,
+            source=source,
         )
+        if source is OrderSource.SHOPIFY:
+            return driver_assigned
+
         if driver_assigned == 0:
             return 0
 
