@@ -197,6 +197,7 @@ class TestCreateOrderLambdaHandler(TestCase):
     
     @patch("uuid.uuid4")
     @patch.dict(os.environ, {"APP_ENVIRONMENT": "local"}, clear=True)
+    @patch("src.orders.order_modules.data_mapper.order_mapper.OrderDAO.create_order")
     @patch("src.orders.order_modules.data_mapper.order_mapper.OrderDAO.fetch_orders")
     @patch("src.orders.app.DoormanUtil.auth_user")
     @patch("src.orders.app.DoormanUtil.get_username_from_context")
@@ -205,11 +206,17 @@ class TestCreateOrderLambdaHandler(TestCase):
         get_username_mocked,
         auth_user_mocked,
         fetch_mock,
+        dao_mocked,
         uuid_mock,
     ):
         mock_id = "123e4567-e89b-12d3-a456-426614174000"
         uuid_mock.return_value = uuid.UUID(mock_id)
-        
+        dao_response = {
+            "status": "success",
+            "status_code": 201,
+            "message": "Record saved in DynamoDB",
+            "payload": None,
+        }
         response = {
             "isBase64Encoded": False,
             "statusCode": 201,
@@ -254,6 +261,9 @@ class TestCreateOrderLambdaHandler(TestCase):
         fetch_mock.return_value = mock_orders
         get_username_mocked.return_value = "Mock User"
         auth_user_mocked.return_value = True
+        
+        dao_mocked.return_value = dao_response
+
         observed = create_order({"body": input}, None)
         expected = response
 
