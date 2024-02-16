@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timedelta, timezone
 from typing import Optional
 
 from models import ShopifyOrder
@@ -38,10 +38,10 @@ class ShopifyDataMapper:
         attribute_name (str): The name of the attribute for which the value is sought.
 
         Returns:
-        Optional[str]: The value of the specified attribute, if found. Otherwise, None.
+        Optional[str]: The value of the specified attribute, if found and not empty/none. Otherwise, None.
         """
         for attribute in self.order.note_attributes:
-            if attribute.name == attribute_name:
+            if attribute.name == attribute_name and attribute.value:
                 return attribute.value
         return None
 
@@ -89,10 +89,11 @@ class ShopifyDataMapper:
 
     def _get_delivery_date(self) -> str:
         """
-        Retrieves and formats the delivery date from the order's note attributes 'Order Due Date.
-
+        Retrieves and formats the delivery date from the order's note attributes 'Order Due Date'.
+        If there is no 'Order Due Date', automatically assigns tomorrow's date.
+        
         Returns:
-            str: The formatted delivery date in "yyyy-mm-dd" format.
+            str: The formatted delivery date in "yyyy-mm-dd" format. 
 
         Raises:
             ValueError: If the 'Order Due Date' is not in the expected format or is missing.
@@ -100,7 +101,11 @@ class ShopifyDataMapper:
         delivery_date = self._get_note_value("Order Due Date")
         if delivery_date is not None:
             return self._format_delivery_date(delivery_date)
-        return None
+        else:
+            mx_tz_delta = timezone(timedelta(hours=-6))
+            tomorrow_in_mx_timezone = datetime.now(mx_tz_delta) + timedelta(days=1)
+            delivery_date = tomorrow_in_mx_timezone.strftime("%Y-%m-%d")
+            return delivery_date
 
     def _check_order_is_allowed(self):
         """
