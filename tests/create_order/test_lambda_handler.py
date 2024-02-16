@@ -75,6 +75,8 @@ class TestCreateOrderLambdaHandler(TestCase):
                 {
                     "id": mock_id,
                     "delivery_date": datetime.now().strftime("%Y-%m-%d"),
+                    "latitude": 20.12,
+                    "longitude": -103.12,
                     "status": "Creada",
                     "assigned_driver": 2,
                     "errors": [],
@@ -230,6 +232,8 @@ class TestCreateOrderLambdaHandler(TestCase):
                 {
                     "id": mock_id,
                     "delivery_date": datetime.now().strftime("%Y-%m-%d"),
+                    "latitude": 20.721708,
+                    "longitude": -103.370272,
                     "status": "Creada",
                     "assigned_driver": 1,
                     "errors": [],

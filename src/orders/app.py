@@ -71,7 +71,9 @@ def create_order(event: Dict[str, Any], context: LambdaContext) -> Dict[str, Any
             output_data = {
                 "id": order_db_data["id"],
                 "delivery_date": order_db_data["delivery_date"],
-                "status": order_db_data["status"],
+                "latitude": order_db_data["latitude"],
+                "longitude": order_db_data["longitude"],
+                "status": order_status,
                 "assigned_driver": assigned_driver,
                 "errors": errors,
             }
@@ -230,7 +232,9 @@ def update_order(event: Dict[str, Any], context: LambdaContext) -> Dict[str, Any
             )
             output_data = {
                 "id": order_db_data["id"],
-                "status": order_db_data["status"],
+                "latitude": order_db_data["latitude"],
+                "longitude": order_db_data["longitude"],
+                "status": order_status,
                 "assigned_driver": assigned_driver,
                 "errors": errors,
             }
