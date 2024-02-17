@@ -41,6 +41,9 @@ def set_delivery_schedule_order(
         if is_auth is False:
             raise AuthError("User is not allow to retrieve orders")
         body = doorman.get_body_from_request()
+
+        logger.debug(f"Incoming data is {body=} and {username=}")
+
         schedule_for_date = body["date"]
         try:
             datetime.strptime(schedule_for_date, '%Y-%m-%d')

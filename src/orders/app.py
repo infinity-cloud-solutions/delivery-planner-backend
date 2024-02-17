@@ -47,7 +47,7 @@ def create_order(event: Dict[str, Any], context: LambdaContext) -> Dict[str, Any
             raise AuthError(f"User {username} is not authorized to create a new order")
 
         body = doorman.get_body_from_request()
-        logger.info(f"Incoming data is {body=} and {username=}")
+        logger.debug(f"Incoming data is {body=} and {username=}")
 
         new_order_data = HIBerryOrder(**body)
 
@@ -80,7 +80,7 @@ def create_order(event: Dict[str, Any], context: LambdaContext) -> Dict[str, Any
                 "errors": errors,
             }
 
-            logger.info(f"Outgoing data is {output_data=}")
+            logger.debug(f"Outgoing data is {output_data=}")
             return doorman.build_response(
                 payload=output_data, status_code=create_response["status_code"]
             )
@@ -145,7 +145,7 @@ def retrieve_orders(event: Dict[str, Any], context: LambdaContext) -> Dict[str, 
             _query_param_name="date", _is_required=True
         )
         
-        logger.info(f"Incoming data is {date=} and {username=}")
+        logger.debug(f"Incoming data is {date=} and {username=}")
 
         orders_date = DeliveryDateMixin(delivery_date=date)
 
@@ -154,7 +154,7 @@ def retrieve_orders(event: Dict[str, Any], context: LambdaContext) -> Dict[str, 
             primary_key=ORDERS_PRIMARY_KEY, query_value=orders_date.delivery_date
         )
         output_data = orders["payload"]
-        logger.info(f"Outgoing data is {output_data=}")
+        logger.debug(f"Outgoing data is {output_data=}")
 
         return doorman.build_response(payload=output_data, status_code=200)
 
@@ -196,7 +196,7 @@ def update_order(event: Dict[str, Any], context: LambdaContext) -> Dict[str, Any
 
         body = doorman.get_body_from_request()
 
-        logger.info(f"Incoming data is {body=} and {username=}")
+        logger.debug(f"Incoming data is {body=} and {username=}")
 
         order_data = HIBerryOrderUpdate(**body)
         order_id = order_data.id
@@ -248,7 +248,7 @@ def update_order(event: Dict[str, Any], context: LambdaContext) -> Dict[str, Any
                 "errors": errors,
             }
             
-            logger.info(f"Outgoing data is {output_data=}")
+            logger.debug(f"Outgoing data is {output_data=}")
 
             return doorman.build_response(
                 payload=output_data, status_code=update_response["status_code"]
@@ -317,7 +317,7 @@ def delete_order(event: Dict[str, Any], context: LambdaContext) -> Dict[str, Any
             _query_param_name="delivery_date", _is_required=True
         )
 
-        logger.info(f"Incoming data is {id=}, {delivery_date=} and {username=}")
+        logger.debug(f"Incoming data is {id=}, {delivery_date=} and {username=}")
 
         order_to_delete = OrderPrimaryKey(id=id, delivery_date=delivery_date)
 
