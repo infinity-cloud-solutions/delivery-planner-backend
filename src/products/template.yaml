@@ -36,7 +36,10 @@ Parameters:
       - development
       - uat
       - prod
-  #TODO Add POWERTOOLS_LOG_LEVEL
+  LogLevel:
+    Type: String
+    Default: INFO
+
 Resources:
 
   ProductsTable:
@@ -63,7 +66,7 @@ Resources:
       Environment:
         Variables:
           POWERTOOLS_SERVICE_NAME: create-product
-          POWERTOOLS_LOG_LEVEL: DEBUG
+          POWERTOOLS_LOG_LEVEL: !Ref LogLevel
           APP_ENVIRONMENT: !Ref StageName
       Events:
         HttpPost:
@@ -86,7 +89,7 @@ Resources:
       Environment:
         Variables:
           POWERTOOLS_SERVICE_NAME: get-all-products
-          POWERTOOLS_LOG_LEVEL: DEBUG
+          POWERTOOLS_LOG_LEVEL: !Ref LogLevel
           APP_ENVIRONMENT: !Ref StageName
       Events:
         HttpPost:
@@ -109,7 +112,7 @@ Resources:
       Environment:
         Variables:
           POWERTOOLS_SERVICE_NAME: delete-product
-          POWERTOOLS_LOG_LEVEL: DEBUG
+          POWERTOOLS_LOG_LEVEL: !Ref LogLevel
           APP_ENVIRONMENT: !Ref StageName
       Events:
         HttpDelete:
@@ -132,7 +135,7 @@ Resources:
       Environment:
         Variables:
           POWERTOOLS_SERVICE_NAME: update-product
-          POWERTOOLS_LOG_LEVEL: DEBUG
+          POWERTOOLS_LOG_LEVEL: !Ref LogLevel
           APP_ENVIRONMENT: !Ref StageName
       Events:
         HttpPut:

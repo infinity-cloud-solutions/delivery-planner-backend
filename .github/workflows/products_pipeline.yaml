@@ -48,7 +48,7 @@ jobs:
     uses: ./.github/workflows/pipeline_template.yaml
     needs: [development]
     with: 
-      sam_deploy_overrides: "StageName=uat"
+      sam_deploy_overrides: "StageName=uat LogLevel=DEBUG"
       stack_name: ${{ vars.PRODUCTS_STACK_NAME }}-uat
       sam_template: src/products/template.yaml
       aws_region: us-east-1

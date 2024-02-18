@@ -38,7 +38,10 @@ Parameters:
       - development
       - uat
       - prod
-  #TODO Add POWERTOOLS_LOG_LEVEL 
+  LogLevel:
+    Type: String
+    Default: INFO
+    
 Resources:
 
   OrdersTable:
@@ -77,7 +80,7 @@ Resources:
       Environment:
         Variables:
           POWERTOOLS_SERVICE_NAME: create-order
-          POWERTOOLS_LOG_LEVEL: DEBUG
+          POWERTOOLS_LOG_LEVEL: !Ref LogLevel
           APP_ENVIRONMENT: !Ref StageName
       Events:
         HttpPost:
@@ -100,7 +103,7 @@ Resources:
       Environment:
         Variables:
           POWERTOOLS_SERVICE_NAME: retrieve-orders
-          POWERTOOLS_LOG_LEVEL: DEBUG
+          POWERTOOLS_LOG_LEVEL: !Ref LogLevel
           APP_ENVIRONMENT: !Ref StageName
       Events:
         HttpPost:
@@ -123,7 +126,7 @@ Resources:
       Environment:
         Variables:
           POWERTOOLS_SERVICE_NAME: update-order
-          POWERTOOLS_LOG_LEVEL: DEBUG
+          POWERTOOLS_LOG_LEVEL: !Ref LogLevel
           APP_ENVIRONMENT: !Ref StageName
       Events:
         HttpPut:
@@ -146,7 +149,7 @@ Resources:
       Environment:
         Variables:
           POWERTOOLS_SERVICE_NAME: delete-order
-          POWERTOOLS_LOG_LEVEL: DEBUG
+          POWERTOOLS_LOG_LEVEL: !Ref LogLevel
           APP_ENVIRONMENT: !Ref StageName
       Events:
         HttpDelete:
@@ -169,7 +172,7 @@ Resources:
       Environment:
         Variables:
           POWERTOOLS_SERVICE_NAME: schedule-orders
-          POWERTOOLS_LOG_LEVEL: DEBUG
+          POWERTOOLS_LOG_LEVEL: !Ref LogLevel
           APP_ENVIRONMENT: !Ref StageName
       Events:
         HttpPost:
@@ -195,7 +198,7 @@ Resources:
         Variables:
           CREATE_ORDER_FUNCTION_NAME: !Ref CreateOrderFunction
           POWERTOOLS_SERVICE_NAME: shopify-order-integration
-          POWERTOOLS_LOG_LEVEL: DEBUG
+          POWERTOOLS_LOG_LEVEL: !Ref LogLevel
       DeadLetterQueue:
         Type: SQS
         TargetArn: !GetAtt ShopifyOrderIntegrationDLQ.Arn
