@@ -47,6 +47,8 @@ def create_order(event: Dict[str, Any], context: LambdaContext) -> Dict[str, Any
             raise AuthError(f"User {username} is not authorized to create a new order")
 
         body = doorman.get_body_from_request()
+        logger.debug(f"Incoming data is {body=} and {username=}")
+
         new_order_data = HIBerryOrder(**body)
 
         logger.info(
@@ -78,6 +80,7 @@ def create_order(event: Dict[str, Any], context: LambdaContext) -> Dict[str, Any
                 "errors": errors,
             }
 
+            logger.debug(f"Outgoing data is {output_data=}")
             return doorman.build_response(
                 payload=output_data, status_code=create_response["status_code"]
             )
@@ -141,6 +144,8 @@ def retrieve_orders(event: Dict[str, Any], context: LambdaContext) -> Dict[str, 
         date = doorman.get_query_param_from_request(
             _query_param_name="date", _is_required=True
         )
+        
+        logger.debug(f"Incoming data is {date=} and {username=}")
 
         orders_date = DeliveryDateMixin(delivery_date=date)
 
@@ -149,6 +154,8 @@ def retrieve_orders(event: Dict[str, Any], context: LambdaContext) -> Dict[str, 
             primary_key=ORDERS_PRIMARY_KEY, query_value=orders_date.delivery_date
         )
         output_data = orders["payload"]
+        logger.debug(f"Outgoing data is {output_data=}")
+
         return doorman.build_response(payload=output_data, status_code=200)
 
     except AuthError as auth_error:
@@ -188,6 +195,8 @@ def update_order(event: Dict[str, Any], context: LambdaContext) -> Dict[str, Any
             raise AuthError(f"User {username} is not authorized to update a order")
 
         body = doorman.get_body_from_request()
+
+        logger.debug(f"Incoming data is {body=} and {username=}")
 
         order_data = HIBerryOrderUpdate(**body)
         order_id = order_data.id
@@ -238,6 +247,8 @@ def update_order(event: Dict[str, Any], context: LambdaContext) -> Dict[str, Any
                 "assigned_driver": assigned_driver,
                 "errors": errors,
             }
+            
+            logger.debug(f"Outgoing data is {output_data=}")
 
             return doorman.build_response(
                 payload=output_data, status_code=update_response["status_code"]
@@ -299,13 +310,16 @@ def delete_order(event: Dict[str, Any], context: LambdaContext) -> Dict[str, Any
         if not is_auth:
             raise AuthError("User is not allowed to delete order")
 
-        order_id = doorman.get_query_param_from_request(
+        id = doorman.get_query_param_from_request(
             _query_param_name="id", _is_required=True
         )
         delivery_date = doorman.get_query_param_from_request(
             _query_param_name="delivery_date", _is_required=True
         )
-        order_to_delete = OrderPrimaryKey(id=order_id, delivery_date=delivery_date)
+
+        logger.debug(f"Incoming data is {id=}, {delivery_date=} and {username=}")
+
+        order_to_delete = OrderPrimaryKey(id=id, delivery_date=delivery_date)
 
         dao = OrderDAO()
         delete_response = dao.delete_order(
@@ -313,7 +327,7 @@ def delete_order(event: Dict[str, Any], context: LambdaContext) -> Dict[str, Any
         )
 
         if delete_response["status"] == "success":
-            logger.info(f"Order with ID {order_id} on {delivery_date} deleted")
+            logger.info(f"Order with ID {id} on {delivery_date} deleted")
             return doorman.build_response(
                 payload={"message": delete_response["message"]}, status_code=204
             )
