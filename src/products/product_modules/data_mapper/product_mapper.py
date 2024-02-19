@@ -1,4 +1,5 @@
 # Python's libraries
+import uuid
 from typing import Dict
 from typing import Any
 from datetime import datetime
@@ -20,8 +21,12 @@ class ProductHelper():
         Returns:
             Object needed by DynamoDB to create a record
         """
+        id = product_data.get("id", None)
+        if id is None:
+            id = str(uuid.uuid4())
 
         data = {
+            "id": id,
             "name": product_data["name"],
             "price": product_data["price"],
             "created_by": username,
