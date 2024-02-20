@@ -4,7 +4,7 @@ from typing import Any
 
 # Own's modules
 from product_modules.dao.product_dao import ProductDAO
-from product_modules.models.product import HIBerryProduct
+from product_modules.models.product import HIBerryProduct, HIBerryProductUpdate
 from product_modules.utils.doorman import DoormanUtil
 from product_modules.errors.auth_error import AuthError
 from product_modules.data_mapper.product_mapper import ProductHelper
@@ -41,9 +41,9 @@ def create_product(event: Dict[str, Any], context: LambdaContext) -> Dict[str, A
             raise AuthError(f"User {username} is not authorized to create a product")
 
         body = doorman.get_body_from_request()
-        
+
         logger.debug(f"Incoming data is {body=} and {username=}")
-        
+
         new_product_data = HIBerryProduct(**body)
 
         logger.info(
@@ -55,12 +55,19 @@ def create_product(event: Dict[str, Any], context: LambdaContext) -> Dict[str, A
             product_data=new_product_data.__dict__, username=username
         )
         dao = ProductDAO()
-        dao.create_product(product_db_data)
-        logger.info("Product received and created")
-        return doorman.build_response(
-            payload={"message": "Record was created"}, status_code=201
-        )
+        create_response = dao.create_product(product_db_data)
 
+        if create_response["status"] == "success":
+            logger.info("Product received and created")
+            output_data = {"id": product_db_data["id"]}
+
+            logger.debug(f"Outgoing data is {output_data=}")
+            return doorman.build_response(payload=output_data, status_code=201)
+        else:
+            return doorman.build_response(
+                payload={"message": create_response["message"]},
+                status_code=create_response.get("status_code", 500),
+            )
     except ValidationError as validation_error:
         error_details = "Some fields failed validation"
         if validation_error._error_cache:
@@ -105,13 +112,13 @@ def get_all_products(event: Dict[str, Any], context: LambdaContext) -> Dict[str,
         is_auth = doorman.auth_user()
         if is_auth is False:
             raise AuthError(f"User {username} is not authorized to retrieve a product")
-        
+
         logger.debug(f"Incoming data is {username=}")
 
         dao = ProductDAO()
         products = dao.fetch_products()
         output_data = products
-        
+
         logger.debug(f"Outgoing data is {output_data=}")
         return doorman.build_response(payload=output_data, status_code=200)
 
@@ -154,9 +161,9 @@ def delete_product(event: Dict[str, Any], context: LambdaContext) -> Dict[str, A
         product_name = doorman.get_query_param_from_request(
             _query_param_name="name", _is_required=True
         )
-        
+
         logger.debug(f"Incoming data is {product_name=} and {username=}")
-        
+
         dao = ProductDAO()
         delete_response = dao.delete_product(product_name)
 
@@ -213,12 +220,15 @@ def update_product(event: Dict[str, Any], context: LambdaContext) -> Dict[str, A
 
         logger.debug(f"Incoming data is {body=} and {username=}")
 
-        updated_product_data = HIBerryProduct(**body)
-
+        updated_product_data = HIBerryProductUpdate(**body)
+        builder = ProductHelper()
+        product_db_data = builder.build_product(
+            product_data=updated_product_data.__dict__, username=username
+        )
         logger.info(f"Updating product: {updated_product_data.name}")
 
         dao = ProductDAO()
-        update_response = dao.update_product(updated_product_data.__dict__)
+        update_response = dao.update_product(product_db_data)
 
         if update_response.get("status") == "success":
             return doorman.build_response(

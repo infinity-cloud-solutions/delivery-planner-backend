@@ -47,10 +47,10 @@ Resources:
     Properties:
       TableName: Products
       AttributeDefinitions:
-        - AttributeName: name
+        - AttributeName: id
           AttributeType: S
       KeySchema:
-        - AttributeName: name
+        - AttributeName: id
           KeyType: HASH
       ProvisionedThroughput:
         ReadCapacityUnits: 5
