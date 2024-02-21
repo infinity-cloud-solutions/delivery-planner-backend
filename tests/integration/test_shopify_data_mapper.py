@@ -114,7 +114,7 @@ class TestShopifyDataMapper(TestCase):
             "delivery_address": "123 Happy St",
             "geolocation": {"latitude": 20.0,"longitude": -105.0},
             "delivery_date": "2023-12-20",
-            "delivery_time": "8 AM - 1 PM",
+            "delivery_time": "9 AM - 1 PM",
             "cart_items": [{"product": "Product 1", "price": 100.0 ,"quantity": 2}],
             "total_amount": 200.0,
             "payment_method": 'PAID',
