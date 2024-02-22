@@ -8,7 +8,7 @@ from order_modules.utils.source import OrderSource
 
 
 class DeliveryScheduler:
-    MORNING_DELIVERIES = "8 AM - 1 PM"
+    MORNING_DELIVERIES = "9 AM - 1 PM"
     AFTERNOON_DELIVERIES = "1 PM - 5 PM"
     AT_CAPACITY = 0
     INVALID_SECTOR = 0
@@ -148,7 +148,7 @@ class DeliveryScheduler:
 
         Arguments:
             customer_location -- Geolocation data, lat and long
-            delivery_time -- Options can be '8 AM - 1 PM' or '1 PM - 5 PM'
+            delivery_time -- Options can be '9 AM - 1 PM' or '1 PM - 5 PM'
             order_date -- string date with format YYYY-MM-DD
             orders -- list of orders for specific date, this will help us to check capacity
             source -- OrderSource Enum. Used to give priority to Shopify orders.
@@ -160,11 +160,11 @@ class DeliveryScheduler:
         Notes:
             Sector-Based Delivery Preferences for HiberryApp orders:
             - West Sectors (1 and 2):
-                - Deliveries are preferred on Mondays, Wednesdays, and Fridays (days 0, 2, 4) during the morning (8 AM - 1 PM).
+                - Deliveries are preferred on Mondays, Wednesdays, and Fridays (days 0, 2, 4) during the morning (9 AM - 1 PM).
                 - Deliveries are preferred on Tuesdays, Thursdays, and Saturdays (days 1, 3, 5) during the afternoon (1 PM - 5 PM).
             - East Sectors (3 and 4):
                 - Deliveries are preferred on Mondays, Wednesdays, and Fridays (days 0, 2, 4) during the afternoon (1 PM - 5 PM).
-                - Deliveries are preferred on Tuesdays, Thursdays, and Saturdays (days 1, 3, 5) during the morning (8 AM - 1 PM).
+                - Deliveries are preferred on Tuesdays, Thursdays, and Saturdays (days 1, 3, 5) during the morning (9 AM - 1 PM).
         """
         day_of_week = self._get_day_of_week(order_date)
         customer_sector = self._get_customer_sector(customer_location)

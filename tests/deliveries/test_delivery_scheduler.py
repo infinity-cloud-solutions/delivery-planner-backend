@@ -12,7 +12,7 @@ class TestDeliveryScheduler(TestCase):
         self.southeast_location = (20.595247, -103.315226)
         self.monday = "2024-01-08"
         self.tuesday = "2024-01-09"
-        self.morning_time = "8 AM - 1 PM"
+        self.morning_time = "9 AM - 1 PM"
         self.afternoon_time = "1 PM - 5 PM"
 
     def test_give_a_request_for_northwest_sector_for_the_morning_route_on_a_monday_order_will_be_created(

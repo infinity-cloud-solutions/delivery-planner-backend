@@ -17,11 +17,11 @@ class DeliveryProcessor:
         logger.info(f"Processing records for driver {driver_number}")
         morning_records = processor.select_orders_by_delivery_range_time(
             order_records=orders_for_today,
-            delivery_time_to_match="8 AM - 1 PM",
+            delivery_time_to_match="9 AM - 1 PM",
             driver_to_match=driver_number
         )
         if len(morning_records) > 0:
-            logger.info(f"Records to schedule for 8 AM - 1 PM delivery for Driver {driver_number}: {len(morning_records)}")
+            logger.info(f"Records to schedule for 9 AM - 1 PM delivery for Driver {driver_number}: {len(morning_records)}")
             morning_starting_point = {
                 "latitude": 20.7257943,
                 "longitude": -103.3792193,
