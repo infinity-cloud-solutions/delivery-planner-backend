@@ -1,5 +1,5 @@
 from datetime import datetime, timedelta, timezone
-from typing import List
+from typing import List, Optional
 
 from pydantic import BaseModel, field_validator
 from pydantic import StrictStr
@@ -83,6 +83,8 @@ class HIBerryOrder(DeliveryDateMixin):
 class HIBerryOrderUpdate(HIBerryOrder):
     id: StrictStr
     original_date: StrictStr
+    delivery_sequence: Optional[conint(ge=0)]
+    cooler: Optional[conint(ge=0)]
 
     validate_date = field_validator("original_date")(validate_date_format)
 
