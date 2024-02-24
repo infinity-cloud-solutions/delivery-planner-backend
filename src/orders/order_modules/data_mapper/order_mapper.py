@@ -50,7 +50,7 @@ class OrderHelper():
     def get_available_driver(self,
                              geolocation: Dict[str, float],
                              delivery_time: str,
-                             delivery_date: str, 
+                             delivery_date: str,
                              source: OrderSource):
 
         customer_location = (geolocation.get("latitude"),
@@ -97,14 +97,14 @@ class OrderHelper():
         driver = None
         latitude = None
         longitude = None
-        
+
         if uid is None:
             uid = str(uuid.uuid4())
-        
+
         delivery_date = self.order_data.get("delivery_date")
         delivery_time = self.order_data.get("delivery_time")
         source = self.order_data.get("source")
-        
+
         geolocation = self.fetch_geolocation()
         if geolocation is None:
             self.logger.info("Geolocation Data is missing, adding to the list of errors")
@@ -117,13 +117,13 @@ class OrderHelper():
         else:
             latitude = float(geolocation.get("latitude", 0))
             longitude = float(geolocation.get("longitude", 0))
-            
+
             driver = self.get_available_driver(
                 geolocation,
                 delivery_time,
-                delivery_date, 
+                delivery_date,
                 source)
-            
+
         items = [item for item in self.order_data.get(
             "cart_items", [])]
 
@@ -146,9 +146,10 @@ class OrderHelper():
             "errors": order_errors,
             "notes": self.order_data.get("notes"),
             "status": status,
-            "delivery_sequence": None,
+            "delivery_sequence": self.order_data.get("delivery_sequence", None),
             "driver": driver,
-            "source": source.value, 
+            "source": source.value,
+            "cooler": self.order_data.get("cooler", None)
         }
 
         return data
