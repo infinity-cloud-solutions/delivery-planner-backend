@@ -36,10 +36,10 @@ def set_delivery_schedule_order(
     logger.info("Initializing set_delivery_schedule_order function")
     try:
         doorman = DoormanUtil(event, logger)
-        username = doorman.get_username_from_token()
+        username = doorman.get_username_from_context()
         is_auth = doorman.auth_user()
         if is_auth is False:
-            raise AuthError("User is not allow to retrieve orders")
+            raise AuthError(f"User {username} is not authorized to schedule orders")
         body = doorman.get_body_from_request()
 
         logger.debug(f"Incoming data is {body=} and {username=}")
@@ -66,8 +66,8 @@ def set_delivery_schedule_order(
             logger.warning("No orders to process today, check DB if this is ok")
         return doorman.build_response(payload={"message": "scheduling completed"}, status_code=200)
 
-    except AuthError:
-        error_details = f"user {username} was not auth to fetch orders"
+    except AuthError as auth_error:
+        error_details = f"Not authorized. {auth_error}"
         logger.error(error_details)
         output_data = {"message": error_details}
         return doorman.build_response(payload=output_data, status_code=403)
