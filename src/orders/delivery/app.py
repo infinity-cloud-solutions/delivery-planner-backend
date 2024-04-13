@@ -50,7 +50,7 @@ def set_delivery_schedule_order(
         available_drivers = schedule_orders.available_drivers
 
         logger.info(f"Date to process: {schedule_for_date}")
-        logger.info(f"Available drivers to process: {', '.join(available_drivers)}")
+        logger.info(f"Available drivers to process: {', '.join(map(str, available_drivers))}")
 
         dao = OrderDAO()
         orders_for_today = dao.fetch_orders(
@@ -59,7 +59,7 @@ def set_delivery_schedule_order(
         orders_for_today = orders_for_today.get("payload", [])
 
         if len(orders_for_today) > 0:
-            
+
             if len(available_drivers) == 1:
                 available_driver = available_drivers[0]
                 for order in orders_for_today:
@@ -68,7 +68,7 @@ def set_delivery_schedule_order(
                 
             logger.info(f"Orders for today {schedule_for_date}: {len(orders_for_today)}")
             scheduler = DeliveryProcessor()
-            for driver_number in [1, 2]:
+            for driver_number in available_drivers:
                 scheduler.process_records_for_driver(driver_number, orders_for_today, dao)
         else:
             logger.warning("No orders to process today, check DB if this is ok")

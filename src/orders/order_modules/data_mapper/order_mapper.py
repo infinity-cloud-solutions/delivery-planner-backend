@@ -85,16 +85,17 @@ class OrderHelper():
         username: str,
         uid: str = None,
         status_on_success: OrderStatus = OrderStatus.CREATED,
+        driver: int | None = None,
     ) -> Dict[str, Any]:
         """This function will create a dictionary to send to DynamoDB to create a new record
 
         :param username: Who is sending the request.
         :param uid: Order unique identifier.
         :param status_on_success: Order status to use on successful creation.
+        :param driver: Force driver assignment
         :return: Object needed by DynamoDB to create a record.
         """
         order_errors = []
-        driver = None
         latitude = None
         longitude = None
 
@@ -118,11 +119,12 @@ class OrderHelper():
             latitude = float(geolocation.get("latitude", 0))
             longitude = float(geolocation.get("longitude", 0))
 
-            driver = self.get_available_driver(
-                geolocation,
-                delivery_time,
-                delivery_date,
-                source)
+            if driver is None:
+                driver = self.get_available_driver(
+                    geolocation,
+                    delivery_time,
+                    delivery_date,
+                    source)
 
         items = [item for item in self.order_data.get(
             "cart_items", [])]

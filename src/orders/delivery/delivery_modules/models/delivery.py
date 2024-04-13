@@ -15,6 +15,6 @@ def validate_date_format(date: StrictStr) -> StrictStr:
 
 class ScheduleRequestModel(BaseModel):
     date: StrictStr
-    available_drivers: List[StrictStr] 
+    available_drivers: List[int]
 
     validate_date = field_validator("date")(validate_date_format)

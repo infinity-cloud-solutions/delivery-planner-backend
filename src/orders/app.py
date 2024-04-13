@@ -207,6 +207,7 @@ def update_order(event: Dict[str, Any], context: LambdaContext) -> Dict[str, Any
             username=username,
             uid=order_id,
             status_on_success=order_status,
+            driver=order_data.driver,
         )
         dao = OrderDAO()
 
