@@ -44,12 +44,13 @@ class DynamoDBHandler:
         """
         try:
             for record in records:
-                update_expression = "SET delivery_sequence = :val, #status = :statusVal"
+                update_expression = "SET delivery_sequence = :val, #status = :statusVal, #driver = :driverVal"
                 expression_attribute_values = {
                     ":val": record["delivery_sequence"],
                     ":statusVal": "Programada",
+                    ":driverVal": record["driver"],
                 }
-                expression_attribute_names = {"#status": "status"}
+                expression_attribute_names = {"#status": "status", "#driver": "driver"}
 
                 self.table.update_item(
                     Key={'delivery_date': record['delivery_date'], 'id': record['id']},
