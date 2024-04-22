@@ -87,6 +87,7 @@ class HIBerryOrderUpdate(HIBerryOrder):
     delivery_sequence: StrictInt | None = None
     cooler: StrictInt | None = None
     driver: int | None = None
+    original_driver: int | None = None
 
     validate_date = field_validator("original_date")(validate_date_format)
 
