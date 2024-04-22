@@ -2,7 +2,6 @@
 import uuid
 from typing import Dict
 from typing import Any
-from typing import List
 from datetime import datetime
 
 # Own's modules
@@ -85,7 +84,7 @@ class OrderHelper:
         username: str,
         uid: str = None,
         status_on_success: OrderStatus = OrderStatus.CREATED,
-        was_driver_updated: bool | None = None,
+        generate_driver: bool | None = None,
         driver: int | None = None,
     ) -> Dict[str, Any]:
         """This function will create a dictionary to send to DynamoDB to create a new record
@@ -123,7 +122,7 @@ class OrderHelper:
             latitude = float(geolocation.get("latitude", 0))
             longitude = float(geolocation.get("longitude", 0))
 
-            if was_driver_updated is False:
+            if generate_driver:
                 driver = self.get_available_driver(
                     geolocation, delivery_time, delivery_date, source
                 )

@@ -56,9 +56,7 @@ def create_order(event: Dict[str, Any], context: LambdaContext) -> Dict[str, Any
         )
 
         builder = OrderHelper(new_order_data.model_dump())
-        order_db_data = builder.build_order(
-            username=username,
-        )
+        order_db_data = builder.build_order(username=username, generate_driver=True)
         dao = OrderDAO()
         create_response = dao.create_order(order_db_data)
 
@@ -203,14 +201,17 @@ def update_order(event: Dict[str, Any], context: LambdaContext) -> Dict[str, Any
         order_status = order_data.status
 
         builder = OrderHelper(order_data.model_dump())
-        was_driver_updated = (
-            True if order_data.driver != order_data.original_driver else False
+
+        # True means that the update is to change the date, and we need to recalculate capacity and check sector
+        # False means that the update is to assign a new driver, so skiping the capacity checks and assignation functions
+        generate_driver = (
+            True if order_data.driver == order_data.original_driver else False
         )
         order_db_data = builder.build_order(
             username=username,
             uid=order_id,
             status_on_success=order_status,
-            was_driver_updated=was_driver_updated,
+            generate_driver=generate_driver,
             driver=order_data.driver,
         )
         dao = OrderDAO()
