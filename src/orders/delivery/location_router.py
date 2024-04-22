@@ -18,7 +18,9 @@ class TravelPlanner:
         """
         distance = 0
         for i in range(len(path) - 1):
-            distance += self.calculate_distance(locations[path[i]], locations[path[i + 1]])
+            distance += self.calculate_distance(
+                locations[path[i]], locations[path[i + 1]]
+            )
         return distance
 
     def find_shortest_path(self, locations, start_point):
@@ -29,7 +31,15 @@ class TravelPlanner:
         num_locations = len(locations)
         locations_indices = list(range(num_locations))
 
-        start_index = next((index for index, loc in enumerate(locations) if loc["latitude"] == start_point["latitude"] and loc["longitude"] == start_point["longitude"]), None)
+        start_index = next(
+            (
+                index
+                for index, loc in enumerate(locations)
+                if loc["latitude"] == start_point["latitude"]
+                and loc["longitude"] == start_point["longitude"]
+            ),
+            None,
+        )
 
         if start_index is not None:
             locations_indices.remove(start_index)

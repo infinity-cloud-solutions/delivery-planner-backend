@@ -4,7 +4,13 @@ import logging
 
 class BaseError(Exception):
 
-    def __init__(self, _message, _error=None, _logger=None, _source=None,):
+    def __init__(
+        self,
+        _message,
+        _error=None,
+        _logger=None,
+        _source=None,
+    ):
         self.logger = _logger or logging.getLogger(__name__)
 
         self.message = _message
@@ -16,12 +22,12 @@ class BaseError(Exception):
         super().__init__(_message)
 
     def __get_FullMsgError(self):
-        value = f'{self.message}'
+        value = f"{self.message}"
         if self.source:
-            value = f'{value} ({self.source})'
+            value = f"{value} ({self.source})"
 
         if self.error:
-            value = f'{value}: {self.error}'
+            value = f"{value}: {self.error}"
 
         return value
 

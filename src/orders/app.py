@@ -203,7 +203,9 @@ def update_order(event: Dict[str, Any], context: LambdaContext) -> Dict[str, Any
         order_status = order_data.status
 
         builder = OrderHelper(order_data.model_dump())
-        was_driver_updated = True if order_data.driver != order_data.original_driver else False
+        was_driver_updated = (
+            True if order_data.driver != order_data.original_driver else False
+        )
         order_db_data = builder.build_order(
             username=username,
             uid=order_id,

@@ -8,7 +8,7 @@ from aws_lambda_powertools import Logger
 
 load_dotenv()
 logger = Logger()
-environment = os.environ.get('APP_ENVIRONMENT', 'local')
+environment = os.environ.get("APP_ENVIRONMENT", "local")
 
 logger.info(f"Starting with environment: {environment}")
 ORDERS_PRIMARY_KEY = "delivery_date"

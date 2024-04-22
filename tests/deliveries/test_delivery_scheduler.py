@@ -25,7 +25,9 @@ class TestDeliveryScheduler(TestCase):
         delivery_time = self.morning_time
         orders = [{"delivery_time": self.morning_time, "driver": 1} for _ in range(10)]
 
-        observed = scheduler.assign_driver_for_delivery(customer_location, delivery_time, order_date, orders)
+        observed = scheduler.assign_driver_for_delivery(
+            customer_location, delivery_time, order_date, orders
+        )
         expected = 1
 
         self.assertEqual(observed, expected)
@@ -40,7 +42,9 @@ class TestDeliveryScheduler(TestCase):
         delivery_time = self.morning_time
         orders = [{"delivery_time": self.morning_time, "driver": 2} for _ in range(10)]
 
-        observed = scheduler.assign_driver_for_delivery(customer_location, delivery_time, order_date, orders)
+        observed = scheduler.assign_driver_for_delivery(
+            customer_location, delivery_time, order_date, orders
+        )
         expected = 2
 
         self.assertEqual(observed, expected)
@@ -53,9 +57,13 @@ class TestDeliveryScheduler(TestCase):
         customer_location = self.northeast_location
         order_date = self.monday
         delivery_time = self.afternoon_time
-        orders = [{"delivery_time": self.afternoon_time, "driver": 1} for _ in range(10)]
+        orders = [
+            {"delivery_time": self.afternoon_time, "driver": 1} for _ in range(10)
+        ]
 
-        observed = scheduler.assign_driver_for_delivery(customer_location, delivery_time, order_date, orders)
+        observed = scheduler.assign_driver_for_delivery(
+            customer_location, delivery_time, order_date, orders
+        )
         expected = 1
 
         self.assertEqual(observed, expected)
@@ -68,9 +76,13 @@ class TestDeliveryScheduler(TestCase):
         customer_location = self.southeast_location
         order_date = self.monday
         delivery_time = self.afternoon_time
-        orders = [{"delivery_time": self.afternoon_time, "driver": 2} for _ in range(10)]
+        orders = [
+            {"delivery_time": self.afternoon_time, "driver": 2} for _ in range(10)
+        ]
 
-        observed = scheduler.assign_driver_for_delivery(customer_location, delivery_time, order_date, orders)
+        observed = scheduler.assign_driver_for_delivery(
+            customer_location, delivery_time, order_date, orders
+        )
         expected = 2
 
         self.assertEqual(observed, expected)
@@ -83,9 +95,13 @@ class TestDeliveryScheduler(TestCase):
         customer_location = self.northwest_location
         order_date = self.monday
         delivery_time = self.afternoon_time
-        orders = [{"delivery_time": self.afternoon_time, "driver": 1} for _ in range(10)]
+        orders = [
+            {"delivery_time": self.afternoon_time, "driver": 1} for _ in range(10)
+        ]
 
-        observed = scheduler.assign_driver_for_delivery(customer_location, delivery_time, order_date, orders)
+        observed = scheduler.assign_driver_for_delivery(
+            customer_location, delivery_time, order_date, orders
+        )
         expected = 0
 
         self.assertEqual(observed, expected)
@@ -98,9 +114,13 @@ class TestDeliveryScheduler(TestCase):
         customer_location = self.southwest_location
         order_date = self.monday
         delivery_time = self.afternoon_time
-        orders = [{"delivery_time": self.afternoon_time, "driver": 1} for _ in range(10)]
+        orders = [
+            {"delivery_time": self.afternoon_time, "driver": 1} for _ in range(10)
+        ]
 
-        observed = scheduler.assign_driver_for_delivery(customer_location, delivery_time, order_date, orders)
+        observed = scheduler.assign_driver_for_delivery(
+            customer_location, delivery_time, order_date, orders
+        )
         expected = 0
 
         self.assertEqual(observed, expected)
@@ -115,7 +135,9 @@ class TestDeliveryScheduler(TestCase):
         delivery_time = self.morning_time
         orders = [{"delivery_time": self.morning_time, "driver": 1} for _ in range(10)]
 
-        observed = scheduler.assign_driver_for_delivery(customer_location, delivery_time, order_date, orders)
+        observed = scheduler.assign_driver_for_delivery(
+            customer_location, delivery_time, order_date, orders
+        )
         expected = 0
 
         self.assertEqual(observed, expected)
@@ -130,7 +152,9 @@ class TestDeliveryScheduler(TestCase):
         delivery_time = self.morning_time
         orders = [{"delivery_time": self.morning_time, "driver": 1} for _ in range(10)]
 
-        observed = scheduler.assign_driver_for_delivery(customer_location, delivery_time, order_date, orders)
+        observed = scheduler.assign_driver_for_delivery(
+            customer_location, delivery_time, order_date, orders
+        )
         expected = 0
 
         self.assertEqual(observed, expected)
@@ -145,7 +169,9 @@ class TestDeliveryScheduler(TestCase):
         delivery_time = self.morning_time
         orders = [{"delivery_time": self.morning_time, "driver": 1} for _ in range(10)]
 
-        observed = scheduler.assign_driver_for_delivery(customer_location, delivery_time, order_date, orders)
+        observed = scheduler.assign_driver_for_delivery(
+            customer_location, delivery_time, order_date, orders
+        )
         expected = 0
 
         self.assertEqual(observed, expected)
@@ -160,7 +186,9 @@ class TestDeliveryScheduler(TestCase):
         delivery_time = self.morning_time
         orders = [{"delivery_time": self.morning_time, "driver": 1} for _ in range(10)]
 
-        observed = scheduler.assign_driver_for_delivery(customer_location, delivery_time, order_date, orders)
+        observed = scheduler.assign_driver_for_delivery(
+            customer_location, delivery_time, order_date, orders
+        )
         expected = 0
 
         self.assertEqual(observed, expected)
@@ -173,9 +201,13 @@ class TestDeliveryScheduler(TestCase):
         customer_location = self.northeast_location
         order_date = self.tuesday
         delivery_time = self.afternoon_time
-        orders = [{"delivery_time": self.afternoon_time, "driver": 1} for _ in range(10)]
+        orders = [
+            {"delivery_time": self.afternoon_time, "driver": 1} for _ in range(10)
+        ]
 
-        observed = scheduler.assign_driver_for_delivery(customer_location, delivery_time, order_date, orders)
+        observed = scheduler.assign_driver_for_delivery(
+            customer_location, delivery_time, order_date, orders
+        )
         expected = 0
 
         self.assertEqual(observed, expected)
@@ -188,9 +220,13 @@ class TestDeliveryScheduler(TestCase):
         customer_location = self.southeast_location
         order_date = self.tuesday
         delivery_time = self.afternoon_time
-        orders = [{"delivery_time": self.afternoon_time, "driver": 1} for _ in range(10)]
+        orders = [
+            {"delivery_time": self.afternoon_time, "driver": 1} for _ in range(10)
+        ]
 
-        observed = scheduler.assign_driver_for_delivery(customer_location, delivery_time, order_date, orders)
+        observed = scheduler.assign_driver_for_delivery(
+            customer_location, delivery_time, order_date, orders
+        )
         expected = 0
 
         self.assertEqual(observed, expected)
@@ -203,9 +239,13 @@ class TestDeliveryScheduler(TestCase):
         customer_location = self.northwest_location
         order_date = self.tuesday
         delivery_time = self.afternoon_time
-        orders = [{"delivery_time": self.afternoon_time, "driver": 1} for _ in range(10)]
+        orders = [
+            {"delivery_time": self.afternoon_time, "driver": 1} for _ in range(10)
+        ]
 
-        observed = scheduler.assign_driver_for_delivery(customer_location, delivery_time, order_date, orders)
+        observed = scheduler.assign_driver_for_delivery(
+            customer_location, delivery_time, order_date, orders
+        )
         expected = 1
 
         self.assertEqual(observed, expected)
@@ -218,9 +258,13 @@ class TestDeliveryScheduler(TestCase):
         customer_location = self.southwest_location
         order_date = self.tuesday
         delivery_time = self.afternoon_time
-        orders = [{"delivery_time": self.afternoon_time, "driver": 1} for _ in range(10)]
+        orders = [
+            {"delivery_time": self.afternoon_time, "driver": 1} for _ in range(10)
+        ]
 
-        observed = scheduler.assign_driver_for_delivery(customer_location, delivery_time, order_date, orders)
+        observed = scheduler.assign_driver_for_delivery(
+            customer_location, delivery_time, order_date, orders
+        )
         expected = 2
 
         self.assertEqual(observed, expected)
@@ -235,7 +279,9 @@ class TestDeliveryScheduler(TestCase):
         delivery_time = self.morning_time
         orders = [{"delivery_time": self.morning_time, "driver": 1} for _ in range(10)]
 
-        observed = scheduler.assign_driver_for_delivery(customer_location, delivery_time, order_date, orders)
+        observed = scheduler.assign_driver_for_delivery(
+            customer_location, delivery_time, order_date, orders
+        )
         expected = 1
 
         self.assertEqual(observed, expected)
@@ -250,12 +296,14 @@ class TestDeliveryScheduler(TestCase):
         delivery_time = self.morning_time
         orders = [{"delivery_time": self.morning_time, "driver": 1} for _ in range(10)]
 
-        observed = scheduler.assign_driver_for_delivery(customer_location, delivery_time, order_date, orders)
+        observed = scheduler.assign_driver_for_delivery(
+            customer_location, delivery_time, order_date, orders
+        )
         expected = 2
 
         self.assertEqual(observed, expected)
 
-# Test for capacity
+    # Test for capacity
 
     def test_give_a_request_with_max_capacity_for_one_driver_the_other_will_assist_and_order_will_be_created(
         self,
@@ -268,7 +316,9 @@ class TestDeliveryScheduler(TestCase):
         orders = [{"delivery_time": self.morning_time, "driver": 1} for _ in range(32)]
         orders += [{"delivery_time": self.morning_time, "driver": 2} for _ in range(8)]
 
-        observed = scheduler.assign_driver_for_delivery(customer_location, delivery_time, order_date, orders)
+        observed = scheduler.assign_driver_for_delivery(
+            customer_location, delivery_time, order_date, orders
+        )
         expected = 2
 
         self.assertEqual(observed, expected)
@@ -283,10 +333,16 @@ class TestDeliveryScheduler(TestCase):
         delivery_time = self.morning_time
         orders = [{"delivery_time": self.morning_time, "driver": 1} for _ in range(32)]
         orders += [{"delivery_time": self.morning_time, "driver": 2} for _ in range(32)]
-        orders += [{"delivery_time": self.afternoon_time, "driver": 1} for _ in range(32)]
-        orders += [{"delivery_time": self.afternoon_time, "driver": 2} for _ in range(32)]
+        orders += [
+            {"delivery_time": self.afternoon_time, "driver": 1} for _ in range(32)
+        ]
+        orders += [
+            {"delivery_time": self.afternoon_time, "driver": 2} for _ in range(32)
+        ]
 
-        observed = scheduler.assign_driver_for_delivery(customer_location, delivery_time, order_date, orders)
+        observed = scheduler.assign_driver_for_delivery(
+            customer_location, delivery_time, order_date, orders
+        )
         expected = 0
 
         self.assertEqual(observed, expected)
@@ -302,7 +358,9 @@ class TestDeliveryScheduler(TestCase):
         orders = [{"delivery_time": self.morning_time, "driver": 1} for _ in range(32)]
         orders += [{"delivery_time": self.morning_time, "driver": 2} for _ in range(32)]
 
-        observed = scheduler.assign_driver_for_delivery(customer_location, delivery_time, order_date, orders)
+        observed = scheduler.assign_driver_for_delivery(
+            customer_location, delivery_time, order_date, orders
+        )
         expected = 0
 
         self.assertEqual(observed, expected)
@@ -318,7 +376,9 @@ class TestDeliveryScheduler(TestCase):
         orders = [{"delivery_time": self.morning_time, "driver": 1} for _ in range(20)]
         orders += [{"delivery_time": self.morning_time, "driver": 2} for _ in range(20)]
 
-        observed = scheduler.assign_driver_for_delivery(customer_location, delivery_time, order_date, orders)
+        observed = scheduler.assign_driver_for_delivery(
+            customer_location, delivery_time, order_date, orders
+        )
         expected = 1
 
         self.assertEqual(observed, expected)
@@ -334,7 +394,9 @@ class TestDeliveryScheduler(TestCase):
         orders = [{"delivery_time": self.morning_time, "driver": 1} for _ in range(20)]
         orders += [{"delivery_time": self.morning_time, "driver": 2} for _ in range(20)]
 
-        observed = scheduler.assign_driver_for_delivery(customer_location, delivery_time, order_date, orders)
+        observed = scheduler.assign_driver_for_delivery(
+            customer_location, delivery_time, order_date, orders
+        )
         expected = 2
 
         self.assertEqual(observed, expected)
@@ -347,10 +409,16 @@ class TestDeliveryScheduler(TestCase):
         customer_location = self.northeast_location
         order_date = self.monday
         delivery_time = self.afternoon_time
-        orders = [{"delivery_time": self.afternoon_time, "driver": 1} for _ in range(20)]
-        orders += [{"delivery_time": self.afternoon_time, "driver": 2} for _ in range(20)]
+        orders = [
+            {"delivery_time": self.afternoon_time, "driver": 1} for _ in range(20)
+        ]
+        orders += [
+            {"delivery_time": self.afternoon_time, "driver": 2} for _ in range(20)
+        ]
 
-        observed = scheduler.assign_driver_for_delivery(customer_location, delivery_time, order_date, orders)
+        observed = scheduler.assign_driver_for_delivery(
+            customer_location, delivery_time, order_date, orders
+        )
         expected = 1
 
         self.assertEqual(observed, expected)
@@ -363,10 +431,16 @@ class TestDeliveryScheduler(TestCase):
         customer_location = self.southeast_location
         order_date = self.monday
         delivery_time = self.afternoon_time
-        orders = [{"delivery_time": self.afternoon_time, "driver": 1} for _ in range(20)]
-        orders += [{"delivery_time": self.afternoon_time, "driver": 2} for _ in range(20)]
+        orders = [
+            {"delivery_time": self.afternoon_time, "driver": 1} for _ in range(20)
+        ]
+        orders += [
+            {"delivery_time": self.afternoon_time, "driver": 2} for _ in range(20)
+        ]
 
-        observed = scheduler.assign_driver_for_delivery(customer_location, delivery_time, order_date, orders)
+        observed = scheduler.assign_driver_for_delivery(
+            customer_location, delivery_time, order_date, orders
+        )
         expected = 2
 
         self.assertEqual(observed, expected)
@@ -382,7 +456,9 @@ class TestDeliveryScheduler(TestCase):
         orders = [{"delivery_time": self.morning_time, "driver": 1} for _ in range(20)]
         orders += [{"delivery_time": self.morning_time, "driver": 2} for _ in range(20)]
 
-        observed = scheduler.assign_driver_for_delivery(customer_location, delivery_time, order_date, orders)
+        observed = scheduler.assign_driver_for_delivery(
+            customer_location, delivery_time, order_date, orders
+        )
         expected = 1
 
         self.assertEqual(observed, expected)
@@ -398,7 +474,9 @@ class TestDeliveryScheduler(TestCase):
         orders = [{"delivery_time": self.morning_time, "driver": 1} for _ in range(20)]
         orders += [{"delivery_time": self.morning_time, "driver": 2} for _ in range(20)]
 
-        observed = scheduler.assign_driver_for_delivery(customer_location, delivery_time, order_date, orders)
+        observed = scheduler.assign_driver_for_delivery(
+            customer_location, delivery_time, order_date, orders
+        )
         expected = 2
 
         self.assertEqual(observed, expected)
@@ -411,10 +489,16 @@ class TestDeliveryScheduler(TestCase):
         customer_location = self.northwest_location
         order_date = self.tuesday
         delivery_time = self.afternoon_time
-        orders = [{"delivery_time": self.afternoon_time, "driver": 1} for _ in range(20)]
-        orders += [{"delivery_time": self.afternoon_time, "driver": 2} for _ in range(20)]
+        orders = [
+            {"delivery_time": self.afternoon_time, "driver": 1} for _ in range(20)
+        ]
+        orders += [
+            {"delivery_time": self.afternoon_time, "driver": 2} for _ in range(20)
+        ]
 
-        observed = scheduler.assign_driver_for_delivery(customer_location, delivery_time, order_date, orders)
+        observed = scheduler.assign_driver_for_delivery(
+            customer_location, delivery_time, order_date, orders
+        )
         expected = 1
 
         self.assertEqual(observed, expected)
@@ -427,10 +511,16 @@ class TestDeliveryScheduler(TestCase):
         customer_location = self.southwest_location
         order_date = self.tuesday
         delivery_time = self.afternoon_time
-        orders = [{"delivery_time": self.afternoon_time, "driver": 1} for _ in range(20)]
-        orders += [{"delivery_time": self.afternoon_time, "driver": 2} for _ in range(20)]
+        orders = [
+            {"delivery_time": self.afternoon_time, "driver": 1} for _ in range(20)
+        ]
+        orders += [
+            {"delivery_time": self.afternoon_time, "driver": 2} for _ in range(20)
+        ]
 
-        observed = scheduler.assign_driver_for_delivery(customer_location, delivery_time, order_date, orders)
+        observed = scheduler.assign_driver_for_delivery(
+            customer_location, delivery_time, order_date, orders
+        )
         expected = 2
 
         self.assertEqual(observed, expected)

@@ -50,7 +50,9 @@ def set_delivery_schedule_order(
         available_drivers = schedule_orders.available_drivers
 
         logger.info(f"Date to process: {schedule_for_date}")
-        logger.info(f"Available drivers to process: {', '.join(map(str, available_drivers))}")
+        logger.info(
+            f"Available drivers to process: {', '.join(map(str, available_drivers))}"
+        )
 
         dao = OrderDAO()
         orders_for_today = dao.fetch_orders(
@@ -63,16 +65,24 @@ def set_delivery_schedule_order(
             if len(available_drivers) == 1:
                 available_driver = available_drivers[0]
                 for order in orders_for_today:
-                    order['driver'] = available_driver
-                logger.info(f"All orders have been assigned to the available driver: {available_driver}")
-                
-            logger.info(f"Orders for today {schedule_for_date}: {len(orders_for_today)}")
+                    order["driver"] = available_driver
+                logger.info(
+                    f"All orders have been assigned to the available driver: {available_driver}"
+                )
+
+            logger.info(
+                f"Orders for today {schedule_for_date}: {len(orders_for_today)}"
+            )
             scheduler = DeliveryProcessor()
             for driver_number in available_drivers:
-                scheduler.process_records_for_driver(driver_number, orders_for_today, dao)
+                scheduler.process_records_for_driver(
+                    driver_number, orders_for_today, dao
+                )
         else:
             logger.warning("No orders to process today, check DB if this is ok")
-        return doorman.build_response(payload={"message": "scheduling completed"}, status_code=200)
+        return doorman.build_response(
+            payload={"message": "scheduling completed"}, status_code=200
+        )
 
     except ValidationError as validation_error:
         error_details = f"Some fields failed validation: {validation_error.errors()}"

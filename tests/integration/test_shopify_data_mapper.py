@@ -1,5 +1,11 @@
 from unittest import TestCase
-from models import ShopifyOrder, ShopifyNoteAttribute, ShopifyAddress, ShopifyCustomer, ShopifyLineItem
+from models import (
+    ShopifyOrder,
+    ShopifyNoteAttribute,
+    ShopifyAddress,
+    ShopifyCustomer,
+    ShopifyLineItem,
+)
 from data_mapper import ShopifyDataMapper
 from exceptions import StorePickupNotAllowed
 
@@ -8,40 +14,63 @@ class TestShopifyDataMapper(TestCase):
 
     def setUp(self):
         customer = ShopifyCustomer(first_name="John", last_name="Doe")
-        shipping_address = ShopifyAddress(address1="123 Happy St", phone="1234567890", latitude=20.0, longitude=-105.0)
-        line_items = [ShopifyLineItem(name="Product 1", price=100.0, quantity=2, sku='HK2020')]
-        
-        self.valid_order = ShopifyOrder(customer=customer,
-                                        shipping_address=shipping_address,
-                                        note_attributes=[ShopifyNoteAttribute(name='Order Due Date', value='Wed, 20 Dec 2023'),
-                                                         ShopifyNoteAttribute(name='Order Due Time', value='8 AM - 1 PM')],
-                                        payment_gateway_names=['Conekta'],
-                                        line_items=line_items,
-                                        current_subtotal_price=200.0)
+        shipping_address = ShopifyAddress(
+            address1="123 Happy St", phone="1234567890", latitude=20.0, longitude=-105.0
+        )
+        line_items = [
+            ShopifyLineItem(name="Product 1", price=100.0, quantity=2, sku="HK2020")
+        ]
 
-        self.invalid_order = ShopifyOrder(customer=customer,
-                                          shipping_address=shipping_address,
-                                          note_attributes=[ShopifyNoteAttribute(name='Order Due Date', value='"Wednesday, 20 December 2023"'),
-                                                           ShopifyNoteAttribute(name='Order Fulfillment Type', value='Store Pickup')],
-                                          line_items=line_items,
-                                          current_subtotal_price=200.0)
-        
-        self.valid_order_no_order_due_date = ShopifyOrder(customer=customer,
-                                                          shipping_address=shipping_address,
-                                                          note_attributes=[ShopifyNoteAttribute(name='Order Due Time', value='8 AM - 1 PM')],
-                                                          payment_gateway_names=['Conekta'],
-                                                          line_items=line_items,
-                                                          current_subtotal_price=200.0)
-        
+        self.valid_order = ShopifyOrder(
+            customer=customer,
+            shipping_address=shipping_address,
+            note_attributes=[
+                ShopifyNoteAttribute(name="Order Due Date", value="Wed, 20 Dec 2023"),
+                ShopifyNoteAttribute(name="Order Due Time", value="8 AM - 1 PM"),
+            ],
+            payment_gateway_names=["Conekta"],
+            line_items=line_items,
+            current_subtotal_price=200.0,
+        )
+
+        self.invalid_order = ShopifyOrder(
+            customer=customer,
+            shipping_address=shipping_address,
+            note_attributes=[
+                ShopifyNoteAttribute(
+                    name="Order Due Date", value='"Wednesday, 20 December 2023"'
+                ),
+                ShopifyNoteAttribute(
+                    name="Order Fulfillment Type", value="Store Pickup"
+                ),
+            ],
+            line_items=line_items,
+            current_subtotal_price=200.0,
+        )
+
+        self.valid_order_no_order_due_date = ShopifyOrder(
+            customer=customer,
+            shipping_address=shipping_address,
+            note_attributes=[
+                ShopifyNoteAttribute(name="Order Due Time", value="8 AM - 1 PM")
+            ],
+            payment_gateway_names=["Conekta"],
+            line_items=line_items,
+            current_subtotal_price=200.0,
+        )
+
         self.valid_order_with_paypal = self.valid_order.copy(
-            update={"payment_gateway_names": ['paypal']})
-        
+            update={"payment_gateway_names": ["paypal"]}
+        )
+
         self.valid_order_with_multiple_methods = self.valid_order.copy(
-                    update={"payment_gateway_names": ['paypal', 'Conekta']})
-        
+            update={"payment_gateway_names": ["paypal", "Conekta"]}
+        )
+
         self.invalid_order_with_other_method = self.valid_order.copy(
-            update={"payment_gateway_names": ['abc']})
-        
+            update={"payment_gateway_names": ["abc"]}
+        )
+
     def test_format_delivery_date_valid(self):
         mapper = ShopifyDataMapper(self.valid_order)
         formatted_date = mapper._get_delivery_date()
@@ -98,28 +127,28 @@ class TestShopifyDataMapper(TestCase):
     def test_determine_payment_method_single_paypal(self):
         mapper = ShopifyDataMapper(self.valid_order_with_paypal)
         self.assertEqual(mapper._determine_payment_status(), "PAID")
-        
+
     def test_determine_payment_method_multiple(self):
         mapper = ShopifyDataMapper(self.valid_order_with_multiple_methods)
         self.assertEqual(mapper._determine_payment_status(), "PAID")
-        
+
     def test_determine_payment_other_method(self):
         mapper = ShopifyDataMapper(self.invalid_order_with_other_method)
         self.assertEqual(mapper._determine_payment_status(), "PAID")
-        
+
     def test_map_order_data(self):
         expected = {
             "client_name": "John Doe",
             "phone_number": "1234567890",
             "delivery_address": "123 Happy St",
-            "geolocation": {"latitude": 20.0,"longitude": -105.0},
+            "geolocation": {"latitude": 20.0, "longitude": -105.0},
             "delivery_date": "2023-12-20",
             "delivery_time": "9 AM - 1 PM",
-            "cart_items": [{"product": "Product 1", "price": 100.0 ,"quantity": 2}],
+            "cart_items": [{"product": "Product 1", "price": 100.0, "quantity": 2}],
             "total_amount": 200.0,
-            "payment_method": 'PAID',
+            "payment_method": "PAID",
             "source": 0,
-            "notes": None
+            "notes": None,
         }
         mapper = ShopifyDataMapper(self.valid_order)
         result = mapper.map_order_data()

@@ -52,10 +52,10 @@ class DynamoDBHandler:
                 }
                 expression_attribute_names = {"#status": "status", "#driver": "driver"}
                 self.table.update_item(
-                    Key={'delivery_date': record['delivery_date'], 'id': record['id']},
+                    Key={"delivery_date": record["delivery_date"], "id": record["id"]},
                     UpdateExpression=update_expression,
                     ExpressionAttributeValues=expression_attribute_values,
-                    ExpressionAttributeNames=expression_attribute_names
+                    ExpressionAttributeNames=expression_attribute_names,
                 )
 
             return self.build_response_object(

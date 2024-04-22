@@ -105,7 +105,9 @@ class DynamoDBHandler:
                 )
         except ClientError as error:
             message = f"{error.response['Error']['Message']}. {error.response['Error']['Code']}"
-            self.logger.error(f"ClientError when retrieving records: Details: {message}")
+            self.logger.error(
+                f"ClientError when retrieving records: Details: {message}"
+            )
             return self.build_response_object(
                 status="error",
                 status_code=error.response["ResponseMetadata"]["HTTPStatusCode"],
@@ -118,13 +120,13 @@ class DynamoDBHandler:
                 status_code=self.HTTP_STATUS_INTERNAL_SERVER_ERROR,
                 message=str(error),
             )
-            
+
     def update_record(self, item: dict) -> Dict[str, Any]:
         """
         This function is used to update a record in the database using put_item.
         If the item already exists, it will be updated.
 
-        :param item: Item as dict 
+        :param item: Item as dict
         :type item: dict
         :return: A summary of the put_item action
         :rtype: Dict[str, Any]
@@ -179,13 +181,12 @@ class DynamoDBHandler:
         """
         try:
             response = self.table.delete_item(
-                Key={
-                    'delivery_date': delivery_date,
-                    'id': order_id
-                }
+                Key={"delivery_date": delivery_date, "id": order_id}
             )
             if response["ResponseMetadata"]["HTTPStatusCode"] == self.HTTP_STATUS_OK:
-                self.logger.info(f"Order with id {order_id} on {delivery_date} was deleted from DynamoDB")
+                self.logger.info(
+                    f"Order with id {order_id} on {delivery_date} was deleted from DynamoDB"
+                )
                 return self.build_response_object(
                     status="success",
                     status_code=self.HTTP_STATUS_OK,
@@ -214,7 +215,7 @@ class DynamoDBHandler:
                 status_code=self.HTTP_STATUS_INTERNAL_SERVER_ERROR,
                 message=str(error),
             )
-            
+
     def build_response_object(
         self,
         status: str,
