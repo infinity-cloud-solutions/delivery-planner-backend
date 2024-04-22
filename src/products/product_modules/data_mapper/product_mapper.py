@@ -5,7 +5,7 @@ from typing import Any
 from datetime import datetime
 
 
-class ProductHelper():
+class ProductHelper:
 
     def build_product(
         self,

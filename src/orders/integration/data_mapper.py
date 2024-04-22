@@ -91,9 +91,9 @@ class ShopifyDataMapper:
         """
         Retrieves and formats the delivery date from the order's note attributes 'Order Due Date'.
         If there is no 'Order Due Date', automatically assigns tomorrow's date.
-        
+
         Returns:
-            str: The formatted delivery date in "yyyy-mm-dd" format. 
+            str: The formatted delivery date in "yyyy-mm-dd" format.
 
         Raises:
             ValueError: If the 'Order Due Date' is not in the expected format or is missing.
@@ -137,9 +137,9 @@ class ShopifyDataMapper:
         self._check_order_is_allowed()
 
         delivery_time = self._get_note_value("Order Due Time")
-        if delivery_time is None or delivery_time == '8 AM - 1 PM':
-            delivery_time = '9 AM - 1 PM'
-            
+        if delivery_time is None or delivery_time == "8 AM - 1 PM":
+            delivery_time = "9 AM - 1 PM"
+
         geolocation = {
             "latitude": self._get_coordinate("latitude"),
             "longitude": self._get_coordinate("longitude"),

@@ -36,8 +36,8 @@ class OrderDAO:
         """
 
         response = self.orders_db.insert_record(item)
-        return response 
-    
+        return response
+
     def fetch_orders(self, primary_key: str, query_value: str) -> dict:
         """
         Attempts to retrieve order records from the DynamoDB table.
@@ -56,7 +56,7 @@ class OrderDAO:
     def update_order(self, item: dict) -> dict:
         """
         Attempts to update a record for an order into the DynamoDB table.
-        
+
         :param item: Order representation
         :type item: dict
         :return: a dictionary that contains the response object
@@ -64,7 +64,7 @@ class OrderDAO:
         """
 
         response = self.orders_db.update_record(item)
-        return response 
+        return response
 
     def delete_order(self, delivery_date: str, order_id: str) -> dict:
         """

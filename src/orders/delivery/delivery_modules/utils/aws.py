@@ -12,11 +12,12 @@ class AWSClientManager:
     - location
 
     """
+
     def __init__(self):
         """
         It's init some most used resources
         """
-        self.lambda_client = self.get_client('lambda')
+        self.lambda_client = self.get_client("lambda")
         self.s3_resource = self.get_resource("s3")
         self.s3_client = self.get_client("s3")
         self.dynamodb = self.get_resource("dynamodb")

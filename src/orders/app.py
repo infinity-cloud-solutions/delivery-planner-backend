@@ -56,9 +56,7 @@ def create_order(event: Dict[str, Any], context: LambdaContext) -> Dict[str, Any
         )
 
         builder = OrderHelper(new_order_data.model_dump())
-        order_db_data = builder.build_order(
-            username=username,
-        )
+        order_db_data = builder.build_order(username=username, generate_driver=True)
         dao = OrderDAO()
         create_response = dao.create_order(order_db_data)
 
@@ -144,7 +142,7 @@ def retrieve_orders(event: Dict[str, Any], context: LambdaContext) -> Dict[str, 
         date = doorman.get_query_param_from_request(
             _query_param_name="date", _is_required=True
         )
-        
+
         logger.debug(f"Incoming data is {date=} and {username=}")
 
         orders_date = DeliveryDateMixin(delivery_date=date)
@@ -203,10 +201,17 @@ def update_order(event: Dict[str, Any], context: LambdaContext) -> Dict[str, Any
         order_status = order_data.status
 
         builder = OrderHelper(order_data.model_dump())
+
+        # True means that the update is to change the date, and we need to recalculate capacity and check sector
+        # False means that the update is to assign a new driver, so skiping the capacity checks and assignation functions
+        generate_driver = (
+            True if order_data.driver == order_data.original_driver else False
+        )
         order_db_data = builder.build_order(
             username=username,
             uid=order_id,
             status_on_success=order_status,
+            generate_driver=generate_driver,
             driver=order_data.driver,
         )
         dao = OrderDAO()
@@ -248,7 +253,7 @@ def update_order(event: Dict[str, Any], context: LambdaContext) -> Dict[str, Any
                 "assigned_driver": assigned_driver,
                 "errors": errors,
             }
-            
+
             logger.debug(f"Outgoing data is {output_data=}")
 
             return doorman.build_response(

@@ -196,7 +196,7 @@ class TestCreateOrderLambdaHandler(TestCase):
         expected = response
 
         self.assertEqual(observed, expected)
-    
+
     @patch("uuid.uuid4")
     @patch.dict(os.environ, {"APP_ENVIRONMENT": "local"}, clear=True)
     @patch("src.orders.order_modules.data_mapper.order_mapper.OrderDAO.create_order")
@@ -252,12 +252,9 @@ class TestCreateOrderLambdaHandler(TestCase):
             "status": "Creada",
             "order": "Ver detalles",
             "source": 0,
-            "geolocation": {
-                "latitude": 20.721708,
-                "longitude": -103.370272
-            }
+            "geolocation": {"latitude": 20.721708, "longitude": -103.370272},
         }
-        orders = [{"delivery_time":  "8 AM - 1 PM", "driver": 1} for _ in range(32)]
+        orders = [{"delivery_time": "8 AM - 1 PM", "driver": 1} for _ in range(32)]
         orders += [{"delivery_time": "8 AM - 1 PM", "driver": 2} for _ in range(32)]
         orders += [{"delivery_time": "8 AM - 1 PM", "driver": 1} for _ in range(32)]
         orders += [{"delivery_time": "1 PM - 5 PM", "driver": 2} for _ in range(32)]
@@ -265,7 +262,7 @@ class TestCreateOrderLambdaHandler(TestCase):
         fetch_mock.return_value = mock_orders
         get_username_mocked.return_value = "Mock User"
         auth_user_mocked.return_value = True
-        
+
         dao_mocked.return_value = dao_response
 
         observed = create_order({"body": input}, None)

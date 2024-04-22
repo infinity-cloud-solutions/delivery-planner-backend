@@ -2,7 +2,6 @@
 import uuid
 from typing import Dict
 from typing import Any
-from typing import List
 from datetime import datetime
 
 # Own's modules
@@ -18,11 +17,9 @@ from settings import ORDERS_PRIMARY_KEY
 from aws_lambda_powertools import Logger
 
 
-class OrderHelper():
+class OrderHelper:
     def __init__(
-        self,
-        order_data: Dict[str, Any],
-        location_service: Geolocation = None
+        self, order_data: Dict[str, Any], location_service: Geolocation = None
     ):
         self.order_data = order_data
         self.logger = Logger()
@@ -38,7 +35,8 @@ class OrderHelper():
         geolocation = self.order_data.get("geolocation", None)
         if geolocation is None:
             self.logger.info(
-                "Input did not include geolocation data, invoking Geolocation Service")
+                "Input did not include geolocation data, invoking Geolocation Service"
+            )
             geolocation = self.location_service.get_lat_and_long_from_street_address(
                 str_address=self.order_data.get("delivery_address")
             )
@@ -47,23 +45,24 @@ class OrderHelper():
             self.logger.info("Using provided geolocation data from input")
             return geolocation
 
-    def get_available_driver(self,
-                             geolocation: Dict[str, float],
-                             delivery_time: str,
-                             delivery_date: str,
-                             source: OrderSource):
+    def get_available_driver(
+        self,
+        geolocation: Dict[str, float],
+        delivery_time: str,
+        delivery_date: str,
+        source: OrderSource,
+    ):
 
-        customer_location = (geolocation.get("latitude"),
-                             geolocation.get("longitude"))
+        customer_location = (geolocation.get("latitude"), geolocation.get("longitude"))
 
         if delivery_date is None:
             delivery_date = self.order_data.get(
-                "delivery_date", datetime.now().strftime("%Y-%m-%d"))
+                "delivery_date", datetime.now().strftime("%Y-%m-%d")
+            )
 
         dao = OrderDAO()
         orders = dao.fetch_orders(
-            primary_key=ORDERS_PRIMARY_KEY,
-            query_value=delivery_date
+            primary_key=ORDERS_PRIMARY_KEY, query_value=delivery_date
         )
         orders = orders["payload"]
 
@@ -85,6 +84,7 @@ class OrderHelper():
         username: str,
         uid: str = None,
         status_on_success: OrderStatus = OrderStatus.CREATED,
+        generate_driver: bool | None = None,
         driver: int | None = None,
     ) -> Dict[str, Any]:
         """This function will create a dictionary to send to DynamoDB to create a new record
@@ -92,7 +92,8 @@ class OrderHelper():
         :param username: Who is sending the request.
         :param uid: Order unique identifier.
         :param status_on_success: Order status to use on successful creation.
-        :param driver: Force driver assignment
+        :param was_driver_updated: Flag to skip capacity and driver assignments
+        :param driver: attribute that will be pass through if was_driver_updated is True
         :return: Object needed by DynamoDB to create a record.
         """
         order_errors = []
@@ -108,7 +109,9 @@ class OrderHelper():
 
         geolocation = self.fetch_geolocation()
         if geolocation is None:
-            self.logger.info("Geolocation Data is missing, adding to the list of errors")
+            self.logger.info(
+                "Geolocation Data is missing, adding to the list of errors"
+            )
             order_errors.append(
                 {
                     "code": "ADDRESS_NEEDS_GEO",
@@ -119,15 +122,12 @@ class OrderHelper():
             latitude = float(geolocation.get("latitude", 0))
             longitude = float(geolocation.get("longitude", 0))
 
-            if driver is None:
+            if generate_driver:
                 driver = self.get_available_driver(
-                    geolocation,
-                    delivery_time,
-                    delivery_date,
-                    source)
+                    geolocation, delivery_time, delivery_date, source
+                )
 
-        items = [item for item in self.order_data.get(
-            "cart_items", [])]
+        items = [item for item in self.order_data.get("cart_items", [])]
 
         status = OrderStatus.ERROR.value if order_errors else status_on_success.value
 
@@ -151,7 +151,7 @@ class OrderHelper():
             "delivery_sequence": self.order_data.get("delivery_sequence", None),
             "driver": driver,
             "source": source.value,
-            "cooler": self.order_data.get("cooler", None)
+            "cooler": self.order_data.get("cooler", None),
         }
 
         return data
