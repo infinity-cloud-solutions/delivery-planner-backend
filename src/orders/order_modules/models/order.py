@@ -51,6 +51,7 @@ class HIBerryOrder(DeliveryDateMixin):
     status: OrderStatus = OrderStatus.CREATED
     source: OrderSource = OrderSource.HIBERRYAPP
     notes: StrictStr | None = None
+    discount: StrictStr | None = None
 
     @validator("total_amount", pre=True, always=True)
     def calculate_total_amount(cls, value, values):

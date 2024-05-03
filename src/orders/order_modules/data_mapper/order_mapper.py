@@ -152,6 +152,7 @@ class OrderHelper:
             "driver": driver,
             "source": source.value,
             "cooler": self.order_data.get("cooler", None),
+            "discount": self.order_data.get("discount"),
         }
 
         return data
