@@ -45,6 +45,7 @@ class HIBerryOrder(DeliveryDateMixin):
     delivery_address: StrictStr
     phone_number: StrictStr
     cart_items: List[HIBerryProduct]
+    discount: StrictStr | None = None
     total_amount: confloat(ge=0.0)
     payment_method: StrictStr
     geolocation: Geolocation | None = None
@@ -58,6 +59,10 @@ class HIBerryOrder(DeliveryDateMixin):
         calculated_total = sum(
             item.price * item.quantity for item in values.get("cart_items", [])
         )
+        if values["discount"] and values["discount"] == "5":
+            calculated_total *= 0.95
+        elif values["discount"] and values["discount"] == "10":
+            calculated_total *= 0.90
 
         if value is not None and calculated_total != value:
             raise ValueError(

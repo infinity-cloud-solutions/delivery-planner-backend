@@ -180,6 +180,10 @@ class DeliveryScheduler:
         if driver_assigned == 0:
             return 0
 
+        # Saturday is day 5, in sat only one schedule is running, so all sector are available
+        if day_of_week == 5:
+            return driver_assigned
+
         west_sectors = [1, 2]
         east_sectors = [3, 4]
 
