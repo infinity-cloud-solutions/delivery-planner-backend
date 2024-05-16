@@ -1,0 +1,157 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: >
+  sam-hiberry-app-clients
+
+Globals:
+  Function:
+    Timeout: 120
+  Api:
+    Cors:
+        AllowHeaders: "'Content-Type,Authorization,authorization,X-Amz-Date,X-Api-Key,X-Amz-Security-Token'"
+        AllowOrigin: "'*'"
+        MaxAge: "'3600'"
+        AllowMethods: "'HEAD,OPTIONS,POST,GET,PUT,DELETE'"
+        AllowCredentials: "'false'"
+    GatewayResponses:
+        DEFAULT_4xx:
+            ResponseParameters:
+                Headers:
+                    Access-Control-Allow-Headers: "'Content-Type,Authorization,authorization,X-Amz-Date,X-Api-Key,X-Amz-Security-Token'"
+                    Access-Control-Allow-Origin: "'*'"
+                    Access-Control-Allow-Methods: "'HEAD,OPTIONS,POST,GET,PUT,DELETE'"
+        DEFAULT_5xx:
+            ResponseParameters:
+                Headers:
+                    Access-Control-Allow-Headers: "'Content-Type,Authorization,authorization,X-Amz-Date,X-Api-Key,X-Amz-Security-Token'"
+                    Access-Control-Allow-Origin: "'*'"
+                    Access-Control-Allow-Methods: "'HEAD,OPTIONS,POST,GET,PUT,DELETE'"
+
+Parameters:
+  StageName:
+    Type: String
+    Default: development
+    AllowedValues:
+      - local
+      - development
+      - uat
+      - prod
+  LogLevel:
+    Type: String
+    Default: INFO
+
+Resources:
+
+  ClientsTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: Clients
+      AttributeDefinitions:
+        - AttributeName: phone_number
+          AttributeType: S
+        - AttributeName: address
+          AttributeType: S
+      KeySchema:
+        - AttributeName: phone_number
+          KeyType: HASH  
+        - AttributeName: address
+          KeyType: RANGE 
+      ProvisionedThroughput:
+        ReadCapacityUnits: 5
+        WriteCapacityUnits: 5
+
+  HiBerrySearchLocationIndex:
+    Type: AWS::Location::PlaceIndex
+    Properties:
+      DataSource: Esri
+      Description: Place index for locating delivery address Using Esri
+      IndexName: "HiBerrySearchLocationIndex"
+      PricingPlan: RequestBasedUsage
+
+  CreateClientFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub "CreateClientFunction-${StageName}"
+      CodeUri: .
+      Handler: lambda_function.create_client
+      Runtime: python3.11
+      Environment:
+        Variables:
+          POWERTOOLS_SERVICE_NAME: create-client
+          POWERTOOLS_LOG_LEVEL: !Ref LogLevel
+          APP_ENVIRONMENT: !Ref StageName
+      Events:
+        HttpPost:
+          Type: Api
+          Properties:
+            RestApiId: !Ref ApiGateway
+            Path: /clients
+            Method: post
+            Auth:
+              Authorizer: HiBerryCognitoAuthorizer
+      Role: !GetAtt CreateClientRole.Arn
+
+  ApiGateway:
+    Type: AWS::Serverless::Api
+    Properties:
+      StageName: !Ref StageName
+      Auth:
+        Authorizers:
+          HiBerryCognitoAuthorizer:
+            UserPoolArn:
+              - !Sub 
+                - 'arn:aws:cognito-idp:${AWS::Region}:${AWS::AccountId}:userpool/${UserPoolId}'
+                - UserPoolId: !ImportValue HiBerryUserPoolIdExport
+
+  # LambdaInvokePermission:
+  #   Type: AWS::Lambda::Permission
+  #   Properties:
+  #     Action: lambda:InvokeFunction
+  #     FunctionName: !GetAtt CreateClientFunction.Arn
+  #     Principal: apigateway.amazonaws.com
+
+  CreateClientRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub "CreateClientRole-${StageName}"
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+            Action: sts:AssumeRole
+      Policies:
+        - PolicyName: DynamoDBPutItemPolicy
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - dynamodb:PutItem
+                Resource: !GetAtt ClientsTable.Arn
+        - PolicyName: LocationServiceAccess
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - geo:SearchPlaceIndexForText
+                Resource: !GetAtt HiBerrySearchLocationIndex.Arn
+        - PolicyName: CloudWatchLogsPolicy
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - logs:CreateLogGroup
+                  - logs:CreateLogStream
+                  - logs:PutLogEvents
+                Resource: "*"
+Outputs:
+  CreateClientFunction:
+    Description: "Lambda Function ARN"
+    Value: !GetAtt CreateClientFunction.Arn
+  HttpApiEndpoint:
+    Description: The default endpoint ApiGateway.
+    Value: !Sub "https://${ApiGateway}.execute-api.${AWS::Region}.amazonaws.com/${StageName}/"
