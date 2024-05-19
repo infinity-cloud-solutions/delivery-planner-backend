@@ -472,3 +472,12 @@ Outputs:
   HttpApiEndpoint:
     Description: The default endpoint ApiGateway.
     Value: !Sub "https://${ApiGateway}.execute-api.${AWS::Region}.amazonaws.com/${StageName}/"
+
+  HiBerryLocationIndexOutput:
+    Value: !Ref HiBerryLocationIndex
+    Export:
+      Name: HiBerryLocationIndex
+  HiBerryLocationIndexArn:
+    Value: !GetAtt HiBerryLocationIndex.Arn
+    Export:
+      Name: HiBerryLocationIndexArn
