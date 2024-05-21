@@ -79,6 +79,29 @@ Resources:
               Authorizer: HiBerryCognitoAuthorizer
       Role: !GetAtt CreateClientRole.Arn
 
+  UpdateClientFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub "UpdateClientFunction-${StageName}"
+      CodeUri: .
+      Handler: lambda_function.update_client
+      Runtime: python3.11
+      Environment:
+        Variables:
+          POWERTOOLS_SERVICE_NAME: update-client
+          POWERTOOLS_LOG_LEVEL: !Ref LogLevel
+          APP_ENVIRONMENT: !Ref StageName
+      Events:
+        HttpPut:
+          Type: Api
+          Properties:
+            RestApiId: !Ref ApiGateway
+            Path: /clients
+            Method: put
+            Auth:
+              Authorizer: HiBerryCognitoAuthorizer
+      Role: !GetAtt UpdateClientsRole.Arn
+
   ApiGateway:
     Type: AWS::Serverless::Api
     Properties:
@@ -118,7 +141,6 @@ Resources:
               - Effect: Allow
                 Action:
                   - geo:SearchPlaceIndexForText
-                #Resource: !GetAtt HiBerrySearchLocationIndex.Arn
                 Resource: !ImportValue HiBerryLocationIndexArn
         - PolicyName: CloudWatchLogsPolicy
           PolicyDocument:
@@ -130,10 +152,57 @@ Resources:
                   - logs:CreateLogStream
                   - logs:PutLogEvents
                 Resource: "*"
+        
+  UpdateClientsRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub "UpdateClientsRole-${StageName}"
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+            Action: sts:AssumeRole
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+      Policies:
+        - PolicyName: DynamoDBUpdateItemPolicy
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - dynamodb:PutItem
+                  - dynamodb:Query
+                  - dynamodb:DeleteItem
+                Resource: !GetAtt ClientsTable.Arn
+        - PolicyName: LocationServiceAccess
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - geo:SearchPlaceIndexForText
+                Resource: !ImportValue HiBerryLocationIndexArn
+        - PolicyName: CloudWatchLogsPolicy
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - logs:CreateLogGroup
+                  - logs:CreateLogStream
+                  - logs:PutLogEvents
+                Resource: "*"
+
 Outputs:
   CreateClientFunction:
     Description: "Lambda Function ARN"
     Value: !GetAtt CreateClientFunction.Arn
+  UpdateClientFunction:
+    Description: "Lambda Function ARN"
+    Value: !GetAtt UpdateClientFunction.Arn
   HttpApiEndpoint:
     Description: The default endpoint ApiGateway.
     Value: !Sub "https://${ApiGateway}.execute-api.${AWS::Region}.amazonaws.com/${StageName}/"

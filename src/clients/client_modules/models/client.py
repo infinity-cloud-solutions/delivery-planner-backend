@@ -19,3 +19,7 @@ class HIBerryBaseClient(BaseModel):
 
 class HIBerryClient(HIBerryBaseClient):
     pass
+
+
+class HIBerryClientUpdate(HIBerryBaseClient):
+    pass

@@ -64,13 +64,13 @@ class ClientHelper:
         return geolocation
 
     def build_client(self, username: str) -> Dict[str, Any]:
-        """This function will create a dictionary to send to DynamoDB to create a new record
+        """This function will create a dictionary to send to DynamoDB to create/update a new record
 
         Arguments:
             username -- who is sending the request
 
         Returns:
-            Object needed by DynamoDB to create a record
+            Object needed by DynamoDB to create/update a record
         """
         client_errors = []
 
@@ -109,7 +109,7 @@ class ClientHelper:
             "discount": self.client_data["discount"],
             "email": self.client_data["email"],
             "errors": client_errors,
-            "created_by": username,
-            "created_at": datetime.now().isoformat(),
+            "last_modified_by": username,
+            "last_modified_at": datetime.now().isoformat(),
         }
         return data
