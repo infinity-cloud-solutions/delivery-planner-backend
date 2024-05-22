@@ -28,3 +28,16 @@ class ClientDAO:
         """
         response = self.clients_db.insert_record(item)
         return response
+
+    def update_client(self, item: dict) -> dict:
+        """
+        Attempts to update an existing record for a client in the DynamoDB table.
+        If the client does not exist, a new record will be created.
+
+        :param item: Client representation.
+        :type item: dict
+        :return: A dictionary that contains the response object.
+        :rtype: dict
+        """
+        response = self.clients_db.update_record(item)
+        return response
