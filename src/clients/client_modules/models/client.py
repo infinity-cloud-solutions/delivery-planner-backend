@@ -1,6 +1,7 @@
 from pydantic import BaseModel
 from pydantic import StrictStr, StrictFloat
 
+
 class Geolocation(BaseModel):
     latitude: StrictFloat
     longitude: StrictFloat
