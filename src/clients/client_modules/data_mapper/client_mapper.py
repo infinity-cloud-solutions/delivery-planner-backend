@@ -78,23 +78,34 @@ class ClientHelper:
             "address", "address_geolocation", "ADDRESS_NEEDS_GEO", client_errors
         )
         address_latitude = (
-            float(address_geolocation.get("latitude", 0)) if address_geolocation else None
+            float(address_geolocation.get("latitude", 0))
+            if address_geolocation
+            else None
         )
         address_longitude = (
-            float(address_geolocation.get("longitude", 0)) if address_geolocation else None
+            float(address_geolocation.get("longitude", 0))
+            if address_geolocation
+            else None
         )
 
         second_address_latitude = None
         second_address_longitude = None
         if self.client_data.get("second_address") is not None:
             second_address_geolocation = self.get_geolocation_data(
-                "second_address", "second_address_geolocation", "SECOND_ADDRESS_NEEDS_GEO", client_errors
+                "second_address",
+                "second_address_geolocation",
+                "SECOND_ADDRESS_NEEDS_GEO",
+                client_errors,
             )
             second_address_latitude = (
-                float(second_address_geolocation.get("latitude", 0)) if second_address_geolocation else None
+                float(second_address_geolocation.get("latitude", 0))
+                if second_address_geolocation
+                else None
             )
             second_address_longitude = (
-                float(second_address_geolocation.get("longitude", 0)) if second_address_geolocation else None
+                float(second_address_geolocation.get("longitude", 0))
+                if second_address_geolocation
+                else None
             )
 
         data = {

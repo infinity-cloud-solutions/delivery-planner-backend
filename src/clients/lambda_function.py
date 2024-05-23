@@ -45,9 +45,7 @@ def create_client(event: Dict[str, Any], context: LambdaContext) -> Dict[str, An
 
         new_client_data = HIBerryClient(**body)
 
-        logger.info(
-            f"Processing client with phone: {new_client_data.phone_number}"
-        )
+        logger.info(f"Processing client with phone: {new_client_data.phone_number}")
 
         builder = ClientHelper(new_client_data.model_dump())
         client_db_data = builder.build_client(username=username)
@@ -62,7 +60,7 @@ def create_client(event: Dict[str, Any], context: LambdaContext) -> Dict[str, An
                 "address_longitude": client_db_data["address_longitude"],
                 "second_address_latitude": client_db_data["second_address_latitude"],
                 "second_address_longitude": client_db_data["second_address_longitude"],
-                "errors": client_db_data["errors"]
+                "errors": client_db_data["errors"],
             }
 
             logger.debug(f"Outgoing data is {output_data=}")
@@ -92,7 +90,6 @@ def create_client(event: Dict[str, Any], context: LambdaContext) -> Dict[str, An
         return doorman.build_response(
             payload={"message": error_details}, status_code=500
         )
-
 
 
 def update_client(event: Dict[str, Any], context: LambdaContext) -> Dict[str, Any]:
@@ -138,7 +135,7 @@ def update_client(event: Dict[str, Any], context: LambdaContext) -> Dict[str, An
                 "address_longitude": client_db_data["address_longitude"],
                 "second_address_latitude": client_db_data["second_address_latitude"],
                 "second_address_longitude": client_db_data["second_address_longitude"],
-                "errors": client_db_data["errors"]
+                "errors": client_db_data["errors"],
             }
 
             logger.debug(f"Outgoing data is {output_data=}")
