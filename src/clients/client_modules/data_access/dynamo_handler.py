@@ -10,6 +10,7 @@ from client_modules.utils.aws import AWSClientManager
 # Third-party libraries
 from aws_lambda_powertools import Logger
 from botocore.exceptions import ClientError
+from boto3.dynamodb.conditions import Key
 
 
 class DynamoDBHandler:
@@ -165,6 +166,44 @@ class DynamoDBHandler:
             )
         except Exception as error:
             self.logger.error(f"Exception when updating record: Details: {error}")
+            return self.build_response_object(
+                status="error",
+                status_code=self.HTTP_STATUS_INTERNAL_SERVER_ERROR,
+                message=str(error),
+            )
+
+    def retrieve_records(self, key_condition_expression: Key) -> Dict[str, Any]:
+        try:
+            response = self.table.query(
+                KeyConditionExpression=key_condition_expression,
+            )
+            if response["ResponseMetadata"]["HTTPStatusCode"] == self.HTTP_STATUS_OK:
+                return self.build_response_object(
+                    status="success",
+                    status_code=self.HTTP_STATUS_OK,
+                    message=f"{len(response['Items'])} clients records were found",
+                    payload=response["Items"][0],
+                )
+            else:
+                message = response["Error"]["Message"]
+                self.logger.error(f"Failed retrieving records: Details: {message}")
+                return self.build_response_object(
+                    status="error",
+                    status_code=response["ResponseMetadata"]["HTTPStatusCode"],
+                    message=message,
+                )
+        except ClientError as error:
+            message = f"{error.response['Error']['Message']}. {error.response['Error']['Code']}"
+            self.logger.error(
+                f"ClientError when retrieving records: Details: {message}"
+            )
+            return self.build_response_object(
+                status="error",
+                status_code=error.response["ResponseMetadata"]["HTTPStatusCode"],
+                message=message,
+            )
+        except Exception as error:
+            self.logger.error(f"Exception when retrieving records: Details: {error}")
             return self.build_response_object(
                 status="error",
                 status_code=self.HTTP_STATUS_INTERNAL_SERVER_ERROR,

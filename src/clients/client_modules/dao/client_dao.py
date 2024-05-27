@@ -2,6 +2,9 @@
 from client_modules.data_access.dynamo_handler import DynamoDBHandler
 import settings
 
+# Third-party libraries
+from boto3.dynamodb.conditions import Key
+
 
 class ClientDAO:
     """
@@ -14,7 +17,7 @@ class ClientDAO:
         """
         self.clients_db = DynamoDBHandler(
             table_name=settings.CLIENTS_TABLE_NAME,
-            partition_key="phone",
+            partition_key="phone_number",
         )
 
     def create_client(self, item: dict) -> dict:
@@ -40,4 +43,19 @@ class ClientDAO:
         :rtype: dict
         """
         response = self.clients_db.update_record(item)
+        return response
+
+    def fetch_client(self, primary_key: str, query_value: str) -> dict:
+        """
+        Attempts to retrieve a client record from the DynamoDB table.
+
+        :param primary_key: Field that we will use to query the table
+        :type primary_key: str
+        :param querie_value: Value that we will use to query the table
+        :type querie_value: str
+        :return: a dictionary that contains the response object
+        :rtype: dict
+        """
+        key_condition_expression = Key(primary_key).eq(query_value)
+        response = self.clients_db.retrieve_records(key_condition_expression)
         return response
