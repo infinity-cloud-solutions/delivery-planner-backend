@@ -13,13 +13,13 @@ from aws_lambda_powertools import Logger
 
 ACCESS_RULES = {
     "Admin": [
-        "GetAllClientsFunction",
+        "RetrieveClientFunction",
         "CreateClientFunction",
         "DeleteClientFunction",
         "UpdateClientFunction",
     ],
     "MesaDeControl": [
-        "GetAllClientsFunction",
+        "RetrieveClientFunction",
         "CreateClientFunction",
         "UpdateClientFunction",
     ],
