@@ -8,6 +8,7 @@ from client_modules.models.client import HIBerryClient, HIBerryClientUpdate
 from client_modules.utils.doorman import DoormanUtil
 from client_modules.errors.auth_error import AuthError
 from client_modules.data_mapper.client_mapper import ClientHelper
+import settings
 
 
 # Third-party libraries
@@ -102,7 +103,7 @@ def update_client(event: Dict[str, Any], context: LambdaContext) -> Dict[str, An
     :param context: Regular lambda function context.
     :type context: LambdaContext
     :return: Custom object with the response from the lambda, it could be a 200 if the update was successful,
-             or >= 400 if there was an error.
+            or >= 400 if there was an error.
     :rtype: Dict
     """
 
@@ -169,3 +170,53 @@ def update_client(event: Dict[str, Any], context: LambdaContext) -> Dict[str, An
         return doorman.build_response(
             payload={"message": error_details}, status_code=500
         )
+
+
+def retrieve_client(event: Dict[str, Any], context: LambdaContext) -> Dict[str, Any]:
+    """This function is the entry point of this process that queries clients table and return the data related to the phone number.
+
+    :param event: Custom object that can come from an APIGateway.
+    :type event: Dict
+    :param context: Regular lambda function context
+    :type context: LambdaContext
+    :return: Custom object with the reponse from the lambda, it could be a 200, if the resources were found
+    or >= 400 if theras was an error
+    :rtype: Dict
+    """
+
+    logger = Logger()
+    logger.info("Initializing Get Clients By Id function")
+    doorman = DoormanUtil(event, logger)
+
+    try:
+        username = doorman.get_username_from_context()
+        is_auth = doorman.auth_user()
+        if is_auth is False:
+            raise AuthError(f"User {username} is not authorized to retrieve clients")
+
+        phone_number = doorman.get_query_param_from_request(
+            _query_param_name="phone_number", _is_required=True
+        )
+
+        logger.debug(f"Incoming data is {phone_number} and {username}")
+
+        dao = ClientDAO()
+        client = dao.fetch_client(
+            primary_key=settings.CLIENTS_PRIMARY_KEY, query_value=phone_number
+        )
+        output_data = client["payload"]
+        logger.debug(f"Outgoing data is {output_data}")
+
+        return doorman.build_response(payload=output_data, status_code=200)
+
+    except AuthError as auth_error:
+        error_details = f"Not authorized. {auth_error}"
+        logger.error(error_details)
+        output_data = {"message": error_details}
+        return doorman.build_response(payload=output_data, status_code=403)
+
+    except Exception as e:
+        error_details = f"Error processing the request to fetch client: {e}"
+        logger.error(error_details, exc_info=True)
+        output_data = {"message": error_details}
+        return doorman.build_response(payload=output_data, status_code=500)
