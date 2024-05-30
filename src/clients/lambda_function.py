@@ -127,6 +127,27 @@ def update_client(event: Dict[str, Any], context: LambdaContext) -> Dict[str, An
         logger.info(f"Updating client with phone: {updated_client_data.phone_number}")
 
         dao = ClientDAO()
+
+        if (
+            updated_client_data.original_phone_number != updated_client_data.phone_number
+        ) and (updated_client_data.delete_old_record):
+            delete_response = dao.delete_client(
+                phone_number=updated_client_data.original_phone_number
+            )
+            if delete_response["status"] != "success":
+                logger.error(f"Error deleting client: {delete_response['message']}")
+                return doorman.build_response(
+                    payload={"message": delete_response["message"]},
+                    status_code=delete_response.get("status_code", 500),
+                )
+
+            logger.info(
+                f"Client with phone number {updated_client_data.original_phone_number} was delete"
+            )
+
+        logger.info(
+            f"Updating client for: {updated_client_data.phone_number} phone_number"
+        )
         update_response = dao.update_client(client_db_data)
 
         if update_response.get("status") == "success":
@@ -220,3 +241,67 @@ def retrieve_client(event: Dict[str, Any], context: LambdaContext) -> Dict[str, 
         logger.error(error_details, exc_info=True)
         output_data = {"message": error_details}
         return doorman.build_response(payload=output_data, status_code=500)
+
+
+def delete_client(event: Dict[str, Any], context: LambdaContext) -> Dict[str, Any]:
+    """
+    This function is the entry point of the process that will receive an order ID and delivery date
+    as input and will attempt to delete the corresponding entry in the DynamoDB table.
+    :param event: Custom object that can come from an API Gateway.
+    :type event: Dict
+    :param context: Regular lambda function context
+    :type context: LambdaContext
+    :return: Custom object with the response from the lambda, it could be a 200 if the deletion was successful
+    or >= 400 if there was an error
+    :rtype: Dict
+    """
+
+    logger = Logger()
+    logger.info("Initializing Delete Client function")
+    try:
+        doorman = DoormanUtil(event, logger)
+        username = doorman.get_username_from_context()
+        is_auth = doorman.auth_user()
+        if not is_auth:
+            raise AuthError("User is not allowed to delete client")
+
+        phone_number = doorman.get_query_param_from_request(
+            _query_param_name="phone_number", _is_required=True
+        )
+
+        logger.debug(f"Incoming data is {phone_number} and {username=}")
+
+        dao = ClientDAO()
+        delete_response = dao.delete_client(phone_number=phone_number)
+
+        if delete_response["status"] == "success":
+            logger.info(f"Client with phone number {phone_number} was delete")
+            return doorman.build_response(
+                payload={"message": delete_response["message"]}, status_code=204
+            )
+        else:
+            logger.error(f"Error deleting client: {delete_response['message']}")
+            return doorman.build_response(
+                payload={"message": delete_response["message"]},
+                status_code=delete_response.get("status_code", 500),
+            )
+
+    except ValidationError as validation_error:
+        error_details = f"Some fields failed validation: {validation_error.errors()}"
+        logger.error(error_details)
+        return doorman.build_response(
+            payload={"message": error_details}, status_code=400
+        )
+    except AuthError:
+        error_details = f"user {username} was not authorized to delete clients"
+        logger.error(error_details)
+        return doorman.build_response(
+            payload={"message": error_details}, status_code=403
+        )
+
+    except Exception as e:
+        error_details = f"Error processing the request to delete client: {e}"
+        logger.error(error_details)
+        return doorman.build_response(
+            payload={"message": error_details}, status_code=500
+        )

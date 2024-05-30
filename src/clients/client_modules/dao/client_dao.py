@@ -59,3 +59,13 @@ class ClientDAO:
         key_condition_expression = Key(primary_key).eq(query_value)
         response = self.clients_db.retrieve_records(key_condition_expression)
         return response
+
+    def delete_client(self, phone_number: str) -> dict:
+        """
+        Attempts to delete a client from the DynamoDB table.
+        :param phone_number: The id of the client to delete
+        :type phone_number: str
+        :return: a dictionary that contains the response object
+        :rtype: dict
+        """
+        return self.clients_db.delete_record(phone_number)
