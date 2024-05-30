@@ -82,23 +82,23 @@ class DynamoDBHandler:
                 message=str(error),
             )
 
-    def delete_record(self, key: dict) -> Dict[str, Any]:
+    def delete_record(self, phone_number: str) -> Dict[str, Any]:
         """
         This function is used to delete a record from the DynamoDB table.
-        It takes in a key dictionary as an argument and attempts to delete the item from the database.
+        It takes in a string as an argument and attempts to delete the item from the database.
         If the response from the database is successful, it returns a status of "success".
         If there is an AWS ClientError, it logs information about the error and also returns a status of "error" along
         with the HTTP status code and details about the error message.
 
-        :param key: The key of the item to be deleted
-        :type key: dict
+        :param phone_number: The key of the item to be deleted
+        :type phone_number: str
         :return: A summary of the delete_item action
         :rtype: Dict[str, Any]
         """
         try:
-            response = self.table.delete_item(Key=key)
+            response = self.table.delete_item(Key={"phone_number": phone_number})
             if response["ResponseMetadata"]["HTTPStatusCode"] == self.HTTP_STATUS_OK:
-                self.logger.info(f"Client with key {key} was deleted from DynamoDB")
+                self.logger.info(f"Client with key {phone_number} was delete from DynamoDB")
                 return self.build_response_object(
                     status="success",
                     status_code=self.HTTP_STATUS_OK,
