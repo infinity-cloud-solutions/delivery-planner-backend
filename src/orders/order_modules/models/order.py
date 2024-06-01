@@ -56,13 +56,21 @@ class HIBerryOrder(DeliveryDateMixin):
 
     @validator("total_amount", pre=True, always=True)
     def calculate_total_amount(cls, value, values):
+        discount_multipliers = {
+            "5": 0.95,
+            "10": 0.90,
+            "15": 0.85,
+            "20": 0.80,
+            "100": 0.00,
+        }
+
         calculated_total = sum(
             item.price * item.quantity for item in values.get("cart_items", [])
         )
-        if values["discount"] and values["discount"] == "5":
-            calculated_total *= 0.95
-        elif values["discount"] and values["discount"] == "10":
-            calculated_total *= 0.90
+
+        discount = values.get("discount")
+        if discount and discount in discount_multipliers:
+            calculated_total *= discount_multipliers[discount]
 
         if value is not None and calculated_total != value:
             raise ValueError(
