@@ -4,10 +4,9 @@ on:
   push:
     paths:
       - 'src/orders/**'
-      - '.github/workflows/orders_pipeline.yaml'
     branches:
       - 'main'
-      - 'feature**'
+      - 'feature*'
   workflow_dispatch:
 jobs:
   run_unit_tests:
@@ -28,12 +27,11 @@ jobs:
         working-directory: ./tests
 
   development: 
-    if: startsWith(github.event.ref, 'refs/heads/main') 
     uses: ./.github/workflows/pipeline_template.yaml
     needs: [run_unit_tests]
     with: 
       stack_name: ${{ vars.ORDERS_STACK_NAME }}-development
-      sam_deploy_overrides: "ShopifyEventBusName=${{ vars.SHOPIFY_EVENT_BUS_NAME_DEV }} StageName=development"
+      sam_deploy_overrides: "ShopifyEventBusName=${{ vars.SHOPIFY_EVENT_BUS_NAME_DEV }} StageName=development LogLevel=DEBUG"
       sam_template: src/orders/template.yaml
       aws_region: us-east-1
       pipeline_execution_role: ${{ vars.PIPELINE_EXECUTION_ROLE_DEV }}

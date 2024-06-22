@@ -43,7 +43,11 @@ class DynamoDBHandler:
         :rtype: Dict[str, Any]
         """
         try:
-            for record in records:
+            total_records = len(records)
+            self.logger.debug(f"Total records to update: {total_records}")
+            for index, record in enumerate(records, start=1):
+                self.logger.debug(f"Updating record {index} of {total_records}")
+
                 update_expression = "SET delivery_sequence = :val, #status = :statusVal, #driver = :driverVal"
                 expression_attribute_values = {
                     ":val": record["delivery_sequence"],
