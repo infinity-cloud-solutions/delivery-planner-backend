@@ -31,7 +31,7 @@ jobs:
     needs: [run_unit_tests]
     with: 
       stack_name: ${{ vars.ORDERS_STACK_NAME }}-development
-      sam_deploy_overrides: "ShopifyEventBusName=${{ vars.SHOPIFY_EVENT_BUS_NAME_DEV }} StageName=development"
+      sam_deploy_overrides: "ShopifyEventBusName=${{ vars.SHOPIFY_EVENT_BUS_NAME_DEV }} StageName=development LogLevel=DEBUG"
       sam_template: src/orders/template.yaml
       aws_region: us-east-1
       pipeline_execution_role: ${{ vars.PIPELINE_EXECUTION_ROLE_DEV }}
