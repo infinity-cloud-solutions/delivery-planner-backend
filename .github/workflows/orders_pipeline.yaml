@@ -27,7 +27,6 @@ jobs:
         working-directory: ./tests
 
   development: 
-    if: startsWith(github.event.ref, 'refs/heads/main') 
     uses: ./.github/workflows/pipeline_template.yaml
     needs: [run_unit_tests]
     with: 
