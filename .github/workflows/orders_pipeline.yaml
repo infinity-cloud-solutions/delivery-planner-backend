@@ -4,10 +4,9 @@ on:
   push:
     paths:
       - 'src/orders/**'
-      - '.github/workflows/orders_pipeline.yaml'
     branches:
       - 'main'
-      - 'feature**'
+      - 'feature*'
   workflow_dispatch:
 jobs:
   run_unit_tests:
