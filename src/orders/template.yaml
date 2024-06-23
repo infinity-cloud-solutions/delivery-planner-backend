@@ -5,7 +5,7 @@ Description: >
 
 Globals:
   Function:
-    Timeout: 120
+    Timeout: 870
   Api:
     Cors:
         AllowHeaders: "'Content-Type,Authorization,authorization,X-Amz-Date,X-Api-Key,X-Amz-Security-Token'"
