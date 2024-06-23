@@ -1,3 +1,4 @@
+import time
 from itertools import permutations
 from math import inf
 from aws_lambda_powertools import Logger
@@ -33,6 +34,11 @@ class TravelPlanner:
         locations_indices = list(range(num_locations))
         logger = Logger()
 
+        start_time = time.time()
+        logger.info(
+            f"Started shortest path at {start_time}"
+        )
+
         start_index = next(
             (
                 index
@@ -64,7 +70,11 @@ class TravelPlanner:
                 order["delivery_sequence"] = index
             # We need to remove starting point from the list, so there is no confusions in frontend
             ordered_locations.pop(0)
-            logger.debug("Shortest path found.")
+
+            end_time = time.time()
+            execution_time = end_time - start_time
+            logger.info(f"Execution time: {execution_time} seconds")
+
             return ordered_locations
         else:
             raise ValueError("Start point not found in locations list")
