@@ -32,8 +32,6 @@ class TravelPlanner:
             path.append(nearest_location)
             unvisited.remove(nearest_location)
 
-        path.pop(0)
-
         for index, location in enumerate(path):
             location["delivery_sequence"] = index
 
