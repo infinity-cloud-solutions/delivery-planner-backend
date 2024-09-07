@@ -7,6 +7,8 @@ from delivery_modules.processors.order_helpers import OrderProcessor
 # Third-party libraries
 from aws_lambda_powertools import Logger
 
+import time
+
 
 class DeliveryProcessor:
 
@@ -28,9 +30,16 @@ class DeliveryProcessor:
                 "latitude": 20.7257943,
                 "longitude": -103.3792193,
             }  # HiBerry offices geolocation
+            start_time = time.time()
+            logger.info(
+                f"started shrotes path at {start_time}"
+            )
             morning_ordered_locations = planner.find_shortest_path(
                 morning_records, morning_starting_point
             )
+            end_time = time.time()
+            execution_time = end_time - start_time
+            logger.info(f"Execution time: {execution_time} seconds")
             afternoon_starting_point = {
                 "latitude": morning_ordered_locations[-1]["latitude"],
                 "longitude": morning_ordered_locations[-1]["longitude"],
