@@ -1,9 +1,6 @@
 # Python's libraries
 from typing import Dict
 from typing import Any
-from datetime import datetime
-
-# import json
 
 # Own's modules
 from delivery_modules.dao.order_dao import OrderDAO
@@ -11,6 +8,7 @@ from delivery_modules.processors.delivery_helpers import DeliveryProcessor
 from delivery_modules.utils.doorman import DoormanUtil
 from delivery_modules.errors.auth_error import AuthError
 from delivery_modules.models.delivery import ScheduleRequestModel
+from delivery_modules.models.delivery import UpdateScheduleRequestModel
 from settings import ORDERS_PRIMARY_KEY
 
 # Third-party libraries
@@ -98,6 +96,68 @@ def set_delivery_schedule_order(
 
     except Exception as e:
         error_details = f"Error processing the request to fetch orders: {e}"
+        logger.error(error_details)
+        output_data = {"message": error_details}
+        return doorman.build_response(payload=output_data, status_code=500)
+
+
+def update_delivery_schedule_order(
+    event: Dict[str, Any], context: LambdaContext
+) -> Dict[str, Any]:
+    """This function will receive Orders with key attributes and delivery_sequence to update the delivery order.
+
+    :param event: Custom object that can come from an APIGateway, containing a list of Orders.
+    :type event: Dict
+    :param context: Regular lambda function context
+    :type context: LambdaContext
+    :return: Custom object with the reponse from the lambda, it could be a 200, if the resources were found
+    or >= 400 if theras was an error
+    :rtype: Dict
+    """
+
+    logger = Logger()
+    logger.info("Initializing update_delivery_schedule_order function")
+    try:
+        doorman = DoormanUtil(event, logger)
+        username = doorman.get_username_from_context()
+        is_auth = doorman.auth_user()
+        if is_auth is False:
+            raise AuthError(f"User {username} is not authorized to updathe the schedule of an orders")
+        body = doorman.get_body_from_request()
+
+        logger.debug(f"Incoming data is {body} and {username}")
+
+        orders_with_new_sequence = UpdateScheduleRequestModel(**body)
+
+        dao = OrderDAO()
+        reduced_orders_with_new_sequence = [
+                {
+                    "id": location["id"],
+                    "delivery_date": location["delivery_date"],
+                    "delivery_sequence": location["delivery_sequence"],
+                }
+                for location in orders_with_new_sequence
+            ]
+        dao.bulk_update(reduced_orders_with_new_sequence)
+
+        return doorman.build_response(
+            payload={"message": "scheduling updated"}, status_code=200
+        )
+
+    except ValidationError as validation_error:
+        error_details = f"Some fields failed validation: {validation_error.errors()}"
+        logger.error(error_details)
+        return doorman.build_response(
+            payload={"message": error_details}, status_code=400
+        )
+    except AuthError as auth_error:
+        error_details = f"Not authorized. {auth_error}"
+        logger.error(error_details)
+        output_data = {"message": error_details}
+        return doorman.build_response(payload=output_data, status_code=403)
+
+    except Exception as e:
+        error_details = f"Error while updating the orders. Details: {e}"
         logger.error(error_details)
         output_data = {"message": error_details}
         return doorman.build_response(payload=output_data, status_code=500)

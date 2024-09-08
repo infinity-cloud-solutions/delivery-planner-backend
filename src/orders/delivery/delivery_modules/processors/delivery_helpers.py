@@ -35,7 +35,17 @@ class DeliveryProcessor:
                 "latitude": morning_ordered_locations[-1]["latitude"],
                 "longitude": morning_ordered_locations[-1]["longitude"],
             }
-            dao.bulk_update(morning_ordered_locations)
+            reduced_morning_ordered_locations = [
+                {
+                    "id": location["id"],
+                    "delivery_date": location["delivery_date"],
+                    "delivery_sequence": location["delivery_sequence"],
+                    "driver": location["driver"],
+                    "status": "Programada",
+                }
+                for location in morning_ordered_locations
+            ]
+            dao.bulk_update(reduced_morning_ordered_locations)
             logger.info(f"Driver {driver_number} records scheduled for morning shift")
         else:
             afternoon_starting_point = {
@@ -55,5 +65,16 @@ class DeliveryProcessor:
             afternoon_ordered_locations = planner.find_shortest_path(
                 afternoon_records, afternoon_starting_point
             )
-            dao.bulk_update(afternoon_ordered_locations)
+            reduced_afternoon_ordered_locations = [
+                {
+                    "id": location["id"],
+                    "delivery_date": location["delivery_date"],
+                    "delivery_sequence": location["delivery_sequence"],
+                    "driver": location["driver"],
+                    "status": "Programada",
+                }
+                for location in afternoon_ordered_locations
+            ]
+
+            dao.bulk_update(reduced_afternoon_ordered_locations)
             logger.info(f"Driver {driver_number} records scheduled for afternoon shift")
