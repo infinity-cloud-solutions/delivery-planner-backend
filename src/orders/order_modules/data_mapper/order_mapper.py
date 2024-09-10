@@ -143,8 +143,6 @@ class OrderHelper:
             "cart_items": items,
             "total_amount": float(self.order_data.get("total_amount", 0)),
             "payment_method": self.order_data.get("payment_method"),
-            "created_by": username,
-            "created_at": datetime.now().isoformat(),
             "errors": order_errors,
             "notes": self.order_data.get("notes"),
             "status": status,
@@ -154,5 +152,18 @@ class OrderHelper:
             "cooler": self.order_data.get("cooler", None),
             "discount": self.order_data.get("discount"),
         }
+
+        if status == OrderStatus.CREATED:
+            metadata = {
+                "created_by": username,
+                "created_at": datetime.now().isoformat(),
+            }
+        else:
+            metadata = {
+                "updated_by": username,
+                "updated_at": datetime.now().isoformat(),
+            }
+
+        data.update(metadata)
 
         return data
