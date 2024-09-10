@@ -2,7 +2,9 @@ from typing import List
 from datetime import datetime
 
 from pydantic import StrictStr
-from pydantic import BaseModel, field_validator
+from pydantic import StrictInt
+from pydantic import BaseModel
+from pydantic import field_validator
 
 
 def validate_date_format(date: StrictStr) -> StrictStr:
@@ -18,3 +20,13 @@ class ScheduleRequestModel(BaseModel):
     available_drivers: List[int]
 
     validate_date = field_validator("date")(validate_date_format)
+
+
+class OrderModel(BaseModel):
+    id: int
+    delivery_date: StrictStr
+    delivery_sequence: StrictInt
+
+
+class UpdateScheduleRequestModel(BaseModel):
+    orders: List[OrderModel]

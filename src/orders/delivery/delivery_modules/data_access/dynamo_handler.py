@@ -35,7 +35,8 @@ class DynamoDBHandler:
         self.logger = Logger()
 
     def update_records(self, records: List[Dict[str, Any]]) -> Dict[str, Any]:
-        """This function is used to update records to the DB.
+        """This function is used to update records to the DB. The dictionary must contain ONLY
+        partition key, sort key and the attributs that will be updated to prevent any potential overwritten.
 
         :param item: Order representation built as a dict
         :type item: dict
@@ -48,13 +49,20 @@ class DynamoDBHandler:
             for index, record in enumerate(records, start=1):
                 self.logger.debug(f"Updating record {index} of {total_records}")
 
-                update_expression = "SET delivery_sequence = :val, #status = :statusVal, #driver = :driverVal"
-                expression_attribute_values = {
-                    ":val": record["delivery_sequence"],
-                    ":statusVal": "Programada",
-                    ":driverVal": record["driver"],
-                }
-                expression_attribute_names = {"#status": "status", "#driver": "driver"}
+                update_expression_parts = []
+                expression_attribute_values = {}
+                expression_attribute_names = {}
+
+                for key, value in record.items():
+                    if key not in ["delivery_date", "id"]:
+                        placeholder = f":{key}"
+                        expression_attribute_values[placeholder] = value
+                        update_expression_parts.append(f"#{key} = {placeholder}")
+                        expression_attribute_names[f"#{key}"] = key
+
+                update_expression = "SET " + ", ".join(update_expression_parts)
+                self.logger.info(f"Attributes Names to update {expression_attribute_names} - Attributes values to update {expression_attribute_values}")
+
                 self.table.update_item(
                     Key={"delivery_date": record["delivery_date"], "id": record["id"]},
                     UpdateExpression=update_expression,
