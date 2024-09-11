@@ -137,7 +137,7 @@ class ShopifyDataMapper:
         self._check_order_is_allowed()
 
         delivery_time = self._get_note_value("Order Due Time")
-        if delivery_time is None or delivery_time == "8 AM - 1 PM":
+        if delivery_time is None or delivery_time == "8 AM - 1 PM" or delivery_time == "9 AM - 2 PM":
             delivery_time = "9 AM - 1 PM"
 
         geolocation = {
