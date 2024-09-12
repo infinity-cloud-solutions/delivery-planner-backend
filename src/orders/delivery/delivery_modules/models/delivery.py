@@ -23,9 +23,11 @@ class ScheduleRequestModel(BaseModel):
 
 
 class OrderModel(BaseModel):
-    id: int
+    id: StrictStr
     delivery_date: StrictStr
     delivery_sequence: StrictInt
+    driver: StrictInt
+    status: StrictStr
 
 
 class UpdateScheduleRequestModel(BaseModel):
