@@ -127,18 +127,14 @@ def update_delivery_schedule_order(
 
         logger.debug(f"Incoming data is {body} and {username}")
 
-        orders_with_new_sequence = UpdateScheduleRequestModel(**body)
+        orders_with_new_sequence = UpdateScheduleRequestModel(orders=body)
 
         dao = OrderDAO()
-        reduced_orders_with_new_sequence = [
-                {
-                    "id": location["id"],
-                    "delivery_date": location["delivery_date"],
-                    "delivery_sequence": location["delivery_sequence"],
-                }
-                for location in orders_with_new_sequence
+        orders_to_update = [
+                location.__dict__
+                for location in orders_with_new_sequence.orders
             ]
-        dao.bulk_update(reduced_orders_with_new_sequence)
+        dao.bulk_update(orders_to_update)
 
         return doorman.build_response(
             payload={"message": "scheduling updated"}, status_code=200

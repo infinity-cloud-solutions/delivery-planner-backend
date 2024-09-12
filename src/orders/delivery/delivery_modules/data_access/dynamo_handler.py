@@ -61,7 +61,7 @@ class DynamoDBHandler:
                         expression_attribute_names[f"#{key}"] = key
 
                 update_expression = "SET " + ", ".join(update_expression_parts)
-                self.logger.info(f"Attributes Names to update {expression_attribute_names} - Attributes values to update {expression_attribute_values}")
+                self.logger.info(f"Attributes Names to update {expression_attribute_names} - Attributes values to update {expression_attribute_values}, with expression {update_expression}.")
 
                 self.table.update_item(
                     Key={"delivery_date": record["delivery_date"], "id": record["id"]},
