@@ -158,14 +158,14 @@ def delete_product(event: Dict[str, Any], context: LambdaContext) -> Dict[str, A
         if is_auth is False:
             raise AuthError(f"User {username} is not authorized to delete a product")
 
-        product_name = doorman.get_query_param_from_request(
-            _query_param_name="name", _is_required=True
+        product_id = doorman.get_query_param_from_request(
+            _query_param_name="id", _is_required=True
         )
 
-        logger.debug(f"Incoming data is {product_name=} and {username=}")
+        logger.debug(f"Incoming data is {product_id=} and {username=}")
 
         dao = ProductDAO()
-        delete_response = dao.delete_product(product_name)
+        delete_response = dao.delete_product(product_id)
 
         if delete_response["status"] == "success":
             return doorman.build_response(

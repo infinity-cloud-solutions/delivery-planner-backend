@@ -54,15 +54,15 @@ class ProductDAO:
         response = self.products_db.update_record(item)
         return response
 
-    def delete_product(self, name: str) -> dict:
+    def delete_product(self, id: str) -> dict:
         """
         Attempts to delete a record for a product from the DynamoDB table.
 
-        :param name: Name of the product to be deleted
-        :type name: str
+        :param id: Id of the product to be deleted
+        :type id: str
         :return: a dictionary that contains the response object
         :rtype: dict
         """
-        key = {"name": name}
+        key = {"id": id}
         response = self.products_db.delete_record(key)
         return response
