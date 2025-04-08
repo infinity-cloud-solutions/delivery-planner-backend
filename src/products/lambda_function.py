@@ -202,7 +202,7 @@ def update_product(event: Dict[str, Any], context: LambdaContext) -> Dict[str, A
     :param context: Regular lambda function context.
     :type context: LambdaContext
     :return: Custom object with the response from the lambda, it could be a 200 if the update was successful,
-             or >= 400 if there was an error.
+        or >= 400 if there was an error.
     :rtype: Dict
     """
 
