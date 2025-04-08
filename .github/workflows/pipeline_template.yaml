@@ -62,7 +62,7 @@ jobs:
             --region ${{ inputs.aws_region }} \
             --output-template-file ${{ env.PACKAGED_TEMPLATE }}
 
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         with:
           name: ${{ env.PACKAGED_TEMPLATE }}
           path: ${{ env.PACKAGED_TEMPLATE }}
@@ -80,7 +80,7 @@ jobs:
       - uses: aws-actions/setup-sam@v2
         with:
           use-installer: true
-      - uses: actions/download-artifact@v3
+      - uses: actions/download-artifact@v4
         with:
           name: ${{ env.PACKAGED_TEMPLATE }}
 
