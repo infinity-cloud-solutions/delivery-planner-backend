@@ -1,7 +1,7 @@
 import json
 import os
 from unittest import TestCase
-from unittest.mock import MagicMock, patch
+from unittest.mock import patch
 
 from order_modules.errors.auth_error import AuthError
 from order_modules.errors.util_error import UtilError

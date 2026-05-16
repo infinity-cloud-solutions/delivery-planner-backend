@@ -8,3 +8,9 @@ install:
 
 test:
 	source ./.venv/bin/activate  &&  pytest -v
+
+unit-test:
+	source ./.venv/bin/activate  &&  pytest -v --ignore=integration
+
+integration-test:
+	source ./.venv/bin/activate  &&  pytest -v integration/

@@ -85,7 +85,7 @@ def lambda_handler(event: dict, context: LambdaContext):
                 f"Create order function returned error {status_code=}, {message=} "
             )
         else:
-            logger.info(f"Order created.")
+            logger.info("Order created.")
 
     except StorePickupNotAllowed as order_error:
         logger.error(f"Store pickup not allowed for this app: {str(order_error)}")

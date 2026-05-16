@@ -1,5 +1,4 @@
 # Python's libraries
-from datetime import datetime
 
 # Third-party libraries
 from boto3.dynamodb.conditions import Key

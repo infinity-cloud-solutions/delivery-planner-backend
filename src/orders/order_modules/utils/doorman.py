@@ -1,7 +1,6 @@
 # Python's libraries
 import json
 import os
-from datetime import datetime
 
 # Third-party libraries
 from aws_lambda_powertools import Logger
@@ -143,7 +142,7 @@ class DoormanUtil(object):
         try:
             email = self.request["requestContext"]["authorizer"]["claims"]["email"]
         except KeyError:
-            raise AuthError(f"Missing context from Api gateway authorizer.")
+            raise AuthError("Missing context from Api gateway authorizer.")
 
         return email
 
