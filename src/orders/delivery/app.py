@@ -1,20 +1,21 @@
 # Python's libraries
-from typing import Dict
-from typing import Any
-
-# Own's modules
-from delivery_modules.dao.order_dao import OrderDAO
-from delivery_modules.processors.delivery_helpers import DeliveryProcessor
-from delivery_modules.utils.doorman import DoormanUtil
-from delivery_modules.errors.auth_error import AuthError
-from delivery_modules.models.delivery import ScheduleRequestModel
-from delivery_modules.models.delivery import UpdateScheduleRequestModel
-from settings import ORDERS_PRIMARY_KEY
+from typing import Any, Dict
 
 # Third-party libraries
 from aws_lambda_powertools import Logger
 from aws_lambda_powertools.utilities.typing import LambdaContext
+
+# Own's modules
+from delivery_modules.dao.order_dao import OrderDAO
+from delivery_modules.errors.auth_error import AuthError
+from delivery_modules.models.delivery import (
+    ScheduleRequestModel,
+    UpdateScheduleRequestModel,
+)
+from delivery_modules.processors.delivery_helpers import DeliveryProcessor
+from delivery_modules.utils.doorman import DoormanUtil
 from pydantic import ValidationError
+from settings import ORDERS_PRIMARY_KEY
 
 
 def set_delivery_schedule_order(
@@ -122,7 +123,9 @@ def update_delivery_schedule_order(
         username = doorman.get_username_from_context()
         is_auth = doorman.auth_user()
         if is_auth is False:
-            raise AuthError(f"User {username} is not authorized to updathe the schedule of an orders")
+            raise AuthError(
+                f"User {username} is not authorized to updathe the schedule of an orders"
+            )
         body = doorman.get_body_from_request()
 
         logger.debug(f"Incoming data is {body} and {username}")
@@ -131,9 +134,8 @@ def update_delivery_schedule_order(
 
         dao = OrderDAO()
         orders_to_update = [
-                location.__dict__
-                for location in orders_with_new_sequence.orders
-            ]
+            location.__dict__ for location in orders_with_new_sequence.orders
+        ]
         dao.bulk_update(orders_to_update)
 
         return doorman.build_response(

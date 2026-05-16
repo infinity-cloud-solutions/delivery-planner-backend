@@ -1,5 +1,7 @@
 pytest
+pytest-cov
 aws-lambda-powertools
 pydantic==2.5.2
 python-dotenv==1.0.0
 boto3
+moto[dynamodb]

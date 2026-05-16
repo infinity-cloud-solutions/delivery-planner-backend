@@ -1,19 +1,18 @@
 # Python's libraries
-from typing import Dict
-from typing import Any
+from typing import Any, Dict
+
+from aws_lambda_powertools import Logger
+from aws_lambda_powertools.utilities.typing import LambdaContext
 
 # Own's modules
 from product_modules.dao.product_dao import ProductDAO
+from product_modules.data_mapper.product_mapper import ProductHelper
+from product_modules.errors.auth_error import AuthError
 from product_modules.models.product import HIBerryProduct, HIBerryProductUpdate
 from product_modules.utils.doorman import DoormanUtil
-from product_modules.errors.auth_error import AuthError
-from product_modules.data_mapper.product_mapper import ProductHelper
-
 
 # Third-party libraries
 from pydantic.error_wrappers import ValidationError
-from aws_lambda_powertools import Logger
-from aws_lambda_powertools.utilities.typing import LambdaContext
 
 
 def create_product(event: Dict[str, Any], context: LambdaContext) -> Dict[str, Any]:

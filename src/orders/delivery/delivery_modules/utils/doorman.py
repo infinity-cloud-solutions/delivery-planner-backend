@@ -2,13 +2,13 @@
 import json
 import os
 
-# Own's modules
-from delivery_modules.errors.util_error import UtilError
-from delivery_modules.errors.auth_error import AuthError
-from settings import environment
-
 # Third-party libraries
 from aws_lambda_powertools import Logger
+from delivery_modules.errors.auth_error import AuthError
+
+# Own's modules
+from delivery_modules.errors.util_error import UtilError
+from settings import environment
 
 ACCESS_RULES = {
     "Admin": ["ScheduleOrdersFunction", "UpdateOrderSequencingFunction"],

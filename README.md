@@ -1,130 +1,154 @@
-# sam-hiberry-app
+# HiBerry Delivery Planner — Backend
 
-This project contains source code and supporting files for a serverless application that you can deploy with the SAM CLI. It includes the following files and folders.
+Serverless backend for the HiBerry delivery management app. Handles order creation, driver assignment, delivery scheduling, client management, and Shopify integration. Built with Python 3.11, AWS SAM, API Gateway, DynamoDB, and Cognito.
 
-- hello_world - Code for the application's Lambda function.
-- events - Invocation events that you can use to invoke the function.
-- tests - Unit tests for the application code. 
-- template.yaml - A template that defines the application's AWS resources.
+## Architecture
 
-The application uses several AWS resources, including Lambda functions and an API Gateway API. These resources are defined in the `template.yaml` file in this project. You can update the template to add AWS resources through the same deployment process that updates your application code.
+The backend is split into **four independent SAM stacks**, each deployed separately:
 
-If you prefer to use an integrated development environment (IDE) to build and test your application, you can use the AWS Toolkit.  
-The AWS Toolkit is an open source plug-in for popular IDEs that uses the SAM CLI to build and deploy serverless applications on AWS. The AWS Toolkit also adds a simplified step-through debugging experience for Lambda function code. See the following links to get started.
+| Stack | Path | Description |
+|---|---|---|
+| Orders | `src/orders/` | Core CRUD for orders + delivery scheduling + Shopify integration |
+| Clients | `src/clients/` | Client records management |
+| Products | `src/products/` | Product catalog |
+| Users | `src/users/` | User management |
 
-* [CLion](https://docs.aws.amazon.com/toolkit-for-jetbrains/latest/userguide/welcome.html)
-* [GoLand](https://docs.aws.amazon.com/toolkit-for-jetbrains/latest/userguide/welcome.html)
-* [IntelliJ](https://docs.aws.amazon.com/toolkit-for-jetbrains/latest/userguide/welcome.html)
-* [WebStorm](https://docs.aws.amazon.com/toolkit-for-jetbrains/latest/userguide/welcome.html)
-* [Rider](https://docs.aws.amazon.com/toolkit-for-jetbrains/latest/userguide/welcome.html)
-* [PhpStorm](https://docs.aws.amazon.com/toolkit-for-jetbrains/latest/userguide/welcome.html)
-* [PyCharm](https://docs.aws.amazon.com/toolkit-for-jetbrains/latest/userguide/welcome.html)
-* [RubyMine](https://docs.aws.amazon.com/toolkit-for-jetbrains/latest/userguide/welcome.html)
-* [DataGrip](https://docs.aws.amazon.com/toolkit-for-jetbrains/latest/userguide/welcome.html)
-* [VS Code](https://docs.aws.amazon.com/toolkit-for-vscode/latest/userguide/welcome.html)
-* [Visual Studio](https://docs.aws.amazon.com/toolkit-for-visual-studio/latest/user-guide/welcome.html)
+All stacks follow the same internal layered structure:
+- **`models/`** — Pydantic v2 input validation
+- **`dao/`** — High-level DynamoDB operations
+- **`data_access/`** — Low-level AWS SDK clients (DynamoDB, Location Service)
+- **`data_mapper/`** — Business logic that assembles DB records
+- **`utils/`** — Auth, delivery scheduling, AWS helpers, encoders
+- **`errors/`** — Custom exception hierarchy
 
-## Deploy the sample application
+## Orders API
 
-The Serverless Application Model Command Line Interface (SAM CLI) is an extension of the AWS CLI that adds functionality for building and testing Lambda applications. It uses Docker to run your functions in an Amazon Linux environment that matches Lambda. It can also emulate your application's build environment and API.
+The Orders stack exposes the following endpoints, all protected by a Cognito authorizer:
 
-To use the SAM CLI, you need the following tools.
+| Method | Path | Lambda handler | Description |
+|---|---|---|---|
+| `POST` | `/orders` | `app.create_order` | Create an order with automatic driver assignment |
+| `GET` | `/orders` | `app.retrieve_orders` | Fetch orders by `delivery_date` |
+| `PUT` | `/orders` | `app.update_order` | Update an existing order |
+| `DELETE` | `/orders` | `app.delete_order` | Delete an order |
+| `POST` | `/schedule-orders` | `app.set_delivery_schedule_order` | Sequence and assign routes for a delivery date |
+| `POST` | `/update-sequencing-orders` | `app.update_delivery_schedule_order` | Persist a resequenced delivery route |
 
-* SAM CLI - [Install the SAM CLI](https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/serverless-sam-cli-install.html)
-* [Python 3 installed](https://www.python.org/downloads/)
-* Docker - [Install Docker community edition](https://hub.docker.com/search/?type=edition&offering=community)
+### Driver assignment
 
-To build and deploy your application for the first time, run the following in your shell:
+Drivers are assigned using a geographic sector model centred on the **Hidalgo & Alcalde intersection** in Guadalajara (`20.6783825, -103.348088`):
 
-```bash
-sam build --use-container
-sam deploy --guided
-```
+| Zone | Driver | Coordinates |
+|---|---|---|
+| NW — Zapopan, Providencia, Andares | 1 | lat ≥ origin, lon ≤ origin |
+| NE — Huentitán, Santuario | 1 | lat ≥ origin, lon > origin |
+| SW — Chapalita, López Mateos | 2 | lat < origin, lon ≤ origin |
+| SE — Tlaquepaque, Tonalá | 2 | lat < origin, lon > origin |
 
-The first command will build the source of your application. The second command will package and deploy your application to AWS, with a series of prompts:
+Each driver handles one zone per shift, alternating east/west by day of week:
 
-* **Stack Name**: The name of the stack to deploy to CloudFormation. This should be unique to your account and region, and a good starting point would be something matching your project name.
-* **AWS Region**: The AWS region you want to deploy your app to.
-* **Confirm changes before deploy**: If set to yes, any change sets will be shown to you before execution for manual review. If set to no, the AWS SAM CLI will automatically deploy application changes.
-* **Allow SAM CLI IAM role creation**: Many AWS SAM templates, including this example, create AWS IAM roles required for the AWS Lambda function(s) included to access AWS services. By default, these are scoped down to minimum required permissions. To deploy an AWS CloudFormation stack which creates or modifies IAM roles, the `CAPABILITY_IAM` value for `capabilities` must be provided. If permission isn't provided through this prompt, to deploy this example you must explicitly pass `--capabilities CAPABILITY_IAM` to the `sam deploy` command.
-* **Save arguments to samconfig.toml**: If set to yes, your choices will be saved to a configuration file inside the project, so that in the future you can just re-run `sam deploy` without parameters to deploy changes to your application.
+| Day | Morning (9 AM – 1 PM) | Afternoon (1 PM – 5 PM) |
+|---|---|---|
+| Mon / Wed / Fri | West (NW, SW) | East (NE, SE) |
+| Tue / Thu  | East (NE, SE) | West (NW, SW) |
+| Sat | All zones | All zones |
 
-You can find your API Gateway Endpoint URL in the output values displayed after deployment.
+Capacity is **32 orders per driver per shift**. Shopify orders bypass capacity limits and are assigned by sector only.
 
-## Use the SAM CLI to build and test locally
+### Shopify integration
 
-Build your application with the `sam build --use-container` command.
+`src/orders/integration/` listens for `orders/create` events on an EventBridge custom bus. It maps the Shopify payload and synchronously invokes `CreateOrderFunction` via `lambda.invoke`.
 
-```bash
-sam-hiberry-app$ sam build --use-container
-```
+### DynamoDB schema
 
-The SAM CLI installs dependencies defined in `hello_world/requirements.txt`, creates a deployment package, and saves it in the `.aws-sam/build` folder.
+The Orders table uses a composite key: `delivery_date` (HASH) + `id` (RANGE).
 
-Test a single function by invoking it directly with a test event. An event is a JSON document that represents the input that the function receives from the event source. Test events are included in the `events` folder in this project.
+## Local development
 
-Run functions locally and invoke them with the `sam local invoke` command.
+**Requirements:** Python 3.11, AWS SAM CLI, AWS credentials configured.
 
-```bash
-sam-hiberry-app$ sam local invoke HelloWorldFunction --event events/event.json
-```
+> Note: pydantic-core does not build on Python 3.14+. Use Python 3.11 explicitly.
 
-The SAM CLI can also emulate your application's API. Use the `sam local start-api` to run the API locally on port 3000.
-
-```bash
-sam-hiberry-app$ sam local start-api
-sam-hiberry-app$ curl http://localhost:3000/
-```
-
-The SAM CLI reads the application template to determine the API's routes and the functions that they invoke. The `Events` property on each function's definition includes the route and method for each path.
-
-```yaml
-      Events:
-        HelloWorld:
-          Type: Api
-          Properties:
-            Path: /hello
-            Method: get
-```
-
-## Add a resource to your application
-The application template uses AWS Serverless Application Model (AWS SAM) to define application resources. AWS SAM is an extension of AWS CloudFormation with a simpler syntax for configuring common serverless application resources such as functions, triggers, and APIs. For resources not included in [the SAM specification](https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md), you can use standard [AWS CloudFormation](https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-template-resource-type-ref.html) resource types.
-
-## Fetch, tail, and filter Lambda function logs
-
-To simplify troubleshooting, SAM CLI has a command called `sam logs`. `sam logs` lets you fetch logs generated by your deployed Lambda function from the command line. In addition to printing the logs on the terminal, this command has several nifty features to help you quickly find the bug.
-
-`NOTE`: This command works for all AWS Lambda functions; not just the ones you deploy using SAM.
+### Run tests
 
 ```bash
-sam-hiberry-app$ sam logs -n HelloWorldFunction --stack-name "sam-hiberry-app" --tail
+cd tests
+make install    # creates .venv and installs dependencies
+make test       # pytest -v (all tests)
 ```
 
-You can find more information and examples about filtering Lambda function logs in the [SAM CLI Documentation](https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/serverless-sam-cli-logging.html).
-
-## Tests
-
-Tests are defined in the `tests` folder in this project. Use PIP to install the test dependencies and run tests.
+Run a single test file:
 
 ```bash
-sam-hiberry-app$ pip install -r tests/requirements.txt --user
-# unit test
-sam-hiberry-app$ python -m pytest tests/unit -v
-# integration test, requiring deploying the stack first.
-# Create the env variable AWS_SAM_STACK_NAME with the name of the stack we are testing
-sam-hiberry-app$ AWS_SAM_STACK_NAME="sam-hiberry-app" python -m pytest tests/integration -v
+cd tests
+source .venv/bin/activate
+pytest orders/test_order_mapper.py -v
 ```
 
-## Cleanup
-
-To delete the sample application that you created, use the AWS CLI. Assuming you used your project name for the stack name, you can run the following:
+Run with coverage:
 
 ```bash
-sam delete --stack-name "sam-hiberry-app"
+cd tests
+../.venv311/bin/pytest --cov=../src/orders --cov-report=term-missing
 ```
 
-## Resources
+### Environment
 
-See the [AWS SAM developer guide](https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/what-is-sam.html) for an introduction to SAM specification, the SAM CLI, and serverless application concepts.
+The `APP_ENVIRONMENT` env var controls behavior (`local | development | uat | prod`). In `local` mode:
+- Cognito auth is bypassed — all operations are permitted
+- Geolocation returns a hardcoded Guadalajara coordinate instead of calling AWS Location Service
+- DynamoDB still requires a real or local endpoint
 
-Next, you can use AWS Serverless Application Repository to deploy ready to use Apps that go beyond hello world samples and learn how authors developed their applications: [AWS Serverless Application Repository main page](https://aws.amazon.com/serverless/serverlessrepo/)
+Set it for local Lambda invocations:
+
+```bash
+APP_ENVIRONMENT=local sam local invoke CreateOrderFunction --event events/create_order.json
+```
+
+### Database seeding
+
+The `scripts/seed_orders.py` script seeds the Orders table with realistic Guadalajara delivery data using the real driver assignment logic.
+
+```bash
+# Seed 3 orders per zone per shift for today
+.venv/bin/python scripts/seed_orders.py
+
+# Custom options
+.venv/bin/python scripts/seed_orders.py --orders 5 --shift morning --date 2026-04-28
+
+# Clean up orders for today
+.venv/bin/python scripts/seed_orders.py --cleanup
+```
+
+See [`scripts/README.md`](scripts/README.md) for full options.
+
+## Deployment
+
+Each stack deploys independently using SAM. `samconfig.toml` in each service directory holds environment-specific defaults.
+
+```bash
+cd src/orders
+sam build
+sam deploy  # uses samconfig.toml
+
+# With overrides
+sam deploy --parameter-overrides "StageName=development LogLevel=DEBUG ShopifyEventBusName=my-bus"
+```
+
+## CI/CD
+
+GitHub Actions pipelines are defined in `.github/workflows/<service>_pipeline.yaml`. Each pipeline triggers on pushes to `src/<service>/**` and deploys sequentially through three environments:
+
+```
+run_unit_tests → development → uat (main only) → prod (main only)
+```
+
+All environments target `us-east-1`. Feature branches deploy to `development` only.
+
+## Linting
+
+```bash
+flake8 src/orders/
+```
+
+Each service has a `.flake8` config that ignores E501 (line length) and W503 (line break before binary operator).

@@ -1,13 +1,12 @@
 # Python's libraries
-from typing import Dict
-from typing import Any
 from datetime import datetime
-
-# Own's modules
-from client_modules.data_access.geolocation_handler import Geolocation
+from typing import Any, Dict
 
 # Third-party libraries
 from aws_lambda_powertools import Logger
+
+# Own's modules
+from client_modules.data_access.geolocation_handler import Geolocation
 
 
 class ClientHelper:

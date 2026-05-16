@@ -1,20 +1,19 @@
 # Python's libraries
-from typing import Dict
-from typing import Any
+from typing import Any, Dict
+
+import settings
+from aws_lambda_powertools import Logger
+from aws_lambda_powertools.utilities.typing import LambdaContext
 
 # Own's modules
 from client_modules.dao.client_dao import ClientDAO
+from client_modules.data_mapper.client_mapper import ClientHelper
+from client_modules.errors.auth_error import AuthError
 from client_modules.models.client import HIBerryClient, HIBerryClientUpdate
 from client_modules.utils.doorman import DoormanUtil
-from client_modules.errors.auth_error import AuthError
-from client_modules.data_mapper.client_mapper import ClientHelper
-import settings
-
 
 # Third-party libraries
 from pydantic.error_wrappers import ValidationError
-from aws_lambda_powertools import Logger
-from aws_lambda_powertools.utilities.typing import LambdaContext
 
 
 def create_client(event: Dict[str, Any], context: LambdaContext) -> Dict[str, Any]:
@@ -129,7 +128,8 @@ def update_client(event: Dict[str, Any], context: LambdaContext) -> Dict[str, An
         dao = ClientDAO()
 
         if (
-            updated_client_data.original_phone_number != updated_client_data.phone_number
+            updated_client_data.original_phone_number
+            != updated_client_data.phone_number
         ) and (updated_client_data.delete_old_record):
             delete_response = dao.delete_client(
                 phone_number=updated_client_data.original_phone_number

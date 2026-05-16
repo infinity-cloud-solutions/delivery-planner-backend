@@ -1,20 +1,19 @@
 # Python's libraries
 import uuid
-from typing import Dict
-from typing import Any
 from datetime import datetime
-
-# Own's modules
-from order_modules.utils.status import OrderStatus
-from order_modules.dao.order_dao import OrderDAO
-from order_modules.data_access.geolocation_handler import Geolocation
-from order_modules.utils.delivery import DeliveryScheduler
-from order_modules.errors.business_error import BusinessError
-from order_modules.utils.source import OrderSource
-from settings import ORDERS_PRIMARY_KEY
+from typing import Any, Dict
 
 # Third-party libraries
 from aws_lambda_powertools import Logger
+from order_modules.dao.order_dao import OrderDAO
+from order_modules.data_access.geolocation_handler import Geolocation
+from order_modules.errors.business_error import BusinessError
+from order_modules.utils.delivery import DeliveryScheduler
+from order_modules.utils.source import OrderSource
+
+# Own's modules
+from order_modules.utils.status import OrderStatus
+from settings import ORDERS_PRIMARY_KEY
 
 
 class OrderHelper:
@@ -100,7 +99,8 @@ class OrderHelper:
         latitude = None
         longitude = None
 
-        if uid is None:
+        is_new_order = uid is None
+        if is_new_order:
             uid = str(uuid.uuid4())
 
         delivery_date = self.order_data.get("delivery_date")
@@ -153,7 +153,7 @@ class OrderHelper:
             "discount": self.order_data.get("discount"),
         }
 
-        if status == OrderStatus.CREATED:
+        if is_new_order:
             metadata = {
                 "created_by": username,
                 "created_at": datetime.now().isoformat(),

@@ -1,15 +1,14 @@
 # Python libraries
 import json
 from decimal import Decimal
-from typing import Dict
-from typing import Any
-
-# Own modules
-from product_modules.utils.aws import AWSClientManager
+from typing import Any, Dict
 
 # Third-party libraries
 from aws_lambda_powertools import Logger
 from botocore.exceptions import ClientError
+
+# Own modules
+from product_modules.utils.aws import AWSClientManager
 
 
 class DynamoDBHandler:

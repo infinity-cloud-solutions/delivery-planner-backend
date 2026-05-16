@@ -1,7 +1,6 @@
 # Own's modules
-from product_modules.data_access.dynamo_handler import DynamoDBHandler
-
 import settings
+from product_modules.data_access.dynamo_handler import DynamoDBHandler
 
 
 class ProductDAO:

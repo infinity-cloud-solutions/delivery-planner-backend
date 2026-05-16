@@ -1,13 +1,14 @@
 from unittest import TestCase
+
+from data_mapper import ShopifyDataMapper
+from exceptions import StorePickupNotAllowed
 from models import (
-    ShopifyOrder,
-    ShopifyNoteAttribute,
     ShopifyAddress,
     ShopifyCustomer,
     ShopifyLineItem,
+    ShopifyNoteAttribute,
+    ShopifyOrder,
 )
-from data_mapper import ShopifyDataMapper
-from exceptions import StorePickupNotAllowed
 
 
 class TestShopifyDataMapper(TestCase):
@@ -77,7 +78,7 @@ class TestShopifyDataMapper(TestCase):
         self.assertEqual(formatted_date, "2023-12-20")
 
     def test_next_day_on_missing_order_due_date(self):
-        from datetime import timezone, datetime, timedelta
+        from datetime import datetime, timedelta, timezone
 
         mapper = ShopifyDataMapper(self.valid_order_no_order_due_date)
         mx_tz_delta = timezone(timedelta(hours=-6))

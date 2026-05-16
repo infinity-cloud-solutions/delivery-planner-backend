@@ -1,5 +1,4 @@
-from pydantic import BaseModel
-from pydantic import StrictStr, StrictFloat, StrictBool
+from pydantic import BaseModel, StrictBool, StrictFloat, StrictStr
 
 
 class Geolocation(BaseModel):

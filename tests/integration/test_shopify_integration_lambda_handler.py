@@ -1,11 +1,11 @@
 import json
 import os
-from unittest import TestCase
-from unittest import mock
-from unittest.mock import patch, Mock
+from unittest import TestCase, mock
+from unittest.mock import Mock, patch
+
+from botocore.exceptions import ClientError
 
 from src.orders.integration.app import lambda_handler
-from botocore.exceptions import ClientError
 
 
 class TestShopifyOrderIntegrationFunction(TestCase):

@@ -1,17 +1,19 @@
+import math
 from datetime import datetime, timedelta, timezone
 from typing import List
-import math
 
-from pydantic import BaseModel, field_validator
-from pydantic import StrictStr
-from pydantic import StrictInt
-from pydantic import StrictFloat
-from pydantic import confloat
-from pydantic import conint
-from pydantic import validator
-
-from order_modules.utils.status import OrderStatus
 from order_modules.utils.source import OrderSource
+from order_modules.utils.status import OrderStatus
+from pydantic import (
+    BaseModel,
+    StrictFloat,
+    StrictInt,
+    StrictStr,
+    confloat,
+    conint,
+    field_validator,
+    validator,
+)
 
 
 def validate_date_format(date: StrictStr) -> StrictStr:
@@ -73,7 +75,9 @@ class HIBerryOrder(DeliveryDateMixin):
         if discount and discount in discount_multipliers:
             calculated_total *= discount_multipliers[discount]
 
-        if value is not None and not math.isclose(calculated_total, value, rel_tol=1e-9):
+        if value is not None and not math.isclose(
+            calculated_total, value, rel_tol=1e-9
+        ):
             raise ValueError(
                 "Provided total_amount does not match the calculated total from cart_items."
             )

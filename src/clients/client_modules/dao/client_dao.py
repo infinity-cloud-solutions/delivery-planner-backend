@@ -1,9 +1,9 @@
 # Own's modules
-from client_modules.data_access.dynamo_handler import DynamoDBHandler
 import settings
 
 # Third-party libraries
 from boto3.dynamodb.conditions import Key
+from client_modules.data_access.dynamo_handler import DynamoDBHandler
 
 
 class ClientDAO:
