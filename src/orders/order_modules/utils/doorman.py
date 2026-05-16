@@ -1,16 +1,15 @@
 # Python's libraries
 import json
 import os
-from datetime import datetime
+
+# Third-party libraries
+from aws_lambda_powertools import Logger
+from order_modules.errors.auth_error import AuthError
 
 # Own's modules
 from order_modules.errors.util_error import UtilError
 from order_modules.utils.encoders import DecimalEncoder
-from order_modules.errors.auth_error import AuthError
 from settings import environment
-
-# Third-party libraries
-from aws_lambda_powertools import Logger
 
 ACCESS_RULES = {
     "Admin": [
@@ -143,7 +142,7 @@ class DoormanUtil(object):
         try:
             email = self.request["requestContext"]["authorizer"]["claims"]["email"]
         except KeyError:
-            raise AuthError(f"Missing context from Api gateway authorizer.")
+            raise AuthError("Missing context from Api gateway authorizer.")
 
         return email
 

@@ -1,11 +1,11 @@
 # Python's libraries
 from typing import Dict
 
+import settings
+from aws_lambda_powertools import Logger
+
 # Own's modules
 from order_modules.utils.aws import AWSClientManager
-import settings
-
-from aws_lambda_powertools import Logger
 
 
 class Geolocation:

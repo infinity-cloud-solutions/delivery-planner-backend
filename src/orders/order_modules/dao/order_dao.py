@@ -1,14 +1,11 @@
 # Python's libraries
-from datetime import datetime
-
-# Own's modules
-from order_modules.data_access.dynamo_handler import DynamoDBHandler
-
-from settings import ORDERS_TABLE_NAME
-from settings import ORDERS_PRIMARY_KEY
 
 # Third-party libraries
 from boto3.dynamodb.conditions import Key
+
+# Own's modules
+from order_modules.data_access.dynamo_handler import DynamoDBHandler
+from settings import ORDERS_PRIMARY_KEY, ORDERS_TABLE_NAME
 
 
 class OrderDAO:

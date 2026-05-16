@@ -1,6 +1,4 @@
-from pydantic import BaseModel
-from pydantic import StrictStr
-from pydantic import confloat
+from pydantic import BaseModel, StrictStr, confloat
 
 
 class HIBerryProduct(BaseModel):

@@ -1,11 +1,10 @@
 # Python's libraries
 
 # Own's modules
-from location_router import TravelPlanner
-from delivery_modules.processors.order_helpers import OrderProcessor
-
 # Third-party libraries
 from aws_lambda_powertools import Logger
+from delivery_modules.processors.order_helpers import OrderProcessor
+from location_router import TravelPlanner
 
 
 class DeliveryProcessor:

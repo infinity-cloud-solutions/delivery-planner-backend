@@ -1,8 +1,7 @@
 # Python's libraries
 import uuid
-from typing import Dict
-from typing import Any
 from datetime import datetime
+from typing import Any, Dict
 
 
 class ProductHelper:

@@ -1,16 +1,15 @@
 # Python libraries
 import json
 from decimal import Decimal
-from typing import Dict
-from typing import Any
-
-# Own modules
-from client_modules.utils.aws import AWSClientManager
+from typing import Any, Dict
 
 # Third-party libraries
 from aws_lambda_powertools import Logger
-from botocore.exceptions import ClientError
 from boto3.dynamodb.conditions import Key
+from botocore.exceptions import ClientError
+
+# Own modules
+from client_modules.utils.aws import AWSClientManager
 
 
 class DynamoDBHandler:
@@ -98,7 +97,9 @@ class DynamoDBHandler:
         try:
             response = self.table.delete_item(Key={"phone_number": phone_number})
             if response["ResponseMetadata"]["HTTPStatusCode"] == self.HTTP_STATUS_OK:
-                self.logger.info(f"Client with key {phone_number} was delete from DynamoDB")
+                self.logger.info(
+                    f"Client with key {phone_number} was delete from DynamoDB"
+                )
                 return self.build_response_object(
                     status="success",
                     status_code=self.HTTP_STATUS_OK,
