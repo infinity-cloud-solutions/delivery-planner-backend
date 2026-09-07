@@ -2,7 +2,7 @@
 import uuid
 from typing import Dict
 from typing import Any
-from datetime import datetime
+from datetime import datetime, timezone, timedelta
 
 # Own's modules
 from order_modules.utils.status import OrderStatus
@@ -153,10 +153,15 @@ class OrderHelper:
             "discount": self.order_data.get("discount"),
         }
 
-        if status == OrderStatus.CREATED:
+        MX_OFFSET = timedelta(hours=-6)
+        now_mx = datetime.now(timezone(MX_OFFSET))
+
+        if status_on_success == OrderStatus.CREATED:
             metadata = {
                 "created_by": username,
-                "created_at": datetime.now().isoformat(),
+                "created_at": now_mx.isoformat(),
+                "created_month": now_mx.strftime("%Y-%m"),
+                "created_date_mx": now_mx.strftime("%Y-%m-%d"),
             }
         else:
             metadata = {

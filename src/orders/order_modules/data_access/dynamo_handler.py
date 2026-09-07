@@ -165,6 +165,101 @@ class DynamoDBHandler:
                 message=str(error),
             )
 
+    def get_item(self, partition_key_value: str, sort_key_value: str = None) -> Dict[str, Any]:
+        try:
+            key = {self.partition_key: partition_key_value}
+            if self.sort_key and sort_key_value is not None:
+                key[self.sort_key] = sort_key_value
+            response = self.table.get_item(Key=key)
+            if response["ResponseMetadata"]["HTTPStatusCode"] == self.HTTP_STATUS_OK:
+                item = response.get("Item")
+                return self.build_response_object(
+                    status="success",
+                    status_code=self.HTTP_STATUS_OK,
+                    message="Item retrieved" if item else "Item not found",
+                    payload=item,
+                )
+            else:
+                message = response["Error"]["Message"]
+                self.logger.error(f"Failed retrieving item: Details: {message}")
+                return self.build_response_object(
+                    status="error",
+                    status_code=response["ResponseMetadata"]["HTTPStatusCode"],
+                    message=message,
+                )
+        except ClientError as error:
+            message = f"{error.response['Error']['Message']}. {error.response['Error']['Code']}"
+            self.logger.error(f"ClientError when retrieving item: Details: {message}")
+            return self.build_response_object(
+                status="error",
+                status_code=error.response["ResponseMetadata"]["HTTPStatusCode"],
+                message=message,
+            )
+        except Exception as error:
+            self.logger.error(f"Exception when retrieving item: Details: {error}")
+            return self.build_response_object(
+                status="error",
+                status_code=self.HTTP_STATUS_INTERNAL_SERVER_ERROR,
+                message=str(error),
+            )
+
+    def update_item_fields(self, item: dict) -> Dict[str, Any]:
+        try:
+            db_item = json.loads(json.dumps(item), parse_float=Decimal)
+
+            key = {self.partition_key: db_item[self.partition_key]}
+            if self.sort_key:
+                key[self.sort_key] = db_item[self.sort_key]
+
+            updates = {k: v for k, v in db_item.items() if k not in key}
+
+            update_parts = []
+            expr_names = {}
+            expr_values = {}
+            for i, (k, v) in enumerate(updates.items()):
+                name_alias = f"#n{i}"
+                val_alias = f":v{i}"
+                expr_names[name_alias] = k
+                expr_values[val_alias] = v
+                update_parts.append(f"{name_alias} = {val_alias}")
+
+            response = self.table.update_item(
+                Key=key,
+                UpdateExpression="SET " + ", ".join(update_parts),
+                ExpressionAttributeNames=expr_names,
+                ExpressionAttributeValues=expr_values,
+            )
+            if response["ResponseMetadata"]["HTTPStatusCode"] == self.HTTP_STATUS_OK:
+                self.logger.info("Order was updated in DynamoDB")
+                return self.build_response_object(
+                    status="success",
+                    status_code=self.HTTP_STATUS_OK,
+                    message="Record updated in DynamoDB",
+                )
+            else:
+                message = response["Error"]["Message"]
+                self.logger.error(f"Failed updating record: Details: {message}")
+                return self.build_response_object(
+                    status="error",
+                    status_code=response["ResponseMetadata"]["HTTPStatusCode"],
+                    message=message,
+                )
+        except ClientError as error:
+            message = f"{error.response['Error']['Message']}. {error.response['Error']['Code']}"
+            self.logger.error(f"ClientError when updating record: Details: {message}")
+            return self.build_response_object(
+                status="error",
+                status_code=error.response["ResponseMetadata"]["HTTPStatusCode"],
+                message=message,
+            )
+        except Exception as error:
+            self.logger.error(f"Exception when updating record: Details: {error}")
+            return self.build_response_object(
+                status="error",
+                status_code=self.HTTP_STATUS_INTERNAL_SERVER_ERROR,
+                message=str(error),
+            )
+
     def delete_record(self, delivery_date: str, order_id: str) -> Dict[str, Any]:
         """
         This function is used to delete a record from the database.

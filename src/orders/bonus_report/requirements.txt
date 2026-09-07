@@ -1,0 +1,2 @@
+aws-lambda-powertools
+python-dotenv==1.0.0

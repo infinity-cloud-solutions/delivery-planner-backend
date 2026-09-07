@@ -218,6 +218,12 @@ def update_order(event: Dict[str, Any], context: LambdaContext) -> Dict[str, Any
 
         original_date = order_data.original_date
         if original_date != order_data.delivery_date:
+            existing = dao.get_order(delivery_date=original_date, order_id=order_id)
+            if existing["status"] == "success" and existing["payload"]:
+                for field in ("created_by", "created_at", "created_month", "created_date_mx"):
+                    if field in existing["payload"]:
+                        order_db_data[field] = existing["payload"][field]
+
             order_to_delete = OrderPrimaryKey(id=order_id, delivery_date=original_date)
             delete_response = dao.delete_order(
                 delivery_date=order_to_delete.delivery_date, order_id=order_to_delete.id
@@ -235,9 +241,15 @@ def update_order(event: Dict[str, Any], context: LambdaContext) -> Dict[str, Any
         logger.info(
             f"Updating order for: {order_data.client_name} at {order_data.delivery_address} and id {order_id} with status {order_status}"
         )
-        update_response = dao.update_order(order_db_data)
 
-        if update_response["status_code"] == 200:
+        if original_date != order_data.delivery_date:
+            db_response = dao.create_order(order_db_data)
+            expected_status_code = 201
+        else:
+            db_response = dao.update_order(order_db_data)
+            expected_status_code = 200
+
+        if db_response["status_code"] == expected_status_code:
             order_status = order_db_data["status"]
             assigned_driver = order_db_data["driver"]
             errors = order_db_data["errors"]
@@ -257,12 +269,12 @@ def update_order(event: Dict[str, Any], context: LambdaContext) -> Dict[str, Any
             logger.debug(f"Outgoing data is {output_data=}")
 
             return doorman.build_response(
-                payload=output_data, status_code=update_response["status_code"]
+                payload=output_data, status_code=db_response["status_code"]
             )
         else:
             return doorman.build_response(
-                payload={"message": update_response["message"]},
-                status_code=update_response.get("status_code", 500),
+                payload={"message": db_response["message"]},
+                status_code=db_response.get("status_code", 500),
             )
 
     except ValidationError as validation_error:

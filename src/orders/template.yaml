@@ -41,6 +41,14 @@ Parameters:
   LogLevel:
     Type: String
     Default: INFO
+  ReportFromEmail:
+    Type: String
+    Description: "Verified SES sender address for the bonus report (e.g. noreply@hiberry.mx)"
+    Default: "noreply@hiberry.mx"
+  ReportRecipients:
+    Type: String
+    Description: "Comma-separated list of bonus report recipient addresses"
+    Default: "Evelyn@hiberry.mx,Omar@hiberry.mx"
 
 Resources:
 
@@ -53,6 +61,10 @@ Resources:
           AttributeType: S
         - AttributeName: id
           AttributeType: S
+        - AttributeName: created_month
+          AttributeType: S
+        - AttributeName: created_at
+          AttributeType: S
       KeySchema:
         - AttributeName: delivery_date
           KeyType: HASH
@@ -61,6 +73,18 @@ Resources:
       ProvisionedThroughput:
         ReadCapacityUnits: 5
         WriteCapacityUnits: 5
+      GlobalSecondaryIndexes:
+        - IndexName: CreatedMonthIndex
+          KeySchema:
+            - AttributeName: created_month
+              KeyType: HASH
+            - AttributeName: created_at
+              KeyType: RANGE
+          Projection:
+            ProjectionType: ALL
+          ProvisionedThroughput:
+            ReadCapacityUnits: 5
+            WriteCapacityUnits: 5
 
   HiBerryLocationIndex:
     Type: AWS::Location::PlaceIndex
@@ -508,6 +532,82 @@ Resources:
                     - logs:CreateLogStream
                     - logs:PutLogEvents
                   Resource: "*"
+
+  BonusReportFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub "BonusReportFunction-${StageName}"
+      CodeUri: bonus_report/
+      Handler: app.generate_bonus_report
+      Runtime: python3.11
+      Environment:
+        Variables:
+          POWERTOOLS_SERVICE_NAME: bonus-report
+          POWERTOOLS_LOG_LEVEL: !Ref LogLevel
+          APP_ENVIRONMENT: !Ref StageName
+          REPORT_FROM_EMAIL: !Ref ReportFromEmail
+          REPORT_RECIPIENTS: !Ref ReportRecipients
+      Events:
+        BonusReportFirst:
+          Type: ScheduleV2
+          Properties:
+            Name: !Sub "BonusReportFirst-${StageName}"
+            ScheduleExpression: "cron(0 9 1 * ? *)"
+            ScheduleExpressionTimezone: "America/Mexico_City"
+            FlexibleTimeWindow:
+              Mode: "OFF"
+        BonusReportSixteenth:
+          Type: ScheduleV2
+          Properties:
+            Name: !Sub "BonusReportSixteenth-${StageName}"
+            ScheduleExpression: "cron(0 9 16 * ? *)"
+            ScheduleExpressionTimezone: "America/Mexico_City"
+            FlexibleTimeWindow:
+              Mode: "OFF"
+      Role: !GetAtt BonusReportRole.Arn
+
+  BonusReportRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub "BonusReportRole-${StageName}"
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+            Action: sts:AssumeRole
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+      Policies:
+        - PolicyName: DynamoDBQueryGsiPolicy
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - dynamodb:Query
+                Resource:
+                  - !GetAtt OrdersTable.Arn
+                  - !Sub "${OrdersTable.Arn}/index/CreatedMonthIndex"
+        - PolicyName: SESPolicy
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - ses:SendRawEmail
+                Resource: "*"
+        - PolicyName: CloudWatchLogsPolicy
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - logs:CreateLogGroup
+                  - logs:CreateLogStream
+                  - logs:PutLogEvents
+                Resource: "*"
 
   ApiGateway:
     Type: AWS::Serverless::Api

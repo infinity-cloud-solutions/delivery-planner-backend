@@ -23,6 +23,7 @@ class OrderDAO:
         self.orders_db = DynamoDBHandler(
             table_name=ORDERS_TABLE_NAME,
             partition_key=ORDERS_PRIMARY_KEY,
+            sort_key="id",
         )
 
     def create_order(self, item: dict) -> dict:
@@ -53,9 +54,27 @@ class OrderDAO:
         response = self.orders_db.retrieve_records(key_condition_expression)
         return response
 
+    def get_order(self, delivery_date: str, order_id: str) -> dict:
+        """
+        Attempts to retrieve a single order record from the DynamoDB table.
+
+        :param delivery_date: The delivery date (partition key)
+        :type delivery_date: str
+        :param order_id: The order id (sort key)
+        :type order_id: str
+        :return: a dictionary that contains the response object
+        :rtype: dict
+        """
+        response = self.orders_db.get_item(
+            partition_key_value=delivery_date,
+            sort_key_value=order_id,
+        )
+        return response
+
     def update_order(self, item: dict) -> dict:
         """
-        Attempts to update a record for an order into the DynamoDB table.
+        Attempts to update specific fields of an order record, preserving any
+        fields not present in item (e.g. created_by, created_at, created_month).
 
         :param item: Order representation
         :type item: dict
@@ -63,7 +82,7 @@ class OrderDAO:
         :rtype: dict
         """
 
-        response = self.orders_db.update_record(item)
+        response = self.orders_db.update_item_fields(item)
         return response
 
     def delete_order(self, delivery_date: str, order_id: str) -> dict:

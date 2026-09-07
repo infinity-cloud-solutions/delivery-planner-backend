@@ -31,7 +31,7 @@ jobs:
     needs: [run_unit_tests]
     with: 
       stack_name: ${{ vars.ORDERS_STACK_NAME }}-development
-      sam_deploy_overrides: "ShopifyEventBusName=${{ vars.SHOPIFY_EVENT_BUS_NAME_DEV }} StageName=development LogLevel=DEBUG"
+      sam_deploy_overrides: "ShopifyEventBusName=${{ vars.SHOPIFY_EVENT_BUS_NAME_DEV }} StageName=development LogLevel=DEBUG ReportFromEmail=${{ vars.REPORT_FROM_EMAIL }} ReportRecipients=${{ vars.REPORT_RECIPIENTS_DEV }}"
       sam_template: src/orders/template.yaml
       aws_region: us-east-1
       pipeline_execution_role: ${{ vars.PIPELINE_EXECUTION_ROLE_DEV }}
@@ -48,7 +48,7 @@ jobs:
     needs: [development]
     with: 
       stack_name: ${{ vars.ORDERS_STACK_NAME }}-uat
-      sam_deploy_overrides: "ShopifyEventBusName=${{ vars.SHOPIFY_EVENT_BUS_NAME_UAT }} StageName=uat LogLevel=DEBUG"
+      sam_deploy_overrides: "ShopifyEventBusName=${{ vars.SHOPIFY_EVENT_BUS_NAME_UAT }} StageName=uat LogLevel=DEBUG ReportFromEmail=${{ vars.REPORT_FROM_EMAIL }} ReportRecipients=${{ vars.REPORT_RECIPIENTS_DEV }}"
       sam_template: src/orders/template.yaml
       aws_region: us-east-1
       pipeline_execution_role: ${{ vars.PIPELINE_EXECUTION_ROLE_UAT }}
@@ -64,7 +64,7 @@ jobs:
     needs: [uat]
     with: 
       stack_name: ${{ vars.ORDERS_STACK_NAME }}-prod
-      sam_deploy_overrides: "ShopifyEventBusName=${{ vars.SHOPIFY_EVENT_BUS_NAME_PROD }} StageName=prod LogLevel=DEBUG"
+      sam_deploy_overrides: "ShopifyEventBusName=${{ vars.SHOPIFY_EVENT_BUS_NAME_PROD }} StageName=prod LogLevel=DEBUG ReportFromEmail=${{ vars.REPORT_FROM_EMAIL }} ReportRecipients=${{ vars.REPORT_RECIPIENTS_PROD }}"
       sam_template: src/orders/template.yaml
       aws_region: us-east-1
       pipeline_execution_role: ${{ vars.PIPELINE_EXECUTION_ROLE_PROD }}
