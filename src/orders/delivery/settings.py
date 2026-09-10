@@ -4,7 +4,6 @@ import os
 # Third-party Libraries
 from aws_lambda_powertools import Logger
 
-
 logger = Logger()
 environment = os.environ.get("APP_ENVIRONMENT")
 if environment is None:

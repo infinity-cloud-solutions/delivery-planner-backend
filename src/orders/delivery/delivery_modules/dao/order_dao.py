@@ -1,15 +1,13 @@
 # Python libraries
-from typing import Dict
-from typing import List
-from typing import Any
+from typing import Any, Dict, List
+
+# Third-party libraries
+from boto3.dynamodb.conditions import Key
 
 # Own's modules
 from delivery_modules.data_access.dynamo_handler import DynamoDBHandler
 
 from settings import ORDERS_TABLE_NAME
-
-# Third-party libraries
-from boto3.dynamodb.conditions import Key
 
 
 class OrderDAO:

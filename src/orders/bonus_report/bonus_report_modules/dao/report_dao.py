@@ -1,11 +1,14 @@
 from typing import Any, Dict, List
 
 import boto3
-from boto3.dynamodb.conditions import Attr, Key
 from aws_lambda_powertools import Logger
+from boto3.dynamodb.conditions import Attr, Key
 
 # OrderSource.SHOPIFY = 0; using the literal to avoid a cross-module import
 _SHOPIFY_SOURCE = 0
+
+# Fixed UTC-6 offset used when writing created_at, consistent with order_mapper.py
+_MX_OFFSET = "-06:00"
 
 
 class ReportDAO:
@@ -13,7 +16,9 @@ class ReportDAO:
 
     def __init__(self, table_name: str, index_name: str, dynamodb_resource=None):
         self.logger = Logger()
-        resource = dynamodb_resource or boto3.resource("dynamodb", region_name="us-east-1")
+        resource = dynamodb_resource or boto3.resource(
+            "dynamodb", region_name="us-east-1"
+        )
         self.table = resource.Table(table_name)
         self.index_name = index_name
 
@@ -24,11 +29,12 @@ class ReportDAO:
         end_date: str,
     ) -> List[Dict[str, Any]]:
         """Return all non-Shopify orders whose created_date_mx falls within [start_date, end_date]."""
-        key_expr = Key("created_month").eq(created_month)
-        filter_expr = (
-            Attr("created_date_mx").between(start_date, end_date)
-            & Attr("source").ne(_SHOPIFY_SOURCE)
+        start_at = f"{start_date}T00:00:00{_MX_OFFSET}"
+        end_at = f"{end_date}T23:59:59{_MX_OFFSET}"
+        key_expr = Key("created_month").eq(created_month) & Key("created_at").between(
+            start_at, end_at
         )
+        filter_expr = Attr("source").ne(_SHOPIFY_SOURCE)
 
         items: List[Dict[str, Any]] = []
         kwargs: Dict[str, Any] = {

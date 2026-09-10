@@ -1,6 +1,4 @@
-from typing import Dict
-from typing import List
-from typing import Any
+from typing import Any, Dict, List
 
 
 class OrderProcessor:

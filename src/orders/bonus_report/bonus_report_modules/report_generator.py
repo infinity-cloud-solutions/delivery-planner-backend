@@ -1,10 +1,20 @@
 import csv
 import io
-from datetime import datetime, timezone, timedelta
+from datetime import datetime, timedelta, timezone
 from typing import Any, Dict, List, Tuple
 
 # Fixed UTC-6 offset for Mexico Central Standard Time, consistent with the rest of the codebase
 MX_OFFSET = timedelta(hours=-6)
+
+# Leading characters that Excel/Sheets interpret as the start of a formula
+_CSV_FORMULA_PREFIXES = ("=", "+", "-", "@")
+
+
+def _sanitize_csv_field(value: Any) -> Any:
+    """Neutralize values that would be interpreted as formulas by spreadsheet software."""
+    if isinstance(value, str) and value.startswith(_CSV_FORMULA_PREFIXES):
+        return "'" + value
+    return value
 
 
 def get_report_period(
@@ -27,9 +37,7 @@ def get_report_period(
         start = last_day_prev.replace(day=16, hour=0, minute=0, second=0, microsecond=0)
         end = last_day_prev.replace(hour=0, minute=0, second=0, microsecond=0)
     else:
-        raise ValueError(
-            f"Report is scheduled for day 1 or 16 only; got day {day}"
-        )
+        raise ValueError(f"Report is scheduled for day 1 or 16 only; got day {day}")
 
     created_month = start.strftime("%Y-%m")
     start_date = start.strftime("%Y-%m-%d")
@@ -44,14 +52,16 @@ def build_detail_csv(orders: List[Dict[str, Any]]) -> str:
     output = io.StringIO()
     writer = csv.writer(output)
 
-    writer.writerow([
-        "Fecha de creación",
-        "Creado por",
-        "Cliente",
-        "Teléfono",
-        "Núm. artículos",
-        "Artículos",
-    ])
+    writer.writerow(
+        [
+            "Fecha de creación",
+            "Creado por",
+            "Cliente",
+            "Teléfono",
+            "Núm. artículos",
+            "Artículos",
+        ]
+    )
 
     for order in orders:
         cart_items = order.get("cart_items", [])
@@ -60,14 +70,16 @@ def build_detail_csv(orders: List[Dict[str, Any]]) -> str:
             f"{int(item.get('quantity', 0))}x {item.get('product', '')}"
             for item in cart_items
         )
-        writer.writerow([
-            order.get("created_date_mx", ""),
-            order.get("created_by", ""),
-            order.get("client_name", ""),
-            order.get("phone_number", ""),
-            num_articles,
-            items_desc,
-        ])
+        writer.writerow(
+            [
+                order.get("created_date_mx", ""),
+                _sanitize_csv_field(order.get("created_by", "")),
+                _sanitize_csv_field(order.get("client_name", "")),
+                _sanitize_csv_field(order.get("phone_number", "")),
+                num_articles,
+                _sanitize_csv_field(items_desc),
+            ]
+        )
 
     return output.getvalue()
 
@@ -92,12 +104,12 @@ def build_summary_csv(orders: List[Dict[str, Any]]) -> str:
 
     writer.writerow(["Creado por", "Total de órdenes"])
     for user, count in sorted(user_counts.items(), key=lambda x: -x[1]):
-        writer.writerow([user, count])
+        writer.writerow([_sanitize_csv_field(user), count])
 
     writer.writerow([])
 
     writer.writerow(["Producto", "Total vendido"])
     for product, total in sorted(product_totals.items(), key=lambda x: -x[1]):
-        writer.writerow([product, total])
+        writer.writerow([_sanitize_csv_field(product), total])
 
     return output.getvalue()

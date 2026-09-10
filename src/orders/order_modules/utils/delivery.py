@@ -1,8 +1,5 @@
 import datetime
-from typing import Tuple
-from typing import List
-from typing import Dict
-from typing import Any
+from typing import Any, Dict, List, Tuple
 
 from order_modules.utils.source import OrderSource
 
