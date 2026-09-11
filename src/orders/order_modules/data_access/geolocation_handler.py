@@ -4,7 +4,6 @@ from typing import Dict
 from aws_lambda_powertools import Logger
 
 import settings
-
 # Own's modules
 from order_modules.utils.aws import AWSClientManager
 

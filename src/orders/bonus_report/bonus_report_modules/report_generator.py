@@ -60,6 +60,7 @@ def build_detail_csv(orders: List[Dict[str, Any]]) -> str:
             "Teléfono",
             "Núm. artículos",
             "Artículos",
+            "Repartidor",
         ]
     )
 
@@ -78,6 +79,7 @@ def build_detail_csv(orders: List[Dict[str, Any]]) -> str:
                 _sanitize_csv_field(order.get("phone_number", "")),
                 num_articles,
                 _sanitize_csv_field(items_desc),
+                order.get("driver", ""),
             ]
         )
 

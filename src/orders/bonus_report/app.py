@@ -2,19 +2,13 @@ from typing import Any, Dict
 
 from aws_lambda_powertools import Logger
 from aws_lambda_powertools.utilities.typing import LambdaContext
-from bonus_report_config import (
-    BONUS_REPORT_GSI_NAME,
-    ORDERS_TABLE_NAME,
-    REPORT_FROM_EMAIL,
-    REPORT_RECIPIENTS,
-)
+from bonus_report_config import (BONUS_REPORT_GSI_NAME, ORDERS_TABLE_NAME,
+                                 REPORT_FROM_EMAIL, REPORT_RECIPIENTS)
 from bonus_report_modules.dao.report_dao import ReportDAO
 from bonus_report_modules.email_sender import EmailSender
-from bonus_report_modules.report_generator import (
-    build_detail_csv,
-    build_summary_csv,
-    get_report_period,
-)
+from bonus_report_modules.report_generator import (build_detail_csv,
+                                                   build_summary_csv,
+                                                   get_report_period)
 
 
 def generate_bonus_report(

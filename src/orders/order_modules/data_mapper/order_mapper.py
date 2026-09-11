@@ -11,7 +11,6 @@ from order_modules.data_access.geolocation_handler import Geolocation
 from order_modules.errors.business_error import BusinessError
 from order_modules.utils.delivery import DeliveryScheduler
 from order_modules.utils.source import OrderSource
-
 # Own's modules
 from order_modules.utils.status import OrderStatus
 from settings import ORDERS_PRIMARY_KEY

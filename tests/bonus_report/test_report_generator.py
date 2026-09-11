@@ -82,11 +82,13 @@ class TestBuildDetailCsv(TestCase):
                     {"product": "Mango", "quantity": 1, "price": 80},
                 ],
                 "id": "abc123",
+                "driver": 1,
             }
         ]
         result = build_detail_csv(orders)
         rows = self._parse_csv(result)
         self.assertEqual(len(rows), 2)
+        self.assertEqual(rows[0][6], "Repartidor")
         data_row = rows[1]
         self.assertEqual(data_row[0], "2026-08-05")
         self.assertEqual(data_row[1], "maria.g")
@@ -95,6 +97,7 @@ class TestBuildDetailCsv(TestCase):
         self.assertEqual(data_row[4], "3")   # 2 + 1
         self.assertIn("Fresa", data_row[5])
         self.assertIn("Mango", data_row[5])
+        self.assertEqual(data_row[6], "1")
 
     def test_article_count_sums_all_cart_items(self):
         orders = [
@@ -122,6 +125,15 @@ class TestBuildDetailCsv(TestCase):
         rows = self._parse_csv(result)
         self.assertEqual(rows[1][0], "")   # created_date_mx
         self.assertEqual(rows[1][1], "")   # created_by
+        self.assertEqual(rows[1][6], "")   # driver
+
+    def test_driver_number_is_included_as_is(self):
+        orders = [
+            {"cart_items": [], "driver": 3},
+        ]
+        result = build_detail_csv(orders)
+        rows = self._parse_csv(result)
+        self.assertEqual(rows[1][6], "3")
 
 
 class TestBuildSummaryCsv(TestCase):

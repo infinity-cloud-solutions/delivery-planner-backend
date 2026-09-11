@@ -3,7 +3,6 @@ from typing import Any, Dict
 
 from aws_lambda_powertools import Logger
 from aws_lambda_powertools.utilities.typing import LambdaContext
-
 # Third-party libraries
 from pydantic import ValidationError
 
@@ -12,12 +11,8 @@ from order_modules.dao.order_dao import OrderDAO
 from order_modules.data_mapper.order_mapper import OrderHelper
 from order_modules.errors.auth_error import AuthError
 from order_modules.errors.business_error import BusinessError
-from order_modules.models.order import (
-    DeliveryDateMixin,
-    HIBerryOrder,
-    HIBerryOrderUpdate,
-    OrderPrimaryKey,
-)
+from order_modules.models.order import (DeliveryDateMixin, HIBerryOrder,
+                                        HIBerryOrderUpdate, OrderPrimaryKey)
 from order_modules.utils.doorman import DoormanUtil
 from settings import ORDERS_PRIMARY_KEY
 

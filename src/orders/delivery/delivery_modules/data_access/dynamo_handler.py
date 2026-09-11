@@ -5,7 +5,6 @@ from typing import Any, Dict, List
 from aws_lambda_powertools import Logger
 from boto3.dynamodb.conditions import Key
 from botocore.exceptions import ClientError
-
 # Own modules
 from delivery_modules.utils.aws import AWSClientManager
 

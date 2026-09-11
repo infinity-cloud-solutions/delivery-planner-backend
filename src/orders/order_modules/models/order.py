@@ -2,16 +2,8 @@ import math
 from datetime import datetime, timedelta, timezone
 from typing import List
 
-from pydantic import (
-    BaseModel,
-    StrictFloat,
-    StrictInt,
-    StrictStr,
-    confloat,
-    conint,
-    field_validator,
-    validator,
-)
+from pydantic import (BaseModel, StrictFloat, StrictInt, StrictStr, confloat,
+                      conint, field_validator, validator)
 
 from order_modules.utils.source import OrderSource
 from order_modules.utils.status import OrderStatus

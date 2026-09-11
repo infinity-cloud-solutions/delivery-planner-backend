@@ -4,14 +4,11 @@ from typing import Any, Dict
 # Third-party libraries
 from aws_lambda_powertools import Logger
 from aws_lambda_powertools.utilities.typing import LambdaContext
-
 # Own's modules
 from delivery_modules.dao.order_dao import OrderDAO
 from delivery_modules.errors.auth_error import AuthError
-from delivery_modules.models.delivery import (
-    ScheduleRequestModel,
-    UpdateScheduleRequestModel,
-)
+from delivery_modules.models.delivery import (ScheduleRequestModel,
+                                              UpdateScheduleRequestModel)
 from delivery_modules.processors.delivery_helpers import DeliveryProcessor
 from delivery_modules.utils.doorman import DoormanUtil
 from pydantic import ValidationError

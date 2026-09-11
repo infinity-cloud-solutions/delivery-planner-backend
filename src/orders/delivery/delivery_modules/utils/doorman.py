@@ -5,7 +5,6 @@ import os
 # Third-party libraries
 from aws_lambda_powertools import Logger
 from delivery_modules.errors.auth_error import AuthError
-
 # Own's modules
 from delivery_modules.errors.util_error import UtilError
 
