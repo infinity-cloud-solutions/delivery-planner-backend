@@ -1,20 +1,19 @@
 # Python's libraries
 import uuid
-from typing import Dict
-from typing import Any
-from datetime import datetime
-
-# Own's modules
-from order_modules.utils.status import OrderStatus
-from order_modules.dao.order_dao import OrderDAO
-from order_modules.data_access.geolocation_handler import Geolocation
-from order_modules.utils.delivery import DeliveryScheduler
-from order_modules.errors.business_error import BusinessError
-from order_modules.utils.source import OrderSource
-from settings import ORDERS_PRIMARY_KEY
+from datetime import datetime, timedelta, timezone
+from typing import Any, Dict
 
 # Third-party libraries
 from aws_lambda_powertools import Logger
+
+from order_modules.dao.order_dao import OrderDAO
+from order_modules.data_access.geolocation_handler import Geolocation
+from order_modules.errors.business_error import BusinessError
+from order_modules.utils.delivery import DeliveryScheduler
+from order_modules.utils.source import OrderSource
+# Own's modules
+from order_modules.utils.status import OrderStatus
+from settings import ORDERS_PRIMARY_KEY
 
 
 class OrderHelper:
@@ -153,15 +152,20 @@ class OrderHelper:
             "discount": self.order_data.get("discount"),
         }
 
-        if status == OrderStatus.CREATED:
+        MX_OFFSET = timedelta(hours=-6)
+        now_mx = datetime.now(timezone(MX_OFFSET))
+
+        if status_on_success == OrderStatus.CREATED:
             metadata = {
                 "created_by": username,
-                "created_at": datetime.now().isoformat(),
+                "created_at": now_mx.isoformat(),
+                "created_month": now_mx.strftime("%Y-%m"),
+                "created_date_mx": now_mx.strftime("%Y-%m-%d"),
             }
         else:
             metadata = {
                 "updated_by": username,
-                "updated_at": datetime.now().isoformat(),
+                "updated_at": now_mx.isoformat(),
             }
 
         data.update(metadata)

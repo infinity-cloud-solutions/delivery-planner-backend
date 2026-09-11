@@ -1,15 +1,12 @@
 # Python libraries
-from typing import Dict
-from typing import Any
-from typing import List
-
-# Own modules
-from delivery_modules.utils.aws import AWSClientManager
+from typing import Any, Dict, List
 
 # Third-party libraries
 from aws_lambda_powertools import Logger
-from botocore.exceptions import ClientError
 from boto3.dynamodb.conditions import Key
+from botocore.exceptions import ClientError
+# Own modules
+from delivery_modules.utils.aws import AWSClientManager
 
 
 class DynamoDBHandler:
@@ -61,7 +58,9 @@ class DynamoDBHandler:
                         expression_attribute_names[f"#{key}"] = key
 
                 update_expression = "SET " + ", ".join(update_expression_parts)
-                self.logger.info(f"Attributes Names to update {expression_attribute_names} - Attributes values to update {expression_attribute_values}, with expression {update_expression}.")
+                self.logger.info(
+                    f"Attributes Names to update {expression_attribute_names} - Attributes values to update {expression_attribute_values}, with expression {update_expression}."
+                )
 
                 self.table.update_item(
                     Key={"delivery_date": record["delivery_date"], "id": record["id"]},

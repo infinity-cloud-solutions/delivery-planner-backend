@@ -1,17 +1,16 @@
 import json
 import os
 
-from exceptions import ConfigurationError, StorePickupNotAllowed
-from data_mapper import ShopifyDataMapper
-from models import ShopifyPayload
-
 import boto3
 from aws_lambda_powertools import Logger
+from aws_lambda_powertools.utilities.parser import ValidationError, parse
+from aws_lambda_powertools.utilities.parser.envelopes import \
+    EventBridgeEnvelope
 from aws_lambda_powertools.utilities.typing import LambdaContext
-from aws_lambda_powertools.utilities.parser import parse, ValidationError
-from aws_lambda_powertools.utilities.parser.envelopes import EventBridgeEnvelope
 from botocore.exceptions import ClientError
-
+from data_mapper import ShopifyDataMapper
+from exceptions import ConfigurationError, StorePickupNotAllowed
+from models import ShopifyPayload
 
 # Initialize logging
 logger = Logger()

@@ -3,14 +3,14 @@ import json
 import os
 from datetime import datetime
 
+# Third-party libraries
+from aws_lambda_powertools import Logger
+
+from order_modules.errors.auth_error import AuthError
 # Own's modules
 from order_modules.errors.util_error import UtilError
 from order_modules.utils.encoders import DecimalEncoder
-from order_modules.errors.auth_error import AuthError
 from settings import environment
-
-# Third-party libraries
-from aws_lambda_powertools import Logger
 
 ACCESS_RULES = {
     "Admin": [

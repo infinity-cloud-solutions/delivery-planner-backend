@@ -1,26 +1,20 @@
 # Python's libraries
-from typing import Dict
-from typing import Any
+from typing import Any, Dict
+
+from aws_lambda_powertools import Logger
+from aws_lambda_powertools.utilities.typing import LambdaContext
+# Third-party libraries
+from pydantic import ValidationError
 
 # Own's modules
 from order_modules.dao.order_dao import OrderDAO
 from order_modules.data_mapper.order_mapper import OrderHelper
-from order_modules.models.order import (
-    HIBerryOrder,
-    HIBerryOrderUpdate,
-    OrderPrimaryKey,
-    DeliveryDateMixin,
-)
-from order_modules.utils.doorman import DoormanUtil
 from order_modules.errors.auth_error import AuthError
 from order_modules.errors.business_error import BusinessError
-
+from order_modules.models.order import (DeliveryDateMixin, HIBerryOrder,
+                                        HIBerryOrderUpdate, OrderPrimaryKey)
+from order_modules.utils.doorman import DoormanUtil
 from settings import ORDERS_PRIMARY_KEY
-
-# Third-party libraries
-from pydantic import ValidationError
-from aws_lambda_powertools import Logger
-from aws_lambda_powertools.utilities.typing import LambdaContext
 
 
 def create_order(event: Dict[str, Any], context: LambdaContext) -> Dict[str, Any]:
@@ -218,6 +212,28 @@ def update_order(event: Dict[str, Any], context: LambdaContext) -> Dict[str, Any
 
         original_date = order_data.original_date
         if original_date != order_data.delivery_date:
+            existing = dao.get_order(delivery_date=original_date, order_id=order_id)
+            if existing["status"] != "success" or not existing["payload"]:
+                logger.error(
+                    f"Could not retrieve original order {order_id} on {original_date} "
+                    f"to carry over creation metadata: {existing.get('message')}"
+                )
+                return doorman.build_response(
+                    payload={
+                        "message": "Unable to retrieve original order data needed for the delivery date change"
+                    },
+                    status_code=existing.get("status_code", 500),
+                )
+
+            for field in (
+                "created_by",
+                "created_at",
+                "created_month",
+                "created_date_mx",
+            ):
+                if field in existing["payload"]:
+                    order_db_data[field] = existing["payload"][field]
+
             order_to_delete = OrderPrimaryKey(id=order_id, delivery_date=original_date)
             delete_response = dao.delete_order(
                 delivery_date=order_to_delete.delivery_date, order_id=order_to_delete.id
@@ -235,9 +251,15 @@ def update_order(event: Dict[str, Any], context: LambdaContext) -> Dict[str, Any
         logger.info(
             f"Updating order for: {order_data.client_name} at {order_data.delivery_address} and id {order_id} with status {order_status}"
         )
-        update_response = dao.update_order(order_db_data)
 
-        if update_response["status_code"] == 200:
+        if original_date != order_data.delivery_date:
+            db_response = dao.create_order(order_db_data)
+            expected_status_code = 201
+        else:
+            db_response = dao.update_order(order_db_data)
+            expected_status_code = 200
+
+        if db_response["status_code"] == expected_status_code:
             order_status = order_db_data["status"]
             assigned_driver = order_db_data["driver"]
             errors = order_db_data["errors"]
@@ -257,12 +279,12 @@ def update_order(event: Dict[str, Any], context: LambdaContext) -> Dict[str, Any
             logger.debug(f"Outgoing data is {output_data=}")
 
             return doorman.build_response(
-                payload=output_data, status_code=update_response["status_code"]
+                payload=output_data, status_code=db_response["status_code"]
             )
         else:
             return doorman.build_response(
-                payload={"message": update_response["message"]},
-                status_code=update_response.get("status_code", 500),
+                payload={"message": db_response["message"]},
+                status_code=db_response.get("status_code", 500),
             )
 
     except ValidationError as validation_error:

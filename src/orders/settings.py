@@ -1,10 +1,9 @@
 # Python's Libraries
 import os
 
+from aws_lambda_powertools import Logger
 # Third-party Libraries
 from dotenv import load_dotenv
-from aws_lambda_powertools import Logger
-
 
 load_dotenv()
 logger = Logger()
