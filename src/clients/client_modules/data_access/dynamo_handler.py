@@ -10,7 +10,7 @@ from client_modules.utils.aws import AWSClientManager
 # Third-party libraries
 from aws_lambda_powertools import Logger
 from botocore.exceptions import ClientError
-from boto3.dynamodb.conditions import Key
+from boto3.dynamodb.conditions import Attr, Key
 
 
 class DynamoDBHandler:
@@ -24,6 +24,7 @@ class DynamoDBHandler:
     HTTP_STATUS_BAD_REQUEST = 400
     HTTP_STATUS_FORBIDDEN = 403
     HTTP_STATUS_NOT_FOUND = 404
+    HTTP_STATUS_CONFLICT = 409
     HTTP_STATUS_INTERNAL_SERVER_ERROR = 500
 
     def __init__(self, table_name: str, partition_key: str, sort_key: str = None):
@@ -50,7 +51,10 @@ class DynamoDBHandler:
         """
         try:
             db_item = json.loads(json.dumps(item), parse_float=Decimal)
-            response = self.table.put_item(Item=db_item)
+            response = self.table.put_item(
+                Item=db_item,
+                ConditionExpression=Attr(self.partition_key).not_exists(),
+            )
             if response["ResponseMetadata"]["HTTPStatusCode"] == self.HTTP_STATUS_OK:
                 self.logger.info("Client was created in DynamoDB")
                 return self.build_response_object(
@@ -67,6 +71,13 @@ class DynamoDBHandler:
                     message=message,
                 )
         except ClientError as error:
+            if error.response["Error"]["Code"] == "ConditionalCheckFailedException":
+                self.logger.warning("Client already exists, record was not overwritten")
+                return self.build_response_object(
+                    status="error",
+                    status_code=self.HTTP_STATUS_CONFLICT,
+                    message="A client with this phone number already exists",
+                )
             message = f"{error.response['Error']['Message']}. {error.response['Error']['Code']}"
             self.logger.error(f"ClientError when saving record: Details: {message}")
             return self.build_response_object(
@@ -178,11 +189,19 @@ class DynamoDBHandler:
                 KeyConditionExpression=key_condition_expression,
             )
             if response["ResponseMetadata"]["HTTPStatusCode"] == self.HTTP_STATUS_OK:
+                items = response["Items"]
+                if not items:
+                    self.logger.info("No client records were found")
+                    return self.build_response_object(
+                        status="success",
+                        status_code=self.HTTP_STATUS_NOT_FOUND,
+                        message="Client not found",
+                    )
                 return self.build_response_object(
                     status="success",
                     status_code=self.HTTP_STATUS_OK,
-                    message=f"{len(response['Items'])} clients records were found",
-                    payload=response["Items"][0],
+                    message=f"{len(items)} clients records were found",
+                    payload=items[0],
                 )
             else:
                 message = response["Error"]["Message"]
