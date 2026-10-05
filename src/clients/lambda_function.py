@@ -225,6 +225,17 @@ def retrieve_client(event: Dict[str, Any], context: LambdaContext) -> Dict[str, 
         client = dao.fetch_client(
             primary_key=settings.CLIENTS_PRIMARY_KEY, query_value=phone_number
         )
+        if client["status"] != "success":
+            return doorman.build_response(
+                payload={"message": client["message"]},
+                status_code=client.get("status_code", 500),
+            )
+
+        if client["status_code"] == 404:
+            return doorman.build_response(
+                payload={"message": client["message"]}, status_code=404
+            )
+
         output_data = client["payload"]
         logger.debug(f"Outgoing data is {output_data}")
 
