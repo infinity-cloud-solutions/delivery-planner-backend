@@ -12,7 +12,7 @@ else:
     raise NameError(f"No environment configured for: {environment}")
 
 BONUS_REPORT_GSI_NAME = "CreatedMonthIndex"
-REPORT_FROM_EMAIL = os.environ.get("REPORT_FROM_EMAIL", "noreply@hiberry.mx")
+REPORT_FROM_EMAIL = os.environ.get("REPORT_FROM_EMAIL", "hola@hiberry.mx")
 REPORT_RECIPIENTS = [
     r.strip()
     for r in os.environ.get(

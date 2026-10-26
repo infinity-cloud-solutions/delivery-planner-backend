@@ -43,8 +43,8 @@ Parameters:
     Default: INFO
   ReportFromEmail:
     Type: String
-    Description: "Verified SES sender address for the bonus report (e.g. noreply@hiberry.mx)"
-    Default: "noreply@hiberry.mx"
+    Description: "Verified SES sender address for the bonus report (e.g. hola@hiberry.mx)"
+    Default: "hola@hiberry.mx"
   ReportRecipients:
     Type: String
     Description: "Comma-separated list of bonus report recipient addresses"
@@ -375,6 +375,8 @@ Resources:
                   - dynamodb:PutItem
                   - dynamodb:Query
                   - dynamodb:DeleteItem
+                  - dynamodb:UpdateItem
+                  - dynamodb:GetItem
                 Resource: !GetAtt OrdersTable.Arn
         - PolicyName: LocationServiceAccess
           PolicyDocument:
