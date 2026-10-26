@@ -8,7 +8,7 @@ class TestEmailSender(TestCase):
 
     def _make_sender(self):
         ses_mock = MagicMock()
-        sender = EmailSender(from_email="noreply@hiberry.mx", ses_client=ses_mock)
+        sender = EmailSender(from_email="hola@hiberry.mx", ses_client=ses_mock)
         return sender, ses_mock
 
     def test_send_report_calls_ses_send_raw_email(self):
@@ -30,7 +30,7 @@ class TestEmailSender(TestCase):
             summary_csv="",
         )
         call_kwargs = ses_mock.send_raw_email.call_args[1]
-        self.assertEqual(call_kwargs["Source"], "noreply@hiberry.mx")
+        self.assertEqual(call_kwargs["Source"], "hola@hiberry.mx")
 
     def test_send_report_includes_all_recipients_as_destinations(self):
         sender, ses_mock = self._make_sender()
